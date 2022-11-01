@@ -20,18 +20,15 @@ import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
 import reactor.core.publisher.Flux;
 
 
-public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bundle, EmptySession> {
+public class FhirQueryToBundleConverter extends FhirRelatedToBundleConverter {
 
   private final static Logger logger = BufferedLoggerFactory.getLogger(FhirQueryToBundleConverter.class);
-  private final IGenericClient client;
-  private final String sourceId;
   private int pageSize = ExporterConst.DEFAULT_FHIR_PAGE_SIZE;
 
-
   public FhirQueryToBundleConverter(String fhirStoreUrl, String sourceId) {
-    this.client = createFhirClient(fhirStoreUrl);
-    this.sourceId = sourceId;
+    super(fhirStoreUrl, sourceId);
   }
+
 
   @Override
   public Flux<Bundle> convert(String fhirQuery, ConverterTemplate template, EmptySession session) {
@@ -161,25 +158,11 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
     template.getFhirRevIncludes().forEach(revInclude -> iQuery.revInclude(new Include(revInclude)));
   }
 
-  private IGenericClient createFhirClient(String blazeStoreUrl) {
-    // TODO: set proxy
-    return FhirContext.forR4().newRestfulGenericClient(blazeStoreUrl);
-  }
-
   @Override
   public Format getInputFormat() {
     return Format.FHIR_QUERY;
   }
 
-  @Override
-  public Format getOutputFormat() {
-    return Format.BUNDLE;
-  }
-
-  @Override
-  public String getSourceId() {
-    return this.sourceId;
-  }
 
   public void setPageSize(int pageSize) {
     this.pageSize = pageSize;

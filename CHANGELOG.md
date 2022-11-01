@@ -89,6 +89,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - XML Exporter
 - Request Page Size
 - Http response header number-of-pages
+- CQL to Bundle Converter
 
 ### Changed
 - Rename Conversion Template as Converter Template

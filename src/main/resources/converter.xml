@@ -11,6 +11,11 @@
     <property name="pageSize" value="50" />
   </bean>
 
+  <bean id="blazeStoreCqlToBundleConverter" class="de.samply.fhir.cql.CqlToBundleConverter">
+    <constructor-arg name="fhirStoreUrl" value="http://localhost:8091/fhir" />
+    <constructor-arg name="sourceId" value="blaze-store" />
+  </bean>
+
   <bean id="csvToOpalConverter" class="de.samply.opal.CsvToOpalConverter">
     <constructor-arg name="opalServer" ref="opalServer" />
     <constructor-arg name="targetId" value="opal" />
