@@ -6,6 +6,7 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import de.samply.teiler.TeilerConst;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
 import org.hl7.fhir.r4.model.Base;
 import org.hl7.fhir.r4.model.ExpressionNode;
@@ -36,10 +37,14 @@ public class BlazeStoreClient {
   }
 
   private void doSomething(Bundle bundle){
-    Patient patient = (Patient) bundle.getEntry().get(0).getResource();
-    //((Patient) bundle.getEntry().get(0).getResource()).gender.myStringValue;
-    ExpressionNode genderNode = fhirPathEngine.parse("Patient.gender");
-    fhirPathEngine.evaluate(patient, genderNode).get(0);
+    String attribute = fetchAttribute("Patient.gender.value", bundle, 0);
+  }
+
+  private String fetchAttribute(String fhirPath, Bundle bundle, int patientIndex){
+    Patient patient = (Patient) bundle.getEntry().get(patientIndex).getResource();
+    ExpressionNode genderNode = fhirPathEngine.parse(fhirPath);
+    List<Base> baseList = fhirPathEngine.evaluate(patient, genderNode);
+    return (baseList != null && baseList.size() > 0) ? baseList.get(0).toString() : null;
   }
 
   private Bundle fetchPatientBundle(String patientPseudonym) {
