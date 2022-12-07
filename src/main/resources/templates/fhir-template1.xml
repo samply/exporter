@@ -1,5 +1,33 @@
+<!--
 <container>
   <filename></filename>
   <column></column>
   <fhirPath></fhirPath>
 </container>
+-->
+<containers excel-filename="">
+  <container type="patient" csv-filename="patient.csv" order="1">
+    <attribute>
+      <csv-column-name></csv-column-name>
+      <excel-sheet-name></excel-sheet-name>
+      <order></order>
+      <fhir-path>root.....Patient.gender.value</fhir-path>
+      <db2-path></db2-path>
+    </attribute>
+    <attribute>
+      <container-ref>
+        <container-type>diagnose</container-type>
+      </container-ref>
+    </attribute>
+    <attribute>
+      <container-ref>container-type</container-ref>
+    </attribute>
+  </container>
+
+  <container type="diagnose">
+    <attribute>
+      <fhir-path></fhir-path>
+    </attribute>
+  </container>
+
+</containers>
