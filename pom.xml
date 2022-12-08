@@ -43,6 +43,7 @@
     <ucum.version>1.0.3</ucum.version>
     <org.hl7.fhir.r4.version>5.6.84</org.hl7.fhir.r4.version>
     <caffeine.version>3.1.2</caffeine.version>
+    <jackson-dataformat-xml.version>2.14.1</jackson-dataformat-xml.version>
   </properties>
 
   <dependencies>
@@ -80,6 +81,11 @@
       <groupId>org.fhir</groupId>
       <artifactId>ucum</artifactId>
       <version>${ucum.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>${jackson-dataformat-xml.version}</version>
     </dependency>
 
   </dependencies>

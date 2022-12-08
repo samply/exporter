@@ -6,18 +6,13 @@
 </container>
 -->
 <containers excel-filename="">
-  <container type="patient" csv-filename="patient.csv" order="1">
-    <attribute>
-      <csv-column-name></csv-column-name>
-      <excel-sheet-name></excel-sheet-name>
-      <order></order>
+  <container type="patient" csv-filename="patient.csv" order="1" excel-sheet-name="patient">
+    <attribute csv-column-name="gender" excel-sheet-column="gender" order="5">
       <fhir-path>root.....Patient.gender.value</fhir-path>
       <db2-path></db2-path>
     </attribute>
     <attribute>
-      <container-ref>
-        <container-type>diagnose</container-type>
-      </container-ref>
+      <container-ref container-type="diagnosis">1234</container-ref>
     </attribute>
     <attribute>
       <container-ref>container-type</container-ref>

@@ -9,8 +9,11 @@ import java.net.URL;
 import java.util.List;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
 import org.hl7.fhir.r4.model.Base;
+import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent;
 import org.hl7.fhir.r4.model.ExpressionNode;
+import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -37,14 +40,39 @@ public class BlazeStoreClient {
   }
 
   private void doSomething(Bundle bundle){
-    String attribute = fetchAttribute("Patient.gender.value", bundle, 0);
+    Resource patient = getFirstPatient(bundle);
+    String attribute = fetchAttribute("Patient.gender.value", patient);
+    Resource histologie = getFirstHistologie(bundle);
+    String attribute2 = fetchAttribute("Observation.value.coding.code", histologie);
+    String attribute3 = fetchAttribute("Observation.value.coding.code", patient);
+    String attribute4 = fetchAttribute("Bundle.entry.select(resource as Patient).gender.value", bundle);
+    String attribute5 = fetchAttribute("Bundle.entry.select(resource as Observation).where(code.coding.code = '59847-4').value.coding.code", bundle);
+    String attribute6 = fetchAttribute("Bundle.entry.select(resource as Observation).subject.reference.value", bundle);
   }
 
-  private String fetchAttribute(String fhirPath, Bundle bundle, int patientIndex){
-    Patient patient = (Patient) bundle.getEntry().get(patientIndex).getResource();
+  private String fetchAttribute(String fhirPath, Resource resource){
     ExpressionNode genderNode = fhirPathEngine.parse(fhirPath);
-    List<Base> baseList = fhirPathEngine.evaluate(patient, genderNode);
+    List<Base> baseList = fhirPathEngine.evaluate(resource, genderNode);
     return (baseList != null && baseList.size() > 0) ? baseList.get(0).toString() : null;
+  }
+
+  private Resource getFirstPatient(Bundle bundle){
+    for (BundleEntryComponent component : bundle.getEntry()){
+      if (component.getResource() instanceof Patient){
+          return component.getResource();
+      }
+    }
+    return null;
+  }
+
+  private Resource getFirstHistologie(Bundle bundle){
+    for (BundleEntryComponent component : bundle.getEntry()){
+      if (component.getResource() instanceof Observation &&
+          component.getResource().getMeta().getProfile().get(0).toString().contains("Histologie")){
+        return component.getResource();
+      }
+    }
+    return null;
   }
 
   private Bundle fetchPatientBundle(String patientPseudonym) {
