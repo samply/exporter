@@ -32,11 +32,9 @@ public class BlazeStoreClient {
     this.fhirPathEngine = createFhirPathEngine(fhirContext);
   }
 
-  public void retrieve() {
+  public Bundle retrieve(String query, String queryFormat) {
     String pseudonym = "ZGPQEA3R";
-    Bundle bundle = fetchPatientBundle(pseudonym);
-    doSomething(bundle);
-
+    return fetchPatientBundle(pseudonym);
   }
 
   private void doSomething(Bundle bundle){

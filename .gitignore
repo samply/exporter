@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 templates
 test-templates
+output
 
 ### STS ###
 .apt_generated

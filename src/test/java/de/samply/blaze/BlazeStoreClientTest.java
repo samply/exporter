@@ -11,6 +11,8 @@ class BlazeStoreClientTest {
 
   private BlazeStoreClient blazeStoreClient;
   private String blazeStoreUrl = "http://localhost:8091";
+  private String query;
+  private String queryFormat;
   @BeforeEach
   void setUp() {
      this.blazeStoreClient = new BlazeStoreClient(blazeStoreUrl);
@@ -18,7 +20,7 @@ class BlazeStoreClientTest {
 
   @Test
   void retrieve() {
-    blazeStoreClient.retrieve();
+    blazeStoreClient.retrieve(query, queryFormat);
     //TODO
   }
 

@@ -1,43 +1,24 @@
 package de.samply.container;
 
+import de.samply.container.template.AttributeTemplate;
+
 public class Attribute {
 
-  private String id;
   // If isContainerRef is true, then type is the container-type.
-  private String type;
+  private AttributeTemplate attributeTemplate;
   private String value;
-  private boolean isContainerRef = false;
 
-  public String getId() {
-    return id;
+  public Attribute(AttributeTemplate attributeTemplate, String value) {
+    this.attributeTemplate = attributeTemplate;
+    this.value = value;
   }
 
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
+  public AttributeTemplate getAttributeTemplate() {
+    return attributeTemplate;
   }
 
   public String getValue() {
     return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public boolean isContainerRef() {
-    return isContainerRef;
-  }
-
-  public void setContainerRef() {
-    isContainerRef = true;
   }
 
 }

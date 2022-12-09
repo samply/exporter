@@ -4,16 +4,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import de.samply.teiler.TeilerConst;
 import java.util.List;
 
 @JacksonXmlRootElement(localName = "template")
-public class ContainersTemplate{
+public class ContainersTemplate {
 
-  @JacksonXmlProperty(isAttribute = true)@JsonProperty("id")
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty("id")
   private String id;
-  @JacksonXmlProperty(isAttribute = true, localName = "excel-filename")@JsonProperty("excel-filename")
+  @JacksonXmlProperty(isAttribute = true, localName = "excel-filename")
+  @JsonProperty("excel-filename")
   private String excelFilename;
-  @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("container")
+
+  @JacksonXmlProperty(isAttribute = true, localName = "csv-separator")
+  @JsonProperty(value = "csv-separator")
+  private String csvSeparator = TeilerConst.DEFAULT_CSV_SEPARATOR;
+
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JsonProperty("container")
   private List<ContainerTemplate> containerTemplates;
 
   public ContainersTemplate() {
@@ -40,6 +49,14 @@ public class ContainersTemplate{
 
   public void setExcelFilename(String excelFilename) {
     this.excelFilename = excelFilename;
+  }
+
+  public String getCsvSeparator() {
+    return csvSeparator;
+  }
+
+  public void setCsvSeparator(String csvSeparator) {
+    this.csvSeparator = csvSeparator;
   }
 
   public List<ContainerTemplate> getContainerTemplates() {

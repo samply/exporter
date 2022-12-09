@@ -61,6 +61,8 @@ public class AttributeTemplate {
     this.fhirPath = fhirPath;
   }
 
+/*
+  // TO DELETE:
   public String fetchRootFhirPath() {
     String rootFhirPath = fhirPath;
     if (fhirPath != null) {
@@ -73,5 +75,7 @@ public class AttributeTemplate {
     }
     return rootFhirPath;
   }
+
+ */
 
 }
