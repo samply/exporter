@@ -15,11 +15,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ContainersWriter {
+public class ContainersCsvWriter {
 
   private String writeDirectory;
 
-  public ContainersWriter(@Value(TeilerConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
+  public ContainersCsvWriter(@Value(TeilerConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
     this.writeDirectory = writeDirectory;
   }
 

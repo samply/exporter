@@ -25,6 +25,9 @@ public class ContainersTemplate {
   @JsonProperty("container")
   private List<ContainerTemplate> containerTemplates;
 
+  @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-rev-include")
+  private List<String> fhirRevIncludes;
+
   public ContainersTemplate() {
   }
 
@@ -67,4 +70,13 @@ public class ContainersTemplate {
       List<ContainerTemplate> containerTemplates) {
     this.containerTemplates = containerTemplates;
   }
+
+  public List<String> getFhirRevIncludes() {
+    return fhirRevIncludes;
+  }
+
+  public void setFhirRevIncludes(List<String> fhirRevIncludes) {
+    this.fhirRevIncludes = fhirRevIncludes;
+  }
+
 }

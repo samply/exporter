@@ -29,6 +29,8 @@ class ContainersTemplateTest {
     containerTemplates.add(generateContainerTemplate(counter++));
     ContainersTemplate containersTemplate = new ContainersTemplate("test-template", "my-test.xml",
         containerTemplates);
+    List<String> fhirRevIncludes = generateFhirRevIncludes();
+    containersTemplate.setFhirRevIncludes(fhirRevIncludes);
     var jsonFile = new File(filepath + ".json");
     objectMapper.writeValue(jsonFile, containersTemplate);
     ContainersTemplate containersTemplate2 = objectMapper.readValue(jsonFile,
@@ -53,6 +55,18 @@ class ContainersTemplateTest {
     String extension = i + "." + j;
     return new AttributeTemplate(j, "col-" + extension, "col-" + extension,
         "path.to.attribute." + extension);
+  }
+
+  private List<String> generateFhirRevIncludes(){
+    List<String> fhirRevIncludes = new ArrayList<>();
+    fhirRevIncludes.add("Observation:patient");
+    fhirRevIncludes.add("Condition:patient");
+    fhirRevIncludes.add("Specimen:patient");
+    fhirRevIncludes.add("Procedure:patient");
+    fhirRevIncludes.add("MedicationStatement:patient");
+    fhirRevIncludes.add("ClinicalImpression:patient");
+
+    return fhirRevIncludes;
   }
 
 }

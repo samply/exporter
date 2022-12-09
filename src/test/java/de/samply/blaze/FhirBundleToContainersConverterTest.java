@@ -2,7 +2,7 @@ package de.samply.blaze;
 
 import de.samply.container.Containers;
 import de.samply.container.template.ResultTemplates;
-import de.samply.container.write.ContainersWriter;
+import de.samply.container.write.ContainersCsvWriter;
 import org.hl7.fhir.r4.model.Bundle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -19,21 +19,21 @@ class FhirBundleToContainersConverterTest {
   private String queryFormat;
   private FhirBundleToContainersConverter bundleToContainersConverter;
   private BlazeStoreClient blazeStoreClient;
-  private ContainersWriter containersWriter;
+  private ContainersCsvWriter containersCsvWriter;
 
   @BeforeEach
   void setUp() {
     ResultTemplates resultTemplates = new ResultTemplates(templateDirectory);
     this.bundleToContainersConverter = new FhirBundleToContainersConverter(resultTemplates);
     this.blazeStoreClient = new BlazeStoreClient(blazeStoreUrl);
-    this.containersWriter = new ContainersWriter(outputDirectory);
+    this.containersCsvWriter = new ContainersCsvWriter(outputDirectory);
   }
 
   @Test
   void testConvert() {
     Bundle bundle = blazeStoreClient.retrieve(query, queryFormat);
     Containers containers = bundleToContainersConverter.convert(bundle, templateId);
-    containersWriter.writeContainersInCsv(containers);
+    containersCsvWriter.writeContainersInCsv(containers);
   }
 
 }
