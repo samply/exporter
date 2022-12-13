@@ -1,4 +1,4 @@
-package de.samply.container.template;
+package de.samply.result.container.template;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -13,11 +13,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResultTemplates {
+public class ResultTemplatesManager {
 
   private Map<String, ContainersTemplate> idContainersTemplateMap = new HashMap<>();
 
-  public ResultTemplates(
+  public ResultTemplatesManager(
       @Value(TeilerConst.RESULT_TEMPLATE_DIRECTORY_SV) String templateDirectory) {
     loadTemplates(Paths.get(templateDirectory));
   }

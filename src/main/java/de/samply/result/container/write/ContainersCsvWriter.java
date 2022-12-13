@@ -1,9 +1,9 @@
-package de.samply.container.write;
+package de.samply.result.container.write;
 
-import de.samply.container.Container;
-import de.samply.container.Containers;
-import de.samply.container.template.ContainerTemplate;
-import de.samply.container.template.ContainersTemplate;
+import de.samply.result.container.Container;
+import de.samply.result.container.Containers;
+import de.samply.result.container.template.ContainerTemplate;
+import de.samply.result.container.template.ContainersTemplate;
 import de.samply.teiler.TeilerConst;
 import java.io.IOException;
 import java.nio.file.Files;

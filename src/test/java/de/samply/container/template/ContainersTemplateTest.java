@@ -1,10 +1,11 @@
 package de.samply.container.template;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import de.samply.result.container.template.AttributeTemplate;
+import de.samply.result.container.template.ContainerTemplate;
+import de.samply.result.container.template.ContainersTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

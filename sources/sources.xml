@@ -1,0 +1,7 @@
+<sources>
+  <source id="blaze" url="http://localhost:8091">
+    <query-format>CQL</query-format>
+    <query-format>FHIR</query-format>
+    <result-format>FHIR</result-format>
+  </source>
+</sources>

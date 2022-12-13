@@ -1,14 +1,13 @@
-package de.samply.blaze;
+package de.samply.fhir;
 
 
 import ca.uhn.fhir.context.FhirContext;
-import de.samply.container.Attribute;
-import de.samply.container.Container;
-import de.samply.container.Containers;
-import de.samply.container.template.AttributeTemplate;
-import de.samply.container.template.ContainerTemplate;
-import de.samply.container.template.ContainersTemplate;
-import de.samply.container.template.ResultTemplates;
+import de.samply.result.container.Attribute;
+import de.samply.result.container.Container;
+import de.samply.result.container.Containers;
+import de.samply.result.container.template.AttributeTemplate;
+import de.samply.result.container.template.ContainerTemplate;
+import de.samply.result.container.template.ContainersTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
@@ -16,28 +15,23 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.ExpressionNode;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FhirBundleToContainersConverter {
+public class BundleToContainersConverter {
 
-  private final ResultTemplates resultTemplates;
   private final FHIRPathEngine fhirPathEngine;
 
-  public FhirBundleToContainersConverter(@Autowired ResultTemplates resultTemplates) {
-    this.resultTemplates = resultTemplates;
+  public BundleToContainersConverter() {
     this.fhirPathEngine = createFhirPathEngine();
   }
 
-  public Containers convert(Bundle bundle, String templateId) {
-    ContainersTemplate containersTemplate = this.resultTemplates.getResultTemplate(templateId);
+  public Containers convert(Bundle bundle, ContainersTemplate containersTemplate) {
     Containers containers = new Containers(containersTemplate);
     if (containersTemplate != null) {
       containersTemplate.getContainerTemplates()
           .forEach(containerTemplate -> addContainers(bundle, containers, containerTemplate));
     }
-
     return containers;
   }
 

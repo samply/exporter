@@ -1,20 +1,19 @@
 package de.samply.container.template;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import de.samply.result.container.template.ResultTemplatesManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled
-class ResultTemplatesTest {
+class ResultTemplatesManagerTest {
 
-  private ResultTemplates templates;
+  private ResultTemplatesManager templates;
   private String templatesDirectory = "./templates";
 
   @BeforeEach
   void setUp() {
-    this.templates = new ResultTemplates(templatesDirectory);
+    this.templates = new ResultTemplatesManager(templatesDirectory);
     //TODO
   }
 

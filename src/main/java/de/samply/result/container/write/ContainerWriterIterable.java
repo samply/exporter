@@ -1,10 +1,10 @@
-package de.samply.container.write;
+package de.samply.result.container.write;
 
-import de.samply.container.Attribute;
-import de.samply.container.Container;
-import de.samply.container.template.AttributeTemplate;
-import de.samply.container.template.ContainerTemplate;
-import de.samply.container.template.ContainersTemplate;
+import de.samply.result.container.Attribute;
+import de.samply.result.container.Container;
+import de.samply.result.container.template.AttributeTemplate;
+import de.samply.result.container.template.ContainerTemplate;
+import de.samply.result.container.template.ContainersTemplate;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;

@@ -1,10 +1,11 @@
-package de.samply.container.template;
+package de.samply.result.container.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import de.samply.teiler.TeilerConst;
+import java.util.ArrayList;
 import java.util.List;
 
 @JacksonXmlRootElement(localName = "template")
@@ -23,10 +24,10 @@ public class ContainersTemplate {
 
   @JacksonXmlElementWrapper(useWrapping = false)
   @JsonProperty("container")
-  private List<ContainerTemplate> containerTemplates;
+  private List<ContainerTemplate> containerTemplates = new ArrayList<>();
 
   @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-rev-include")
-  private List<String> fhirRevIncludes;
+  private List<String> fhirRevIncludes = new ArrayList<>();
 
   public ContainersTemplate() {
   }

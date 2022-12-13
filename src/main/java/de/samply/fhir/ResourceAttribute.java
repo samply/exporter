@@ -1,7 +1,7 @@
-package de.samply.blaze;
+package de.samply.fhir;
 
-import de.samply.container.template.AttributeTemplate;
-import de.samply.container.template.ContainerTemplate;
+import de.samply.result.container.template.AttributeTemplate;
+import de.samply.result.container.template.ContainerTemplate;
 import org.hl7.fhir.r4.model.Resource;
 
 public record ResourceAttribute (
