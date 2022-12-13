@@ -3,8 +3,7 @@ package de.samply.source;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import de.samply.query.QueryFormat;
-import de.samply.result.ResultFormat;
+import de.samply.converter.Format;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,11 +59,11 @@ class SourcesTest {
     return source;
   }
 
-  private List<QueryFormat> generateQueryFormats() {
-    List<QueryFormat> queryFormats = new ArrayList<>();
-    int numberOfQueryFormats = random.nextInt(QueryFormat.values().length) + 1;
+  private List<Format> generateQueryFormats() {
+    List<Format> queryFormats = new ArrayList<>();
+    int numberOfQueryFormats = random.nextInt(Format.values().length) + 1;
     AtomicInteger counter = new AtomicInteger(0);
-    List<QueryFormat> allQueryFormats = new ArrayList<>(Arrays.asList(QueryFormat.values()));
+    List<Format> allQueryFormats = new ArrayList<>(Arrays.asList(Format.values()));
     Collections.shuffle(allQueryFormats);
     allQueryFormats.forEach(queryFormat -> {
       if (counter.getAndIncrement() < numberOfQueryFormats) {
@@ -75,11 +74,11 @@ class SourcesTest {
     return queryFormats;
   }
 
-  private List<ResultFormat> generateResultFormats() {
-    List<ResultFormat> resultFormats = new ArrayList<>();
-    int numberOfResultFormats = random.nextInt(QueryFormat.values().length) + 1;
+  private List<Format> generateResultFormats() {
+    List<Format> resultFormats = new ArrayList<>();
+    int numberOfResultFormats = random.nextInt(Format.values().length) + 1;
     AtomicInteger counter = new AtomicInteger(0);
-    List<ResultFormat> allResultFormats = new ArrayList<>(Arrays.asList(ResultFormat.values()));
+    List<Format> allResultFormats = new ArrayList<>(Arrays.asList(Format.values()));
     Collections.shuffle(allResultFormats);
     allResultFormats.forEach(resultFormat -> {
       if (counter.getAndIncrement() < numberOfResultFormats) {

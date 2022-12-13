@@ -2,7 +2,7 @@ package de.samply.fhir;
 
 
 import ca.uhn.fhir.context.FhirContext;
-import de.samply.query.ConverterImpl;
+import de.samply.converter.ConverterImpl;
 import de.samply.result.container.Attribute;
 import de.samply.result.container.Container;
 import de.samply.result.container.Containers;

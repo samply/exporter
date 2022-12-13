@@ -1,4 +1,4 @@
-package de.samply.query;
+package de.samply.converter;
 
 import de.samply.result.container.template.ResultTemplate;
 import reactor.core.publisher.Flux;

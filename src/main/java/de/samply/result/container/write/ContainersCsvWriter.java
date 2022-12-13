@@ -1,6 +1,6 @@
 package de.samply.result.container.write;
 
-import de.samply.query.ConverterImpl;
+import de.samply.converter.ConverterImpl;
 import de.samply.result.container.Container;
 import de.samply.result.container.Containers;
 import de.samply.result.container.template.ContainerTemplate;

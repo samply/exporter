@@ -3,23 +3,26 @@ package de.samply.source;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import de.samply.query.QueryFormat;
-import de.samply.result.ResultFormat;
+import de.samply.converter.Format;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class Source {
 
-  @JacksonXmlProperty(isAttribute = true)@JsonProperty("id")
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty("id")
   private String id;
-  @JacksonXmlProperty(isAttribute = true)@JsonProperty("url")
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty("url")
   private String url;
-  @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("query-format")
-  private Set<QueryFormat> queryFormats = new HashSet<>();
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JsonProperty("query-format")
+  private Set<Format> queryFormats = new HashSet<>();
 
-  @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("result-format")
-  private Set<ResultFormat> resultFormats = new HashSet<>();
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JsonProperty("result-format")
+  private Set<Format> resultFormats = new HashSet<>();
 
   public String getId() {
     return id;
@@ -37,19 +40,19 @@ public class Source {
     this.url = url;
   }
 
-  public Set<QueryFormat> getQueryFormats() {
+  public Set<Format> getQueryFormats() {
     return queryFormats;
   }
 
-  public void setQueryFormats(List<QueryFormat> queryFormats) {
+  public void setQueryFormats(List<Format> queryFormats) {
     this.queryFormats.addAll(queryFormats);
   }
 
-  public Set<ResultFormat> getResultFormats() {
+  public Set<Format> getResultFormats() {
     return resultFormats;
   }
 
-  public void setResultFormats(List<ResultFormat> resultFormats) {
+  public void setResultFormats(List<Format> resultFormats) {
     this.resultFormats.addAll(resultFormats);
   }
 

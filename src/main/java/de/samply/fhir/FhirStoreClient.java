@@ -4,7 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.IQuery;
-import de.samply.query.ConverterImpl;
+import de.samply.converter.ConverterImpl;
 import de.samply.result.container.template.ResultTemplate;
 import de.samply.teiler.TeilerConst;
 import org.hl7.fhir.instance.model.api.IBaseBundle;

@@ -1,10 +1,9 @@
 package de.samply.ldm;
 
+import de.samply.converter.Format;
 import de.samply.query.Query;
 import de.samply.query.QueryManager;
-import de.samply.result.ResultFormat;
 import de.samply.result.container.template.ResultTemplateManager;
-import de.samply.query.QueryFormat;
 import de.samply.source.Source;
 import de.samply.source.SourcesManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,7 @@ public class LdmClient {
   }
 
   public String retrieve(String sourceId, String queryId, String resultTemplateId,
-      ResultFormat resultFormat) throws LdmClientException {
+      Format resultFormat) throws LdmClientException {
     Query query = queryManager.fetchQuery(queryId);
     if (query != null) {
       return retrieve(sourceId, query.query(), query.queryFormat(), resultTemplateId, resultFormat);
@@ -36,8 +35,8 @@ public class LdmClient {
     }
   }
 
-  public String retrieve(String sourceId, String query, QueryFormat queryFormat,
-      String resultTemplateId, ResultFormat resultFormat) throws LdmClientException {
+  public String retrieve(String sourceId, String query, Format queryFormat,
+      String resultTemplateId, Format resultFormat) throws LdmClientException {
     Source source = sourcesManager.getSource(sourceId);
     if (source == null) {
       throw new LdmClientException("Source " + sourceId + " not found");
