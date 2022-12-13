@@ -13,3 +13,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - FHIR-Bundle to Containers Converter
 - FHIR Rev Includes in Containers Templates
 - Executor in Fhir Store Client
+- Converter Pattern

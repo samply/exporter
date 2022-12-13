@@ -3,7 +3,7 @@ package de.samply.ldm;
 import de.samply.query.Query;
 import de.samply.query.QueryManager;
 import de.samply.result.ResultFormat;
-import de.samply.result.container.template.ResultTemplatesManager;
+import de.samply.result.container.template.ResultTemplateManager;
 import de.samply.query.QueryFormat;
 import de.samply.source.Source;
 import de.samply.source.SourcesManager;
@@ -14,16 +14,16 @@ import org.springframework.stereotype.Component;
 public class LdmClient {
 
   private final SourcesManager sourcesManager;
-  private final ResultTemplatesManager resultTemplatesManager;
+  private final ResultTemplateManager resultTemplateManager;
   private final QueryManager queryManager;
 
   public LdmClient(
       @Autowired SourcesManager sourcesManager,
       @Autowired QueryManager queryManager,
-      @Autowired ResultTemplatesManager resultTemplatesManager) {
+      @Autowired ResultTemplateManager resultTemplateManager) {
     this.sourcesManager = sourcesManager;
     this.queryManager = queryManager;
-    this.resultTemplatesManager = resultTemplatesManager;
+    this.resultTemplateManager = resultTemplateManager;
   }
 
   public String retrieve(String sourceId, String queryId, String resultTemplateId,

@@ -2,12 +2,13 @@ package de.samply.fhir;
 
 
 import ca.uhn.fhir.context.FhirContext;
+import de.samply.query.ConverterImpl;
 import de.samply.result.container.Attribute;
 import de.samply.result.container.Container;
 import de.samply.result.container.Containers;
 import de.samply.result.container.template.AttributeTemplate;
 import de.samply.result.container.template.ContainerTemplate;
-import de.samply.result.container.template.ContainersTemplate;
+import de.samply.result.container.template.ResultTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
@@ -16,9 +17,10 @@ import org.hl7.fhir.r4.model.ExpressionNode;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 @Component
-public class BundleToContainersConverter {
+public class BundleToContainersConverter extends ConverterImpl<Bundle, Containers> {
 
   private final FHIRPathEngine fhirPathEngine;
 
@@ -26,10 +28,15 @@ public class BundleToContainersConverter {
     this.fhirPathEngine = createFhirPathEngine();
   }
 
-  public Containers convert(Bundle bundle, ContainersTemplate containersTemplate) {
-    Containers containers = new Containers(containersTemplate);
-    if (containersTemplate != null) {
-      containersTemplate.getContainerTemplates()
+  @Override
+  public Flux<Containers> convert(Bundle bundle, ResultTemplate resultTemplate) {
+    return Flux.just(convertToContainers(bundle, resultTemplate));
+  }
+
+  public Containers convertToContainers(Bundle bundle, ResultTemplate resultTemplate) {
+    Containers containers = new Containers();
+    if (resultTemplate != null) {
+      resultTemplate.getContainerTemplates()
           .forEach(containerTemplate -> addContainers(bundle, containers, containerTemplate));
     }
     return containers;
@@ -85,6 +92,5 @@ public class BundleToContainersConverter {
     return new FHIRPathEngine(
         new HapiWorkerContext(fhirContext, fhirContext.getValidationSupport()));
   }
-
 
 }

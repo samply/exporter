@@ -13,11 +13,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResultTemplatesManager {
+public class ResultTemplateManager {
 
-  private Map<String, ContainersTemplate> idContainersTemplateMap = new HashMap<>();
+  private Map<String, ResultTemplate> idContainersTemplateMap = new HashMap<>();
 
-  public ResultTemplatesManager(
+  public ResultTemplateManager(
       @Value(TeilerConst.RESULT_TEMPLATE_DIRECTORY_SV) String templateDirectory) {
     loadTemplates(Paths.get(templateDirectory));
   }
@@ -49,12 +49,12 @@ public class ResultTemplatesManager {
     ObjectMapper objectMapper =
         (templatePath.getFileName().toString().contains(".xml")) ? new XmlMapper()
             : new ObjectMapper();
-    ContainersTemplate containersTemplate = objectMapper.readValue(templatePath.toFile(),
-        ContainersTemplate.class);
-    idContainersTemplateMap.put(containersTemplate.getId(), containersTemplate);
+    ResultTemplate resultTemplate = objectMapper.readValue(templatePath.toFile(),
+        ResultTemplate.class);
+    idContainersTemplateMap.put(resultTemplate.getId(), resultTemplate);
   }
 
-  public ContainersTemplate getResultTemplate(String resultTemplate) {
+  public ResultTemplate getResultTemplate(String resultTemplate) {
     return idContainersTemplateMap.get(resultTemplate);
   }
 

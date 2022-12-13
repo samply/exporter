@@ -4,8 +4,8 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.IQuery;
-import de.samply.query.QueryExecutor;
-import de.samply.result.container.template.ContainersTemplate;
+import de.samply.query.ConverterImpl;
+import de.samply.result.container.template.ResultTemplate;
 import de.samply.teiler.TeilerConst;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.r4.model.Bundle;
@@ -13,7 +13,7 @@ import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
 import reactor.core.publisher.Flux;
 
 
-public class FhirStoreClient implements QueryExecutor<Bundle> {
+public class FhirStoreClient extends ConverterImpl<String,Bundle> {
 
   private final IGenericClient client;
 
@@ -23,7 +23,7 @@ public class FhirStoreClient implements QueryExecutor<Bundle> {
   }
 
   @Override
-  public Flux<Bundle> execute(String fhirQuery, ContainersTemplate template) {
+  public Flux<Bundle> convert(String fhirQuery, ResultTemplate template) {
     return Flux.generate(
         () -> "",
         (nextUrl, sync) -> {
@@ -38,7 +38,7 @@ public class FhirStoreClient implements QueryExecutor<Bundle> {
         });
   }
 
-  private Bundle fetchFirstBundle(String fhirQuery, ContainersTemplate template) {
+  private Bundle fetchFirstBundle(String fhirQuery, ResultTemplate template) {
     IQuery<IBaseBundle> iQuery = client.search().byUrl(fhirQuery);
     addRevIncludes(iQuery, template);
     return iQuery.returnBundle(Bundle.class).execute();
@@ -57,7 +57,7 @@ public class FhirStoreClient implements QueryExecutor<Bundle> {
     return null;
   }
 
-  private void addRevIncludes(IQuery iQuery, ContainersTemplate template) {
+  private void addRevIncludes(IQuery iQuery, ResultTemplate template) {
     template.getFhirRevIncludes().forEach(revInclude -> iQuery.revInclude(new Include(revInclude)));
   }
 

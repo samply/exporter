@@ -4,7 +4,7 @@ import de.samply.result.container.Attribute;
 import de.samply.result.container.Container;
 import de.samply.result.container.template.AttributeTemplate;
 import de.samply.result.container.template.ContainerTemplate;
-import de.samply.result.container.template.ContainersTemplate;
+import de.samply.result.container.template.ResultTemplate;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -17,12 +17,12 @@ public class ContainerWriterIterable implements Iterable<String> {
 
   private List<Container> containers;
   private ContainerTemplate containerTemplate;
-  private ContainersTemplate containersTemplate;
+  private ResultTemplate resultTemplate;
   private boolean headersExists;
 
-  public ContainerWriterIterable(List<Container> containers, ContainersTemplate containersTemplate, ContainerTemplate containerTemplate, boolean headersExists) {
+  public ContainerWriterIterable(List<Container> containers, ResultTemplate resultTemplate, ContainerTemplate containerTemplate, boolean headersExists) {
     this.containers = containers;
-    this.containersTemplate = containersTemplate;
+    this.resultTemplate = resultTemplate;
     this.containerTemplate = containerTemplate;
     this.headersExists = headersExists;
   }
@@ -60,7 +60,7 @@ public class ContainerWriterIterable implements Iterable<String> {
       StringBuilder stringBuilder = new StringBuilder();
       templates.forEach(attributeTemplate -> {
         stringBuilder.append(attributeTemplate.getCsvColumnName());
-        stringBuilder.append(containersTemplate.getCsvSeparator());
+        stringBuilder.append(resultTemplate.getCsvSeparator());
       });
       stringBuilder.deleteCharAt(stringBuilder.length()-1);
       return stringBuilder.toString();
@@ -72,7 +72,7 @@ public class ContainerWriterIterable implements Iterable<String> {
       StringBuilder stringBuilder = new StringBuilder();
       container.getAttributes().forEach(attribute -> {
         stringBuilder.append(attribute.getValue());
-        stringBuilder.append(containersTemplate.getCsvSeparator());
+        stringBuilder.append(resultTemplate.getCsvSeparator());
       });
       stringBuilder.deleteCharAt(stringBuilder.length()-1);
       return stringBuilder.toString();

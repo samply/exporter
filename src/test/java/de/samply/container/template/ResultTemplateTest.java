@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import de.samply.result.container.template.AttributeTemplate;
 import de.samply.result.container.template.ContainerTemplate;
-import de.samply.result.container.template.ContainersTemplate;
+import de.samply.result.container.template.ResultTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled
-class ContainersTemplateTest {
+class ResultTemplateTest {
 
   private String filepath = "./test-templates/my-test";
   private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
@@ -28,17 +28,17 @@ class ContainersTemplateTest {
     int counter = 1;
     containerTemplates.add(generateContainerTemplate(counter++));
     containerTemplates.add(generateContainerTemplate(counter++));
-    ContainersTemplate containersTemplate = new ContainersTemplate("test-template", "my-test.xml",
+    ResultTemplate resultTemplate = new ResultTemplate("test-template", "my-test.xml",
         containerTemplates);
     List<String> fhirRevIncludes = generateFhirRevIncludes();
-    containersTemplate.setFhirRevIncludes(fhirRevIncludes);
+    resultTemplate.setFhirRevIncludes(fhirRevIncludes);
     var jsonFile = new File(filepath + ".json");
-    objectMapper.writeValue(jsonFile, containersTemplate);
-    ContainersTemplate containersTemplate2 = objectMapper.readValue(jsonFile,
-        ContainersTemplate.class);
+    objectMapper.writeValue(jsonFile, resultTemplate);
+    ResultTemplate resultTemplate2 = objectMapper.readValue(jsonFile,
+        ResultTemplate.class);
     var xmlFile = new File(filepath + ".xml");
-    xmlMapper.writeValue(xmlFile, containersTemplate);
-    ContainersTemplate containersTemplate3 = xmlMapper.readValue(xmlFile, ContainersTemplate.class);
+    xmlMapper.writeValue(xmlFile, resultTemplate);
+    ResultTemplate resultTemplate3 = xmlMapper.readValue(xmlFile, ResultTemplate.class);
 
     //TODO
   }

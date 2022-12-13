@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JacksonXmlRootElement(localName = "template")
-public class ContainersTemplate {
+public class ResultTemplate {
 
   @JacksonXmlProperty(isAttribute = true)
   @JsonProperty("id")
@@ -29,10 +29,10 @@ public class ContainersTemplate {
   @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-rev-include")
   private List<String> fhirRevIncludes = new ArrayList<>();
 
-  public ContainersTemplate() {
+  public ResultTemplate() {
   }
 
-  public ContainersTemplate(String id, String excelFilename,
+  public ResultTemplate(String id, String excelFilename,
       List<ContainerTemplate> containerTemplates) {
     this.id = id;
     this.excelFilename = excelFilename;
