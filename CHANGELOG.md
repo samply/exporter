@@ -15,3 +15,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Executor in Fhir Store Client
 - Converter Pattern
 - Converter Manager
+- Converter Template and Conversion Template

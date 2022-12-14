@@ -1,7 +1,7 @@
 package de.samply.fhir;
 
-import de.samply.result.container.template.AttributeTemplate;
-import de.samply.result.container.template.ContainerTemplate;
+import de.samply.template.conversion.AttributeTemplate;
+import de.samply.template.conversion.ContainerTemplate;
 import org.hl7.fhir.r4.model.Resource;
 
 public record ResourceAttribute (

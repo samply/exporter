@@ -1,4 +1,4 @@
-package de.samply.result.container.template;
+package de.samply.template.conversion;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;

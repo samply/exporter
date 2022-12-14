@@ -6,7 +6,8 @@ target/
 templates
 test-templates
 output
-test-sources
+converter
+test-converters
 
 ### STS ###
 .apt_generated

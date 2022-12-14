@@ -1,19 +1,19 @@
 package de.samply.container.template;
 
-import de.samply.result.container.template.ResultTemplateManager;
+import de.samply.template.conversion.ConversionTemplateManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled
-class ResultTemplateManagerTest {
+class ConversionTemplateManagerTest {
 
-  private ResultTemplateManager templates;
+  private ConversionTemplateManager templates;
   private String templatesDirectory = "./templates";
 
   @BeforeEach
   void setUp() {
-    this.templates = new ResultTemplateManager(templatesDirectory);
+    this.templates = new ConversionTemplateManager(templatesDirectory);
     //TODO
   }
 

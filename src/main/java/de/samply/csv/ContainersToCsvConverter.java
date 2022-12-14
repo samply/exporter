@@ -1,10 +1,10 @@
-package de.samply.result.container.write;
+package de.samply.csv;
 
 import de.samply.converter.ConverterImpl;
-import de.samply.result.container.Container;
-import de.samply.result.container.Containers;
-import de.samply.result.container.template.ContainerTemplate;
-import de.samply.result.container.template.ResultTemplate;
+import de.samply.container.Container;
+import de.samply.container.Containers;
+import de.samply.template.conversion.ContainerTemplate;
+import de.samply.template.conversion.ConversionTemplate;
 import de.samply.teiler.TeilerConst;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,22 +18,22 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class ContainersCsvWriter extends ConverterImpl<Containers, Path> {
+public class ContainersToCsvConverter extends ConverterImpl<Containers, Path> {
 
   private String writeDirectory;
 
-  public ContainersCsvWriter(@Value(TeilerConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
+  public ContainersToCsvConverter(@Value(TeilerConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
     this.writeDirectory = writeDirectory;
   }
 
   @Override
-  protected Flux<Path> convert(Containers containers, ResultTemplate template) {
+  protected Flux<Path> convert(Containers containers, ConversionTemplate template) {
     Flux<Path> pathFlux = Flux.empty();
     writeContainersInCsv(containers, template).forEach(path -> pathFlux.concatWithValues(path));
     return pathFlux;
   }
 
-  public List<Path> writeContainersInCsv(Containers containers, ResultTemplate template) {
+  public List<Path> writeContainersInCsv(Containers containers, ConversionTemplate template) {
     List<Path> pathList = new ArrayList<>();
     template.getContainerTemplates().forEach(containerTemplate ->
         pathList.add(writeContainersInCsv(containers.getContainers(containerTemplate),
@@ -43,21 +43,21 @@ public class ContainersCsvWriter extends ConverterImpl<Containers, Path> {
   }
 
   private Path writeContainersInCsv(List<Container> containers,
-      ResultTemplate resultTemplate, ContainerTemplate containerTemplate) {
+      ConversionTemplate conversionTemplate, ContainerTemplate containerTemplate) {
     try {
-      return writeContainersInCsvWithoutExceptionManagement(containers, resultTemplate, containerTemplate);
+      return writeContainersInCsvWithoutExceptionManagement(containers, conversionTemplate, containerTemplate);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   private Path writeContainersInCsvWithoutExceptionManagement(List<Container> containers,
-      ResultTemplate resultTemplate, ContainerTemplate containerTemplate) throws IOException {
+      ConversionTemplate conversionTemplate, ContainerTemplate containerTemplate) throws IOException {
 
     Path filePath = getFilePath(containerTemplate.getCsvFilename());
     boolean headersExists = headersExists(filePath);
     Files.write(filePath,
-        new ContainerWriterIterable(containers, resultTemplate, containerTemplate,
+        new ContainerCsvWriterIterable(containers, conversionTemplate, containerTemplate,
             headersExists),
         (headersExists) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
     return filePath;

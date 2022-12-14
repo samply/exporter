@@ -1,6 +1,6 @@
 package de.samply.converter;
 
-import de.samply.result.container.Containers;
+import de.samply.container.Containers;
 import java.nio.file.Path;
 import org.hl7.fhir.r4.model.Bundle;
 

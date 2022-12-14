@@ -3,12 +3,12 @@ package de.samply.fhir;
 
 import ca.uhn.fhir.context.FhirContext;
 import de.samply.converter.ConverterImpl;
-import de.samply.result.container.Attribute;
-import de.samply.result.container.Container;
-import de.samply.result.container.Containers;
-import de.samply.result.container.template.AttributeTemplate;
-import de.samply.result.container.template.ContainerTemplate;
-import de.samply.result.container.template.ResultTemplate;
+import de.samply.container.Attribute;
+import de.samply.container.Container;
+import de.samply.container.Containers;
+import de.samply.template.conversion.AttributeTemplate;
+import de.samply.template.conversion.ContainerTemplate;
+import de.samply.template.conversion.ConversionTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
@@ -29,14 +29,14 @@ public class BundleToContainersConverter extends ConverterImpl<Bundle, Container
   }
 
   @Override
-  public Flux<Containers> convert(Bundle bundle, ResultTemplate resultTemplate) {
-    return Flux.just(convertToContainers(bundle, resultTemplate));
+  public Flux<Containers> convert(Bundle bundle, ConversionTemplate conversionTemplate) {
+    return Flux.just(convertToContainers(bundle, conversionTemplate));
   }
 
-  public Containers convertToContainers(Bundle bundle, ResultTemplate resultTemplate) {
+  public Containers convertToContainers(Bundle bundle, ConversionTemplate conversionTemplate) {
     Containers containers = new Containers();
-    if (resultTemplate != null) {
-      resultTemplate.getContainerTemplates()
+    if (conversionTemplate != null) {
+      conversionTemplate.getContainerTemplates()
           .forEach(containerTemplate -> addContainers(bundle, containers, containerTemplate));
     }
     return containers;

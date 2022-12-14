@@ -1,4 +1,4 @@
-package de.samply.result.container.template;
+package de.samply.template.conversion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -13,12 +13,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResultTemplateManager {
+public class ConversionTemplateManager {
 
-  private Map<String, ResultTemplate> idContainersTemplateMap = new HashMap<>();
+  private Map<String, ConversionTemplate> idConverterTemplateMap = new HashMap<>();
 
-  public ResultTemplateManager(
-      @Value(TeilerConst.RESULT_TEMPLATE_DIRECTORY_SV) String templateDirectory) {
+  public ConversionTemplateManager(
+      @Value(TeilerConst.CONVERTER_TEMPLATE_DIRECTORY_SV) String templateDirectory) {
     loadTemplates(Paths.get(templateDirectory));
   }
 
@@ -49,13 +49,13 @@ public class ResultTemplateManager {
     ObjectMapper objectMapper =
         (templatePath.getFileName().toString().contains(".xml")) ? new XmlMapper()
             : new ObjectMapper();
-    ResultTemplate resultTemplate = objectMapper.readValue(templatePath.toFile(),
-        ResultTemplate.class);
-    idContainersTemplateMap.put(resultTemplate.getId(), resultTemplate);
+    ConversionTemplate conversionTemplate = objectMapper.readValue(templatePath.toFile(),
+        ConversionTemplate.class);
+    idConverterTemplateMap.put(conversionTemplate.getId(), conversionTemplate);
   }
 
-  public ResultTemplate getResultTemplate(String resultTemplate) {
-    return idContainersTemplateMap.get(resultTemplate);
+  public ConversionTemplate getConversionTemplate(String conversionTemplate) {
+    return idConverterTemplateMap.get(conversionTemplate);
   }
 
 }

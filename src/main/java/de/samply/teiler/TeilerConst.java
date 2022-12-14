@@ -3,22 +3,20 @@ package de.samply.teiler;
 public class TeilerConst {
 
     // Blaze Store Constants
-    public final static String BLAZE_STORE_API_PATH = "/fhir";
     public final static String FHIR_STORE_NEXT_BUNDLE = "next";
 
     // Environment Variables
-    public final static String BLAZE_STORE_URL = "BLAZE_STORE_URL";
-    public final static String RESULT_TEMPLATE_DIRECTORY = "RESULT_TEMPLATE_DIRECTORY";
+    public final static String CONVERTER_TEMPLATE_DIRECTORY = "CONVERTER_TEMPLATE_DIRECTORY";
     public final static String WRITE_FILE_DIRECTORY = "WRITE_FILE_DIRECTORY";
-    public final static String SOURCES_PATH = "SOURCES_PATH";
+    public final static String CONVERTER_PATH = "CONVERTER_PATH";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
-    public final static String BLAZE_STORE_URL_SV = HEAD_SV + BLAZE_STORE_URL + ":#{null}" + BOTTOM_SV;
-    public final static String RESULT_TEMPLATE_DIRECTORY_SV = HEAD_SV + RESULT_TEMPLATE_DIRECTORY + ":#{'./templates'}" + BOTTOM_SV;
+    public final static String CONVERTER_TEMPLATE_DIRECTORY_SV = HEAD_SV + CONVERTER_TEMPLATE_DIRECTORY
+        + ":#{'./templates'}" + BOTTOM_SV;
     public final static String WRITE_FILE_DIRECTORY_SV = HEAD_SV + WRITE_FILE_DIRECTORY + ":#{'./output'}" + BOTTOM_SV;
-    public final static String SOURCES_PATH_SV = HEAD_SV + SOURCES_PATH + ":#{'./sources/sources.xml'}" + BOTTOM_SV;
+    public final static String CONVERTER_PATH_SV = HEAD_SV + CONVERTER_PATH + ":#{'./converter/converter.xml'}" + BOTTOM_SV;
 
     // REST Paths
     public static final String REQUEST = "request";

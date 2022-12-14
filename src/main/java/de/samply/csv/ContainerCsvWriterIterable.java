@@ -1,28 +1,28 @@
-package de.samply.result.container.write;
+package de.samply.csv;
 
-import de.samply.result.container.Attribute;
-import de.samply.result.container.Container;
-import de.samply.result.container.template.AttributeTemplate;
-import de.samply.result.container.template.ContainerTemplate;
-import de.samply.result.container.template.ResultTemplate;
+import de.samply.container.Attribute;
+import de.samply.container.Container;
+import de.samply.template.conversion.ConversionTemplate;
+import de.samply.template.conversion.AttributeTemplate;
+import de.samply.template.conversion.ContainerTemplate;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class ContainerWriterIterable implements Iterable<String> {
+public class ContainerCsvWriterIterable implements Iterable<String> {
 
   private AttributeOrderComparator attributeOrderComparator = new AttributeOrderComparator();
   private AttributeTemplateComparator attributeTemplateComparator = new AttributeTemplateComparator();
 
   private List<Container> containers;
   private ContainerTemplate containerTemplate;
-  private ResultTemplate resultTemplate;
+  private ConversionTemplate conversionTemplate;
   private boolean headersExists;
 
-  public ContainerWriterIterable(List<Container> containers, ResultTemplate resultTemplate, ContainerTemplate containerTemplate, boolean headersExists) {
+  public ContainerCsvWriterIterable(List<Container> containers, ConversionTemplate conversionTemplate, ContainerTemplate containerTemplate, boolean headersExists) {
     this.containers = containers;
-    this.resultTemplate = resultTemplate;
+    this.conversionTemplate = conversionTemplate;
     this.containerTemplate = containerTemplate;
     this.headersExists = headersExists;
   }
@@ -60,7 +60,7 @@ public class ContainerWriterIterable implements Iterable<String> {
       StringBuilder stringBuilder = new StringBuilder();
       templates.forEach(attributeTemplate -> {
         stringBuilder.append(attributeTemplate.getCsvColumnName());
-        stringBuilder.append(resultTemplate.getCsvSeparator());
+        stringBuilder.append(conversionTemplate.getCsvSeparator());
       });
       stringBuilder.deleteCharAt(stringBuilder.length()-1);
       return stringBuilder.toString();
@@ -72,7 +72,7 @@ public class ContainerWriterIterable implements Iterable<String> {
       StringBuilder stringBuilder = new StringBuilder();
       container.getAttributes().forEach(attribute -> {
         stringBuilder.append(attribute.getValue());
-        stringBuilder.append(resultTemplate.getCsvSeparator());
+        stringBuilder.append(conversionTemplate.getCsvSeparator());
       });
       stringBuilder.deleteCharAt(stringBuilder.length()-1);
       return stringBuilder.toString();

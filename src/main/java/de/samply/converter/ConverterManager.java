@@ -3,8 +3,8 @@ package de.samply.converter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import de.samply.fhir.BundleToContainersConverter;
-import de.samply.fhir.FhirStoreClient;
-import de.samply.result.container.write.ContainersCsvWriter;
+import de.samply.fhir.FhirQueryToBundleConverter;
+import de.samply.csv.ContainersToCsvConverter;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -20,9 +20,9 @@ public class ConverterManager {
 
   private Table<Format, Format, Converter> loadConverters() {
     Table<Format,Format,Converter> results = HashBasedTable.create();
-    results.put(Format.FHIR_QUERY, Format.BUNDLE, new FhirStoreClient("http://localhost:8091/fhir"));
+    results.put(Format.FHIR_QUERY, Format.BUNDLE, new FhirQueryToBundleConverter("http://localhost:8091/fhir"));
     results.put(Format.BUNDLE, Format.CONTAINERS, new BundleToContainersConverter());
-    results.put(Format.CONTAINERS, Format.CSV, new ContainersCsvWriter("./output"));
+    results.put(Format.CONTAINERS, Format.CSV, new ContainersToCsvConverter("./output"));
 //TODO
     return results;
   }
