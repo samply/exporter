@@ -3,6 +3,7 @@ package de.samply.csv;
 import de.samply.converter.ConverterImpl;
 import de.samply.container.Container;
 import de.samply.container.Containers;
+import de.samply.converter.Format;
 import de.samply.template.conversion.ContainerTemplate;
 import de.samply.template.conversion.ConversionTemplate;
 import de.samply.teiler.TeilerConst;
@@ -72,4 +73,13 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path> {
     return Files.exists(filePath) && filePath.toFile().length() > 0;
   }
 
+  @Override
+  public Format getInputFormat() {
+    return Format.CONTAINERS;
+  }
+
+  @Override
+  public Format getOutputFormat() {
+    return Format.CSV;
+  }
 }

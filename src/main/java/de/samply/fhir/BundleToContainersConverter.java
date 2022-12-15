@@ -6,6 +6,7 @@ import de.samply.converter.ConverterImpl;
 import de.samply.container.Attribute;
 import de.samply.container.Container;
 import de.samply.container.Containers;
+import de.samply.converter.Format;
 import de.samply.template.conversion.AttributeTemplate;
 import de.samply.template.conversion.ContainerTemplate;
 import de.samply.template.conversion.ConversionTemplate;
@@ -91,6 +92,16 @@ public class BundleToContainersConverter extends ConverterImpl<Bundle, Container
     FhirContext fhirContext = FhirContext.forR4();
     return new FHIRPathEngine(
         new HapiWorkerContext(fhirContext, fhirContext.getValidationSupport()));
+  }
+
+  @Override
+  public Format getInputFormat() {
+    return Format.BUNDLE;
+  }
+
+  @Override
+  public Format getOutputFormat() {
+    return Format.CONTAINERS;
   }
 
 }

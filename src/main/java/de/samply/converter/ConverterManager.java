@@ -19,8 +19,9 @@ public class ConverterManager {
   }
 
   private Table<Format, Format, Converter> loadConverters() {
-    Table<Format,Format,Converter> results = HashBasedTable.create();
-    results.put(Format.FHIR_QUERY, Format.BUNDLE, new FhirQueryToBundleConverter("http://localhost:8091/fhir"));
+    Table<Format, Format, Converter> results = HashBasedTable.create();
+    results.put(Format.FHIR_QUERY, Format.BUNDLE,
+        new FhirQueryToBundleConverter("http://localhost:8091/fhir"));
     results.put(Format.BUNDLE, Format.CONTAINERS, new BundleToContainersConverter());
     results.put(Format.CONTAINERS, Format.CSV, new ContainersToCsvConverter("./output"));
 //TODO
@@ -31,54 +32,37 @@ public class ConverterManager {
       Table<Format, Format, Converter> inputFormatOutputFormatConverterTable) {
     ConverterUtils.getCombinationsAndPermutations(inputFormatOutputFormatConverterTable.size())
         .forEach(integers -> {
-          List<TempConverter> tempConverters =
-              generateTempConvertersIfCompatibles(integers, inputFormatOutputFormatConverterTable);
-          if (!tempConverters.isEmpty()) {
+          List<Converter> converters =
+              generateConvertersListIfCompatibles(integers, inputFormatOutputFormatConverterTable);
+          if (!converters.isEmpty()) {
             allConvertersCombinationsTable.put(
-                tempConverters.get(0).inputFormat,
-                tempConverters.get(tempConverters.size() -1).ouputFormat,
-                new ConverterGroup(extractConverters(tempConverters)));
+                converters.get(0).getInputFormat(),
+                converters.get(converters.size() - 1).getOutputFormat(),
+                new ConverterGroup(converters));
           }
         });
   }
 
-  private List<Converter> extractConverters(List<TempConverter> tempConverters){
-    List<Converter> results = new ArrayList<>();
-    tempConverters.forEach(tempConverter -> results.add(tempConverter.converter));
-    return results;
-  }
-
-  private List<TempConverter> generateTempConvertersIfCompatibles(List<Integer> integers,
+  private List<Converter> generateConvertersListIfCompatibles(List<Integer> integers,
       Table<Format, Format, Converter> table) {
-    List<TempConverter> results = new ArrayList<>();
-    List<TempConverter> converters = extractConverters(table);
+    List<Converter> allConverters = table.values().stream().toList();
+    List<Converter> results = new ArrayList<>();
     boolean areCompatibles = true;
     for (int i = 0; i < integers.size() - 1; i++) {
-      if (!areCompatible(converters.get(i), converters.get(i + 1))) {
+      if (!areCompatible(allConverters.get(i), allConverters.get(i + 1))) {
         areCompatibles = false;
         break;
       }
     }
     if (areCompatibles) {
-      integers.forEach(i -> results.add(converters.get(i)));
+      integers.forEach(i -> results.add(allConverters.get(i)));
     }
 
     return results;
   }
 
-  private List<TempConverter> extractConverters(Table<Format, Format, Converter> table) {
-    List<TempConverter> converters = new ArrayList<>();
-    table.rowMap().forEach((format, formatConverterMap) ->
-        formatConverterMap.forEach((format2, converter) -> {
-          converters.add(new TempConverter(format, format2, converter));
-        }));
-    return converters;
-  }
-
-  private record TempConverter(Format inputFormat, Format ouputFormat, Converter converter) {}
-
-  private boolean areCompatible(TempConverter firstConverter, TempConverter secondConverter) {
-    return firstConverter.ouputFormat == secondConverter.inputFormat;
+  private boolean areCompatible(Converter firstConverter, Converter secondConverter) {
+    return firstConverter.getOutputFormat() == secondConverter.getInputFormat();
   }
 
   public Converter getConverter(Format inputFormat, Format outputFormat) {

@@ -5,6 +5,7 @@ import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.IQuery;
 import de.samply.converter.ConverterImpl;
+import de.samply.converter.Format;
 import de.samply.template.conversion.ConversionTemplate;
 import de.samply.teiler.TeilerConst;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
@@ -64,6 +65,16 @@ public class FhirQueryToBundleConverter extends ConverterImpl<String,Bundle> {
   private IGenericClient createFhirClient(String blazeStoreUrl) {
     // TODO: set proxy
     return FhirContext.forR4().newRestfulGenericClient(blazeStoreUrl);
+  }
+
+  @Override
+  public Format getInputFormat() {
+    return Format.FHIR_QUERY;
+  }
+
+  @Override
+  public Format getOutputFormat() {
+    return Format.BUNDLE;
   }
 
 }
