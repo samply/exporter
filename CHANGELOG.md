@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Converter Manager
 - Converter Template and Conversion Template
 - Input and Output Format in Converter
+- Load converter from application context

@@ -2,60 +2,80 @@ package de.samply.converter;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import de.samply.fhir.BundleToContainersConverter;
-import de.samply.fhir.FhirQueryToBundleConverter;
 import de.samply.csv.ContainersToCsvConverter;
+import de.samply.fhir.BundleToContainersConverter;
+import de.samply.teiler.TeilerConst;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ConverterManager {
 
-  Table<Format, Format, Converter> allConvertersCombinationsTable = HashBasedTable.create();
+  Table<Format, Format, List<Converter>> allConvertersCombinationsTable = HashBasedTable.create();
 
-  public ConverterManager() {
-    loadAllConverterCombinations(loadConverters());
+  public ConverterManager(
+      @Autowired BundleToContainersConverter bundleToContainersConverter,
+      @Autowired ContainersToCsvConverter containersToCsvConverter,
+      @Value(TeilerConst.CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV) String converterXmlApplicationContextPath
+  ) {
+    List<Converter> converters = new ArrayList<>();
+    converters.add(bundleToContainersConverter);
+    converters.add(containersToCsvConverter);
+    converters.addAll(fetchConvertersFromApplicationContext(converterXmlApplicationContextPath));
+
+    loadAllConverterCombinations(converters);
   }
 
-  private Table<Format, Format, Converter> loadConverters() {
-    Table<Format, Format, Converter> results = HashBasedTable.create();
-    results.put(Format.FHIR_QUERY, Format.BUNDLE,
-        new FhirQueryToBundleConverter("http://localhost:8091/fhir"));
-    results.put(Format.BUNDLE, Format.CONTAINERS, new BundleToContainersConverter());
-    results.put(Format.CONTAINERS, Format.CSV, new ContainersToCsvConverter("./output"));
-//TODO
-    return results;
+  private List<Converter> fetchConvertersFromApplicationContext(
+      String converterXmlApplicationContextPath) {
+    List<Converter> converters = new ArrayList<>();
+    ApplicationContext context = new FileSystemXmlApplicationContext(
+        converterXmlApplicationContextPath);
+    Arrays.stream(context.getBeanDefinitionNames())
+        .forEach(beanName -> converters.add((Converter) context.getBean(beanName)));
+
+    return converters;
   }
 
-  private void loadAllConverterCombinations(
-      Table<Format, Format, Converter> inputFormatOutputFormatConverterTable) {
-    ConverterUtils.getCombinationsAndPermutations(inputFormatOutputFormatConverterTable.size())
+  private void loadAllConverterCombinations(List<Converter> converters) {
+    ConverterUtils.getCombinationsAndPermutations(converters.size())
         .forEach(integers -> {
-          List<Converter> converters =
-              generateConvertersListIfCompatibles(integers, inputFormatOutputFormatConverterTable);
-          if (!converters.isEmpty()) {
-            allConvertersCombinationsTable.put(
-                converters.get(0).getInputFormat(),
-                converters.get(converters.size() - 1).getOutputFormat(),
-                new ConverterGroup(converters));
+          List<Converter> tempConverters =
+              generateConvertersListIfCompatibles(integers, converters);
+          if (!tempConverters.isEmpty()) {
+            addConverterToAllConvertersCombinatiosTable(new ConverterGroup(tempConverters));
           }
         });
   }
 
+  private void addConverterToAllConvertersCombinatiosTable (Converter converter){
+    List<Converter> converters = allConvertersCombinationsTable.get(converter.getInputFormat(),
+        converter.getOutputFormat());
+    if (converters == null){
+      converters = new ArrayList<>();
+      allConvertersCombinationsTable.put(converter.getInputFormat(), converter.getOutputFormat(), converters);
+    }
+    converters.add(converter);
+  }
+
   private List<Converter> generateConvertersListIfCompatibles(List<Integer> integers,
-      Table<Format, Format, Converter> table) {
-    List<Converter> allConverters = table.values().stream().toList();
+      List<Converter> converters) {
     List<Converter> results = new ArrayList<>();
     boolean areCompatibles = true;
     for (int i = 0; i < integers.size() - 1; i++) {
-      if (!areCompatible(allConverters.get(i), allConverters.get(i + 1))) {
+      if (!areCompatible(converters.get(integers.get(i)), converters.get(integers.get(i+1)))) {
         areCompatibles = false;
         break;
       }
     }
     if (areCompatibles) {
-      integers.forEach(i -> results.add(allConverters.get(i)));
+      integers.forEach(i -> results.add(converters.get(i)));
     }
 
     return results;
@@ -65,7 +85,7 @@ public class ConverterManager {
     return firstConverter.getOutputFormat() == secondConverter.getInputFormat();
   }
 
-  public Converter getConverter(Format inputFormat, Format outputFormat) {
+  public List<Converter> getConverters(Format inputFormat, Format outputFormat) {
     return allConvertersCombinationsTable.get(inputFormat, outputFormat);
   }
 
