@@ -55,8 +55,8 @@ public class ConverterTemplateManager {
     idConverterTemplateMap.put(converterTemplate.getId(), converterTemplate);
   }
 
-  public ConverterTemplate getConverterTemplate(String conversionTemplate) {
-    return idConverterTemplateMap.get(conversionTemplate);
+  public ConverterTemplate getConverterTemplate(String converterTemplateId) {
+    return idConverterTemplateMap.get(converterTemplateId);
   }
 
   public Set<String> getConverterTemplateIds(){
