@@ -19,3 +19,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Input and Output Format in Converter
 - Load converter from application context
 - Converter Selector
+
+### Changed
+- Rename Conversion Template as Converter Template

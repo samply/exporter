@@ -1,11 +1,11 @@
-package de.samply.container.template;
+package de.samply.template;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import de.samply.template.conversion.AttributeTemplate;
-import de.samply.template.conversion.ContainerTemplate;
-import de.samply.template.conversion.ConversionTemplate;
+import de.samply.template.AttributeTemplate;
+import de.samply.template.ContainerTemplate;
+import de.samply.template.ConverterTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled
-class ConversionTemplateTest {
+class ConverterTemplateTest {
 
   private String filepath = "./test-templates/my-test";
   private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
@@ -28,17 +28,17 @@ class ConversionTemplateTest {
     int counter = 1;
     containerTemplates.add(generateContainerTemplate(counter++));
     containerTemplates.add(generateContainerTemplate(counter++));
-    ConversionTemplate conversionTemplate = new ConversionTemplate("test-template", "my-test.xml",
+    ConverterTemplate converterTemplate = new ConverterTemplate("test-template", "my-test.xml",
         containerTemplates);
     List<String> fhirRevIncludes = generateFhirRevIncludes();
-    conversionTemplate.setFhirRevIncludes(fhirRevIncludes);
+    converterTemplate.setFhirRevIncludes(fhirRevIncludes);
     var jsonFile = new File(filepath + ".json");
-    objectMapper.writeValue(jsonFile, conversionTemplate);
-    ConversionTemplate conversionTemplate2 = objectMapper.readValue(jsonFile,
-        ConversionTemplate.class);
+    objectMapper.writeValue(jsonFile, converterTemplate);
+    ConverterTemplate converterTemplate2 = objectMapper.readValue(jsonFile,
+        ConverterTemplate.class);
     var xmlFile = new File(filepath + ".xml");
-    xmlMapper.writeValue(xmlFile, conversionTemplate);
-    ConversionTemplate conversionTemplate3 = xmlMapper.readValue(xmlFile, ConversionTemplate.class);
+    xmlMapper.writeValue(xmlFile, converterTemplate);
+    ConverterTemplate converterTemplate3 = xmlMapper.readValue(xmlFile, ConverterTemplate.class);
 
     //TODO
   }

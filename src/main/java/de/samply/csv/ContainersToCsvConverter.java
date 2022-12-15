@@ -4,8 +4,8 @@ import de.samply.converter.ConverterImpl;
 import de.samply.container.Container;
 import de.samply.container.Containers;
 import de.samply.converter.Format;
-import de.samply.template.conversion.ContainerTemplate;
-import de.samply.template.conversion.ConversionTemplate;
+import de.samply.template.ContainerTemplate;
+import de.samply.template.ConverterTemplate;
 import de.samply.teiler.TeilerConst;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,13 +28,13 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path> {
   }
 
   @Override
-  protected Flux<Path> convert(Containers containers, ConversionTemplate template) {
+  protected Flux<Path> convert(Containers containers, ConverterTemplate template) {
     Flux<Path> pathFlux = Flux.empty();
     writeContainersInCsv(containers, template).forEach(path -> pathFlux.concatWithValues(path));
     return pathFlux;
   }
 
-  public List<Path> writeContainersInCsv(Containers containers, ConversionTemplate template) {
+  public List<Path> writeContainersInCsv(Containers containers, ConverterTemplate template) {
     List<Path> pathList = new ArrayList<>();
     template.getContainerTemplates().forEach(containerTemplate ->
         pathList.add(writeContainersInCsv(containers.getContainers(containerTemplate),
@@ -44,21 +44,21 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path> {
   }
 
   private Path writeContainersInCsv(List<Container> containers,
-      ConversionTemplate conversionTemplate, ContainerTemplate containerTemplate) {
+      ConverterTemplate converterTemplate, ContainerTemplate containerTemplate) {
     try {
-      return writeContainersInCsvWithoutExceptionManagement(containers, conversionTemplate, containerTemplate);
+      return writeContainersInCsvWithoutExceptionManagement(containers, converterTemplate, containerTemplate);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   private Path writeContainersInCsvWithoutExceptionManagement(List<Container> containers,
-      ConversionTemplate conversionTemplate, ContainerTemplate containerTemplate) throws IOException {
+      ConverterTemplate converterTemplate, ContainerTemplate containerTemplate) throws IOException {
 
     Path filePath = getFilePath(containerTemplate.getCsvFilename());
     boolean headersExists = headersExists(filePath);
     Files.write(filePath,
-        new ContainerCsvWriterIterable(containers, conversionTemplate, containerTemplate,
+        new ContainerCsvWriterIterable(containers, converterTemplate, containerTemplate,
             headersExists),
         (headersExists) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
     return filePath;

@@ -2,8 +2,8 @@ package de.samply.converter;
 
 import de.samply.csv.ContainersToCsvConverter;
 import de.samply.fhir.BundleToContainersConverter;
-import de.samply.template.conversion.ConversionTemplate;
-import de.samply.template.conversion.ConversionTemplateManager;
+import de.samply.template.ConverterTemplate;
+import de.samply.template.ConverterTemplateManager;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -22,9 +22,9 @@ class ConverterManagerTest {
   void getConverter() {
     ConverterManager converterManager = new ConverterManager(bundleToContainersConverter, containersToCsvConverter, CONVERTER_APPLICATION_CONTEXT_PATH);
     Converter converter = converterManager.getBestMatchConverter(Format.FHIR_QUERY, Format.CSV, sourceId);
-    ConversionTemplateManager conversionTemplateManager = new ConversionTemplateManager("./templates");
-    ConversionTemplate conversionTemplate = conversionTemplateManager.getConversionTemplate("test-template1");
-    Flux flux = converter.convert(Flux.just("Patient"), conversionTemplate);
+    ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager("./templates");
+    ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate("test-template1");
+    Flux flux = converter.convert(Flux.just("Patient"), converterTemplate);
     flux.blockLast();
     //TODO
   }

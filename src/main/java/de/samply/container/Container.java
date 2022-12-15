@@ -1,6 +1,6 @@
 package de.samply.container;
 
-import de.samply.template.conversion.ContainerTemplate;
+import de.samply.template.ContainerTemplate;
 import java.util.ArrayList;
 import java.util.List;
 

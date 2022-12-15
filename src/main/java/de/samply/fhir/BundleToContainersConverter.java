@@ -7,9 +7,9 @@ import de.samply.container.Attribute;
 import de.samply.container.Container;
 import de.samply.container.Containers;
 import de.samply.converter.Format;
-import de.samply.template.conversion.AttributeTemplate;
-import de.samply.template.conversion.ContainerTemplate;
-import de.samply.template.conversion.ConversionTemplate;
+import de.samply.template.AttributeTemplate;
+import de.samply.template.ContainerTemplate;
+import de.samply.template.ConverterTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
@@ -30,14 +30,14 @@ public class BundleToContainersConverter extends ConverterImpl<Bundle, Container
   }
 
   @Override
-  public Flux<Containers> convert(Bundle bundle, ConversionTemplate conversionTemplate) {
-    return Flux.just(convertToContainers(bundle, conversionTemplate));
+  public Flux<Containers> convert(Bundle bundle, ConverterTemplate converterTemplate) {
+    return Flux.just(convertToContainers(bundle, converterTemplate));
   }
 
-  public Containers convertToContainers(Bundle bundle, ConversionTemplate conversionTemplate) {
+  public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate) {
     Containers containers = new Containers();
-    if (conversionTemplate != null) {
-      conversionTemplate.getContainerTemplates()
+    if (converterTemplate != null) {
+      converterTemplate.getContainerTemplates()
           .forEach(containerTemplate -> addContainers(bundle, containers, containerTemplate));
     }
     return containers;

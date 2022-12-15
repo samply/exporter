@@ -1,6 +1,6 @@
 package de.samply.container;
 
-import de.samply.template.conversion.AttributeTemplate;
+import de.samply.template.AttributeTemplate;
 
 public class Attribute {
 

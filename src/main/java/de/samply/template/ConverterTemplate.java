@@ -1,4 +1,4 @@
-package de.samply.template.conversion;
+package de.samply.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JacksonXmlRootElement(localName = "template")
-public class ConversionTemplate {
+public class ConverterTemplate {
 
   @JacksonXmlProperty(isAttribute = true)
   @JsonProperty("id")
@@ -29,10 +29,10 @@ public class ConversionTemplate {
   @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-rev-include")
   private List<String> fhirRevIncludes = new ArrayList<>();
 
-  public ConversionTemplate() {
+  public ConverterTemplate() {
   }
 
-  public ConversionTemplate(String id, String excelFilename,
+  public ConverterTemplate(String id, String excelFilename,
       List<ContainerTemplate> containerTemplates) {
     this.id = id;
     this.excelFilename = excelFilename;

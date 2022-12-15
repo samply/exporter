@@ -1,8 +1,8 @@
 package de.samply.fhir;
 
 import de.samply.container.Containers;
-import de.samply.template.conversion.ConversionTemplate;
-import de.samply.template.conversion.ConversionTemplateManager;
+import de.samply.template.ConverterTemplate;
+import de.samply.template.ConverterTemplateManager;
 import de.samply.csv.ContainersToCsvConverter;
 import java.nio.file.Path;
 import org.hl7.fhir.r4.model.Bundle;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
 class FhirQueryToBundleConverterTest {
 
   private FhirQueryToBundleConverter fhirQueryToBundleConverter;
-  private ConversionTemplateManager conversionTemplateManager;
+  private ConverterTemplateManager converterTemplateManager;
   private BundleToContainersConverter bundleToContainersConverter;
   private ContainersToCsvConverter containersToCsvConverter;
 
@@ -29,29 +29,29 @@ class FhirQueryToBundleConverterTest {
   void setUp() {
     this.fhirQueryToBundleConverter = new FhirQueryToBundleConverter(blazeStoreUrl, sourceId);
     this.containersToCsvConverter = new ContainersToCsvConverter(outputDirectory);
-    this.conversionTemplateManager = new ConversionTemplateManager(templateDirectory);
+    this.converterTemplateManager = new ConverterTemplateManager(templateDirectory);
     this.bundleToContainersConverter = new BundleToContainersConverter();
   }
 
   @Test
   void testExecute() {
-    ConversionTemplate conversionTemplate = conversionTemplateManager.getConversionTemplate(templateId);
-    fhirQueryToBundleConverter.convert(Flux.just("Patient"), conversionTemplate).subscribe(bundle -> {
+    ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(templateId);
+    fhirQueryToBundleConverter.convert(Flux.just("Patient"), converterTemplate).subscribe(bundle -> {
       Containers containers = bundleToContainersConverter.convertToContainers(bundle,
-          conversionTemplate);
-      containersToCsvConverter.writeContainersInCsv(containers, conversionTemplate);
+          converterTemplate);
+      containersToCsvConverter.writeContainersInCsv(containers, converterTemplate);
     });
     //TODO
   }
 
   @Test
   void testConverters(){
-    ConversionTemplate conversionTemplate = conversionTemplateManager.getConversionTemplate(templateId);
+    ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(templateId);
     Flux<String> stringFlux = Flux.just("Patient");
-    Flux<Bundle> bundleFlux = fhirQueryToBundleConverter.convert(stringFlux, conversionTemplate);
+    Flux<Bundle> bundleFlux = fhirQueryToBundleConverter.convert(stringFlux, converterTemplate);
     Flux<Containers> containersFlux = bundleToContainersConverter.convert(bundleFlux,
-        conversionTemplate);
-    Flux<Path> pathFlux = containersToCsvConverter.convert(containersFlux, conversionTemplate);
+        converterTemplate);
+    Flux<Path> pathFlux = containersToCsvConverter.convert(containersFlux, converterTemplate);
     pathFlux.blockLast();
     //TODO
   }
