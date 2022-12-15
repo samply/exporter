@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -56,6 +57,10 @@ public class ConverterTemplateManager {
 
   public ConverterTemplate getConverterTemplate(String conversionTemplate) {
     return idConverterTemplateMap.get(conversionTemplate);
+  }
+
+  public Set<String> getConverterTemplateIds(){
+    return idConverterTemplateMap.keySet();
   }
 
 }

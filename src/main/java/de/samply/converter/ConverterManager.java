@@ -11,7 +11,10 @@ import de.samply.fhir.BundleToContainersConverter;
 import de.samply.teiler.TeilerConst;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -21,7 +24,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConverterManager {
 
-  private Table<Format, Format, List<Converter>> allConvertersCombinationsTable = HashBasedTable.create();
+  private final Table<Format, Format, List<Converter>> allConvertersCombinationsTable = HashBasedTable.create();
+  private final Set<String> sourceIds;
   private ConverterSelector converterSelector = new ConverterSelector(
       Arrays.asList(new LessWeight()));
 
@@ -36,6 +40,7 @@ public class ConverterManager {
     converters.addAll(fetchConvertersFromApplicationContext(converterXmlApplicationContextPath));
 
     loadAllConverterCombinations(converters);
+    sourceIds = fetchSourceIds();
   }
 
   private List<Converter> fetchConvertersFromApplicationContext(
@@ -97,15 +102,19 @@ public class ConverterManager {
   }
 
   public Converter getBestMatchConverter(Format inputFormat, Format outputFormat) {
-    return converterSelector.getBestMatch(convertToGroups(getConverters(inputFormat, outputFormat)));
+    return converterSelector.getBestMatch(
+        convertToGroups(getConverters(inputFormat, outputFormat)));
   }
 
-  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat, List<ConverterSelectorCriteria> criteria) {
-    return converterSelector.getBestMatch(criteria, convertToGroups(getConverters(inputFormat, outputFormat)));
+  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat,
+      List<ConverterSelectorCriteria> criteria) {
+    return converterSelector.getBestMatch(criteria,
+        convertToGroups(getConverters(inputFormat, outputFormat)));
   }
 
-  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat, String sourceId){
-    return getBestMatchConverter(inputFormat, outputFormat, Arrays.asList(new ExistentSource(sourceId)));
+  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat, String sourceId) {
+    return getBestMatchConverter(inputFormat, outputFormat,
+        Arrays.asList(new ExistentSource(sourceId)));
   }
 
   List<ConverterGroup> convertToGroups(List<Converter> converters) {
@@ -116,5 +125,19 @@ public class ConverterManager {
     return results;
   }
 
+  private Set<String> fetchSourceIds() {
+    return (Set<String>) allConvertersCombinationsTable.values().stream()
+        .flatMap(Collection::stream)
+        .map(converter -> (converter instanceof ConverterGroup)
+            ? ((ConverterGroup) converter).getConverters()
+            : Arrays.asList(converter)).flatMap(Collection::stream)
+        .filter(converter -> converter instanceof SourceConverter)
+        .map(converter -> ((SourceConverter) converter).getSourceId()).collect(
+            Collectors.toSet());
+  }
+
+  public Set<String> getSourceIds() {
+    return sourceIds;
+  }
 
 }
