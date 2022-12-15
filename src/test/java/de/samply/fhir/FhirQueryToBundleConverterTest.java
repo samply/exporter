@@ -20,13 +20,14 @@ class FhirQueryToBundleConverterTest {
   private ContainersToCsvConverter containersToCsvConverter;
 
   private String blazeStoreUrl = "http://localhost:8091/fhir";
+  private String sourceId = "blazeStore";
   private String templateDirectory = "./templates";
   private String outputDirectory = "./output";
   private String templateId = "test-template1";
 
   @BeforeEach
   void setUp() {
-    this.fhirQueryToBundleConverter = new FhirQueryToBundleConverter(blazeStoreUrl);
+    this.fhirQueryToBundleConverter = new FhirQueryToBundleConverter(blazeStoreUrl, sourceId);
     this.containersToCsvConverter = new ContainersToCsvConverter(outputDirectory);
     this.conversionTemplateManager = new ConversionTemplateManager(templateDirectory);
     this.bundleToContainersConverter = new BundleToContainersConverter();

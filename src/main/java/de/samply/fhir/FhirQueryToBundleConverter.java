@@ -4,8 +4,8 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.IQuery;
-import de.samply.converter.ConverterImpl;
 import de.samply.converter.Format;
+import de.samply.converter.SourceConverterImpl;
 import de.samply.template.conversion.ConversionTemplate;
 import de.samply.teiler.TeilerConst;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
@@ -14,13 +14,15 @@ import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
 import reactor.core.publisher.Flux;
 
 
-public class FhirQueryToBundleConverter extends ConverterImpl<String,Bundle> {
+public class FhirQueryToBundleConverter extends SourceConverterImpl<String,Bundle> {
 
   private final IGenericClient client;
+  private final String sourceId;
 
 
-  public FhirQueryToBundleConverter(String fhirStoreUrl) {
+  public FhirQueryToBundleConverter(String fhirStoreUrl, String sourceId) {
     this.client = createFhirClient(fhirStoreUrl);
+    this.sourceId = sourceId;
   }
 
   @Override
@@ -75,6 +77,11 @@ public class FhirQueryToBundleConverter extends ConverterImpl<String,Bundle> {
   @Override
   public Format getOutputFormat() {
     return Format.BUNDLE;
+  }
+
+  @Override
+  public String getSourceId() {
+    return this.sourceId;
   }
 
 }

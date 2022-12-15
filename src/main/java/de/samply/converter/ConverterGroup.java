@@ -32,4 +32,8 @@ public class ConverterGroup<I, O> implements Converter<I, O> {
         .getOutputFormat() : null;
   }
 
+  public List<Converter> getConverters() {
+    return converters;
+  }
+
 }

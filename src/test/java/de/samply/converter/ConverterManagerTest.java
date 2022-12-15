@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 class ConverterManagerTest {
 
   private final String OUTPUT_DIRECTORY = "./output";
+  private final String sourceId = "blaze-store";
   private final String CONVERTER_APPLICATION_CONTEXT_PATH = "./converter/converter.xml";
 
   private BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
@@ -20,11 +21,12 @@ class ConverterManagerTest {
   @Test
   void getConverter() {
     ConverterManager converterManager = new ConverterManager(bundleToContainersConverter, containersToCsvConverter, CONVERTER_APPLICATION_CONTEXT_PATH);
-    Converter converter = converterManager.getConverters(Format.FHIR_QUERY, Format.CSV).get(0);
+    Converter converter = converterManager.getBestMatchConverter(Format.FHIR_QUERY, Format.CSV, sourceId);
     ConversionTemplateManager conversionTemplateManager = new ConversionTemplateManager("./templates");
     ConversionTemplate conversionTemplate = conversionTemplateManager.getConversionTemplate("test-template1");
     Flux flux = converter.convert(Flux.just("Patient"), conversionTemplate);
     flux.blockLast();
     //TODO
   }
+
 }

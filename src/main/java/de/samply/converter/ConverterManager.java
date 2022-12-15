@@ -2,6 +2,10 @@ package de.samply.converter;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import de.samply.converter.selector.ConverterSelector;
+import de.samply.converter.selector.ConverterSelectorCriteria;
+import de.samply.converter.selector.ExistentSource;
+import de.samply.converter.selector.LessWeight;
 import de.samply.csv.ContainersToCsvConverter;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.teiler.TeilerConst;
@@ -17,7 +21,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConverterManager {
 
-  Table<Format, Format, List<Converter>> allConvertersCombinationsTable = HashBasedTable.create();
+  private Table<Format, Format, List<Converter>> allConvertersCombinationsTable = HashBasedTable.create();
+  private ConverterSelector converterSelector = new ConverterSelector(
+      Arrays.asList(new LessWeight()));
 
   public ConverterManager(
       @Autowired BundleToContainersConverter bundleToContainersConverter,
@@ -54,12 +60,13 @@ public class ConverterManager {
         });
   }
 
-  private void addConverterToAllConvertersCombinatiosTable (Converter converter){
+  private void addConverterToAllConvertersCombinatiosTable(Converter converter) {
     List<Converter> converters = allConvertersCombinationsTable.get(converter.getInputFormat(),
         converter.getOutputFormat());
-    if (converters == null){
+    if (converters == null) {
       converters = new ArrayList<>();
-      allConvertersCombinationsTable.put(converter.getInputFormat(), converter.getOutputFormat(), converters);
+      allConvertersCombinationsTable.put(converter.getInputFormat(), converter.getOutputFormat(),
+          converters);
     }
     converters.add(converter);
   }
@@ -69,7 +76,7 @@ public class ConverterManager {
     List<Converter> results = new ArrayList<>();
     boolean areCompatibles = true;
     for (int i = 0; i < integers.size() - 1; i++) {
-      if (!areCompatible(converters.get(integers.get(i)), converters.get(integers.get(i+1)))) {
+      if (!areCompatible(converters.get(integers.get(i)), converters.get(integers.get(i + 1)))) {
         areCompatibles = false;
         break;
       }
@@ -87,6 +94,26 @@ public class ConverterManager {
 
   public List<Converter> getConverters(Format inputFormat, Format outputFormat) {
     return allConvertersCombinationsTable.get(inputFormat, outputFormat);
+  }
+
+  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat) {
+    return converterSelector.getBestMatch(convertToGroups(getConverters(inputFormat, outputFormat)));
+  }
+
+  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat, List<ConverterSelectorCriteria> criteria) {
+    return converterSelector.getBestMatch(criteria, convertToGroups(getConverters(inputFormat, outputFormat)));
+  }
+
+  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat, String sourceId){
+    return getBestMatchConverter(inputFormat, outputFormat, Arrays.asList(new ExistentSource(sourceId)));
+  }
+
+  List<ConverterGroup> convertToGroups(List<Converter> converters) {
+    List<ConverterGroup> results = new ArrayList<>();
+    converters.forEach(converter -> results.add(
+        (converter instanceof ConverterGroup) ? (ConverterGroup) converter
+            : new ConverterGroup(Arrays.asList(converter))));
+    return results;
   }
 
 
