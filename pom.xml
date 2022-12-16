@@ -109,6 +109,7 @@
   </dependencies>
 
   <build>
+    <finalName>teiler</finalName>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>

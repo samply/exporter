@@ -8,7 +8,6 @@ public class TeilerConst {
     // Environment Variables
     public final static String CONVERTER_TEMPLATE_DIRECTORY = "CONVERTER_TEMPLATE_DIRECTORY";
     public final static String WRITE_FILE_DIRECTORY = "WRITE_FILE_DIRECTORY";
-    public final static String CONVERTER_PATH = "CONVERTER_PATH";
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH = "CONVERTER_XML_APPLICATION_CONTEXT_PATH";
 
     // Spring Values (SV)
@@ -17,7 +16,6 @@ public class TeilerConst {
     public final static String CONVERTER_TEMPLATE_DIRECTORY_SV = HEAD_SV + CONVERTER_TEMPLATE_DIRECTORY
         + ":#{'./templates'}" + BOTTOM_SV;
     public final static String WRITE_FILE_DIRECTORY_SV = HEAD_SV + WRITE_FILE_DIRECTORY + ":#{'./output'}" + BOTTOM_SV;
-    public final static String CONVERTER_PATH_SV = HEAD_SV + CONVERTER_PATH + ":#{'./converter/converter.xml'}" + BOTTOM_SV;
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV = HEAD_SV + CONVERTER_XML_APPLICATION_CONTEXT_PATH + ":#{'./converter/converter.xml'}" + BOTTOM_SV;
 
     // REST Paths
