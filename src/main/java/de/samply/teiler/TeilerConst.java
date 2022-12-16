@@ -21,13 +21,21 @@ public class TeilerConst {
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV = HEAD_SV + CONVERTER_XML_APPLICATION_CONTEXT_PATH + ":#{'./converter/converter.xml'}" + BOTTOM_SV;
 
     // REST Paths
+    public static final String INFO = "info";
     public static final String REQUEST = "request";
     public static final String RESPONSE = "response";
+    public static final String RETRIEVE_QUERY = "retrieve-query";
     public static final String PAGE = "page";
     public static final String STATS = "stats";
-    public static final String QUERY_ID = "queryId";
+    public static final String QUERY_ID = "query-id";
+    public static final String QUERY = "query";
+    public static final String SOURCE_ID = "source-id";
+    public static final String TEMPLATE_ID = "template-id";
+    public static final String QUERY_FORMAT = "query-format";
+    public static final String OUTPUT_FORMAT = "output-format";
 
     // Other constants
     public static final String DEFAULT_CSV_SEPARATOR = "\t";
+    public static final String APP_NAME = "Teiler";
 
 }

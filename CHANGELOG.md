@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Load converter from application context
 - Converter Selector
 - Get Source Ids and Converter Template Ids
+- Project Version
+- REST API: retrieve-query
 
 ### Changed
 - Rename Conversion Template as Converter Template
