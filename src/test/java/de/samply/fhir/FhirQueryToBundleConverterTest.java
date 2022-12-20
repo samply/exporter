@@ -5,6 +5,7 @@ import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.csv.ContainersToCsvConverter;
 import java.nio.file.Path;
+import java.util.HashMap;
 import org.hl7.fhir.r4.model.Bundle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -39,7 +40,7 @@ class FhirQueryToBundleConverterTest {
     fhirQueryToBundleConverter.convert(Flux.just("Patient"), converterTemplate).subscribe(bundle -> {
       Containers containers = bundleToContainersConverter.convertToContainers(bundle,
           converterTemplate);
-      containersToCsvConverter.writeContainersInCsv(containers, converterTemplate);
+      containersToCsvConverter.writeContainersInCsv(containers, converterTemplate, new HashMap<>());
     });
     //TODO
   }

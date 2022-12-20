@@ -2,6 +2,12 @@ package de.samply.teiler;
 
 public class TeilerConst {
 
+    // Token variables
+    public final static String TOKEN_HEAD = "${";
+    public final static String TOKEN_END = "}";
+    public final static String TOKEN_EXTENSION_DELIMITER = ":";
+    public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyyMMdd-HH_mm";
+
     // Blaze Store Constants
     public final static String FHIR_STORE_NEXT_BUNDLE = "next";
 

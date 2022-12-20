@@ -39,6 +39,10 @@ public class ContainerTemplate {
     return csvFilename;
   }
 
+  public String replaceTokensAndGetCsvFilename(){
+    return ConverterTemplateUtils.replaceTokens(csvFilename);
+  }
+
   public void setCsvFilename(String csvFilename) {
     this.csvFilename = csvFilename;
   }

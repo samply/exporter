@@ -13,7 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -29,33 +31,34 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path> {
 
   @Override
   protected Flux<Path> convert(Containers containers, ConverterTemplate template) {
+    Map<String, String> filenameMap = new HashMap<>();
     Flux<Path> pathFlux = Flux.empty();
-    writeContainersInCsv(containers, template).forEach(path -> pathFlux.concatWithValues(path));
+    writeContainersInCsv(containers, template, filenameMap).forEach(path -> pathFlux.concatWithValues(path));
     return pathFlux;
   }
 
-  public List<Path> writeContainersInCsv(Containers containers, ConverterTemplate template) {
+  public List<Path> writeContainersInCsv(Containers containers, ConverterTemplate template, Map<String,String> filenameMap) {
     List<Path> pathList = new ArrayList<>();
     template.getContainerTemplates().forEach(containerTemplate ->
         pathList.add(writeContainersInCsv(containers.getContainers(containerTemplate),
-            template, containerTemplate))
+            template, containerTemplate, filenameMap))
     );
     return pathList;
   }
 
   private Path writeContainersInCsv(List<Container> containers,
-      ConverterTemplate converterTemplate, ContainerTemplate containerTemplate) {
+      ConverterTemplate converterTemplate, ContainerTemplate containerTemplate, Map<String,String> filenameMap) {
     try {
-      return writeContainersInCsvWithoutExceptionManagement(containers, converterTemplate, containerTemplate);
+      return writeContainersInCsvWithoutExceptionManagement(containers, converterTemplate, containerTemplate, filenameMap);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   private Path writeContainersInCsvWithoutExceptionManagement(List<Container> containers,
-      ConverterTemplate converterTemplate, ContainerTemplate containerTemplate) throws IOException {
+      ConverterTemplate converterTemplate, ContainerTemplate containerTemplate, Map<String,String> filenameMap) throws IOException {
 
-    Path filePath = getFilePath(containerTemplate.getCsvFilename());
+    Path filePath = getFilePath(containerTemplate, filenameMap);
     boolean headersExists = headersExists(filePath);
     Files.write(filePath,
         new ContainerCsvWriterIterable(containers, converterTemplate, containerTemplate,
@@ -65,7 +68,12 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path> {
 
   }
 
-  private Path getFilePath(String filename) {
+  private Path getFilePath(ContainerTemplate containerTemplate, Map<String,String> filenameMap) {
+    String filename = filenameMap.get(containerTemplate.getCsvFilename());
+    if (filename == null){
+      filename = containerTemplate.replaceTokensAndGetCsvFilename();
+      filenameMap.put(containerTemplate.getCsvFilename(), filename);
+    }
     return Paths.get(writeDirectory).resolve(filename);
   }
 
@@ -82,4 +90,5 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path> {
   public Format getOutputFormat() {
     return Format.CSV;
   }
+
 }
