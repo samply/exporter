@@ -1,4 +1,4 @@
-<template id="generated-template" excel-filename="generated-test.xlsx">
+<template id="test-template4" excel-filename="generated-test.xlsx">
 
     <!-- Todo -->
     <container csv-filename="Verlauf.csv" excel-sheet="Verlauf" order="42">

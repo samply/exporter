@@ -1,4 +1,4 @@
-<template id="generated-template" excel-filename="generated-test.xlsx">
+<template id="test-template3" excel-filename="generated-test.xlsx">
 
     <container csv-filename="Patient.csv" excel-sheet="Patient" order="71">
         <attribute csv-column="DKTK-ID-Global" excel-column="DKTK-ID-Global"
