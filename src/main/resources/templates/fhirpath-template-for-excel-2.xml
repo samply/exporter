@@ -1,6 +1,6 @@
-<template id="generated-template" excel-filename="generated-test.xlsx">
+<template id="test-template4" excel-filename="generated-test-${TIMESTAMP}.xlsx">
 
-    <container csv-filename="Patient.csv" excel-sheet="Patient" order="71">
+    <container csv-filename="Patient-${TIMESTAMP}.csv" excel-sheet="Patient" order="71">
         <attribute csv-column="DKTK-ID-Global" excel-column="DKTK-ID-Global"
             fhir-path="Patient.identifier.where(type.coding.code = 'Global').value.value" order="2"/>
         <attribute csv-column="DKTK-ID-Lokal" excel-column="DKTK-ID-Lokal"
@@ -29,7 +29,7 @@
     </container>
 
 
-    <container csv-filename="Diagnosis.csv" excel-sheet="Diagnosis" order="43">
+    <container csv-filename="Diagnosis-${TIMESTAMP}.csv" excel-sheet="Diagnosis" order="43">
         <attribute csv-column="Tumor Diagnosedatum" excel-column="Tumor Diagnosedatum"
             fhir-path="Condition.onset.value" order="7"/>
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
@@ -41,7 +41,7 @@
             fhir-path="Condition.code.coding.version.value" order="1"/>
     </container>
 
-    <container csv-filename="Tumour.csv" excel-sheet="Tumour" order="43">
+    <container csv-filename="Tumour-${TIMESTAMP}.csv" excel-sheet="Tumour" order="43">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="Lokalisation" excel-column="Lokalisation"
@@ -57,7 +57,7 @@
             order="6"/>
     </container>
 
-    <container csv-filename="Histology.csv" excel-sheet="Histology" order="60">
+    <container csv-filename="Histology-${TIMESTAMP}.csv" excel-sheet="Histology" order="60">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="Histologie Datum" excel-column="Histologie Datum"
@@ -77,7 +77,7 @@
     </container>
 
 
-    <container csv-filename="Metastasis.csv" excel-sheet="Metastasis" order="55">
+    <container csv-filename="Metastasis-${TIMESTAMP}.csv" excel-sheet="Metastasis" order="55">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="Datum diagnostischer Sicherung"
@@ -93,7 +93,7 @@
     </container>
 
 
-    <container csv-filename="TNMc.csv" excel-sheet="TNMc" order="63">
+    <container csv-filename="TNMc-${TIMESTAMP}.csv" excel-sheet="TNMc" order="63">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="Datum der TNM-Dokumentation/Datum Befund"
@@ -137,7 +137,7 @@
     </container>
 
 
-    <container csv-filename="TNMp.csv" excel-sheet="TNMp" order="64">
+    <container csv-filename="TNMp-${TIMESTAMP}.csv" excel-sheet="TNMp" order="64">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="Datum der TNM-Dokumentation/Datum Befund"
@@ -181,7 +181,7 @@
             order="2"/>
     </container>
 
-    <container csv-filename="MolecularMarker.csv" excel-sheet="MolecularMarker" order="56">
+    <container csv-filename="MolecularMarker-${TIMESTAMP}.csv" excel-sheet="MolecularMarker" order="56">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="Datum der Datenerhebung" excel-column="Datum der Datenerhebung"
@@ -198,7 +198,7 @@
             fhir-path="Observation.where(code.coding.code = '69548-6').value.text.value" order="4"/>
     </container>
 
-    <container csv-filename="Progress.csv" excel-sheet="Progress" order="72">
+    <container csv-filename="Progress-${TIMESTAMP}.csv" excel-sheet="Progress" order="72">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="Ansprechen im Verlauf" excel-column="Ansprechen im Verlauf"
@@ -220,7 +220,7 @@
             order="1"/>
     </container>
 
-    <container csv-filename="SystemTherapy.csv" excel-sheet="SystemTherapy" order="54">
+    <container csv-filename="SystemTherapy-${TIMESTAMP}.csv" excel-sheet="SystemTherapy" order="54">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="Systemische Therapie Stellung zu operativer Therapie"
@@ -256,7 +256,7 @@
     </container>
 
 
-    <container csv-filename="Surgery.csv" excel-sheet="Surgery" order="72">
+    <container csv-filename="Surgery-${TIMESTAMP}.csv" excel-sheet="Surgery" order="72">
         <attribute csv-column="Primärdiagnose" excel-column="Primärdiagnose"
             fhir-path="Condition.code.coding.code.value" order="2"/>
         <attribute csv-column="OPS-Code" excel-column="OPS-Code"
@@ -279,7 +279,7 @@
             order="1"/>
     </container>
 
-    <container csv-filename="RadiationTherapy.csv" excel-sheet="RadiationTherapy" order="73">
+    <container csv-filename="RadiationTherapy-${TIMESTAMP}.csv" excel-sheet="RadiationTherapy" order="73">
         <attribute csv-column="Strahlentherapie Stellung zu operativer Therapie"
             excel-column="Strahlentherapie Stellung zu operativer Therapie"
             fhir-path="Procedure.extension('http://dktk.dkfz.de/fhir/StructureDefinition/onco-core-Extension-StellungZurOp').value.coding.code.value"
