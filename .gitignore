@@ -3,7 +3,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-templates
 test-templates
 output
 converter
@@ -36,3 +35,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/lib/
