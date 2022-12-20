@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 test-templates
+templates
 output
 converter
 test-converters
