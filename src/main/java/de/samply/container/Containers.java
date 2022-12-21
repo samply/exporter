@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Containers {
+
   private Map<ContainerTemplate, Map<String, Container>> templateIdContainerMap = new HashMap<>();
 
   public void addContainer(Container container) {
@@ -27,6 +28,16 @@ public class Containers {
   public List<Container> getContainers(ContainerTemplate containerTemplate) {
     Map<String, Container> idContainerMap = templateIdContainerMap.get(containerTemplate);
     return (idContainerMap != null) ? new ArrayList<>(idContainerMap.values()) : new ArrayList<>();
+  }
+
+  public void addAttribute(ContainerTemplate containerTemplate, String containerId,
+      Attribute attribute) {
+    Container container = getContainer(containerTemplate, containerId);
+    if (container == null) {
+      container = new Container(containerId, containerTemplate);
+      addContainer(container);
+    }
+    container.addAttribute(attribute);
   }
 
 }

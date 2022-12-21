@@ -3,7 +3,6 @@ package de.samply.fhir;
 
 import ca.uhn.fhir.context.FhirContext;
 import de.samply.container.Attribute;
-import de.samply.container.Container;
 import de.samply.container.Containers;
 import de.samply.converter.ConverterImpl;
 import de.samply.converter.Format;
@@ -131,14 +130,8 @@ public class BundleToContainersConverter extends ConverterImpl<Bundle, Container
 
   private void addResourceAttributeToContainers(Containers containers,
       ResourceAttribute resourceAttribute) {
-    Container container = containers.getContainer(resourceAttribute.containerTemplate(),
-        resourceAttribute.fetchContainerId());
-    if (container == null) {
-      container = new Container(resourceAttribute.fetchContainerId(),
-          resourceAttribute.containerTemplate());
-      containers.addContainer(container);
-    }
-    container.addAttribute(
+    containers.addAttribute(resourceAttribute.containerTemplate(),
+        resourceAttribute.fetchContainerId(),
         new Attribute(resourceAttribute.attributeTemplate(), resourceAttribute.attributeValue()));
   }
 
