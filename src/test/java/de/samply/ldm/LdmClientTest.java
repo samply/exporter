@@ -1,20 +1,18 @@
 package de.samply.ldm;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import de.samply.EnvironmentTestUtils;
 import de.samply.converter.ConverterManager;
 import de.samply.converter.Format;
 import de.samply.csv.ContainersToCsvConverter;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.query.QueryManager;
-import de.samply.teiler.TeilerConst;
 import de.samply.template.ConverterTemplateManager;
+import de.samply.template.ConverterTemplateUtils;
+import de.samply.utils.EnvironmentUtils;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Flux;
 
 @Disabled
@@ -29,10 +27,17 @@ class LdmClientTest {
 
   @BeforeEach
   void setUp() {
+    EnvironmentUtils environmentUtils = new EnvironmentUtils(
+        EnvironmentTestUtils.getEmptyMockEnvironment());
+    ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(environmentUtils);
+    ContainersToCsvConverter containersToCsvConverter = new ContainersToCsvConverter(
+        converterTemplateUtils,
+        writeDirectory);
     BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
-    ContainersToCsvConverter containersToCsvConverter = new ContainersToCsvConverter(writeDirectory);
-    ConverterManager converterManager = new ConverterManager(bundleToContainersConverter, containersToCsvConverter, converterXmlApplicationContextPath);
-    ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager(templateDirectory);
+    ConverterManager converterManager = new ConverterManager(bundleToContainersConverter,
+        containersToCsvConverter, converterXmlApplicationContextPath);
+    ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager(
+        templateDirectory);
     QueryManager queryManager = new QueryManager();
 
     ldmClient = new LdmClient(converterManager, converterTemplateManager, queryManager);

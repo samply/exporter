@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - REST API: retrieve-query
 - Docker
 - Timestamp variable for templates
+- Environment variables for templates
 
 ### Changed
 - Rename Conversion Template as Converter Template

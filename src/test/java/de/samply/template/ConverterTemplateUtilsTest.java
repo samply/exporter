@@ -1,32 +1,81 @@
 package de.samply.template;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.samply.EnvironmentTestUtils;
+import de.samply.teiler.TeilerConst;
+import de.samply.utils.EnvironmentUtils;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.ConfigurableEnvironment;
+
 
 class ConverterTemplateUtilsTest {
+
+  private ConverterTemplateUtils converterTemplateUtils;
+  private String property1 = "PROPERTY1";
+  private String value1 = "VALUE1";
+  private String property2 = "PROPERTY2";
+  private String value2 = "VALUE2";
+  private String property3 = "PROPERTY3";
+  private String value3 = "VALUE3";
+
+
+  @BeforeEach
+  void setUp() {
+    Map<String, Object> properties = generateProperties();
+    ConfigurableEnvironment environment = EnvironmentTestUtils.getMockEnvironment(properties);
+    EnvironmentUtils environmentUtils = new EnvironmentUtils(environment);
+    this.converterTemplateUtils = new ConverterTemplateUtils(environmentUtils);
+  }
+
+  private Map<String, Object> generateProperties() {
+    Map<String, Object> properties = new HashMap<>();
+    properties.put(property1, value1);
+    properties.put(property2, value2);
+    properties.put(property3, value3);
+    return properties;
+  }
 
   @Test
   void replaceTokens() {
     String example = "example1";
-    String result = ConverterTemplateUtils.replaceTokens(example);
+    String result = converterTemplateUtils.replaceTokens(example);
     assertEquals(example, result);
 
     String part1 = "example-";
-    example = part1 + "${TIMESTAMP}";
-    result = ConverterTemplateUtils.replaceTokens(example);
+    example = part1 + TeilerConst.TOKEN_HEAD + "TIMESTAMP" + TeilerConst.TOKEN_END;
+    result = converterTemplateUtils.replaceTokens(example);
     assertTrue(result.contains(part1) && !example.equals(result));
 
     String part2 = ".csv";
-    example = part1 + "${TIMESTAMP}" + part2;
-    result = ConverterTemplateUtils.replaceTokens(example);
+    example = part1 + TeilerConst.TOKEN_HEAD + "TIMESTAMP" + TeilerConst.TOKEN_END + part2;
+    result = converterTemplateUtils.replaceTokens(example);
     assertTrue(result.contains(part1) && result.contains(part2) && !example.equals(result));
 
     String format = "yyyyMMdd";
-    example = part1 + "${TIMESTAMP:" + format + "}" + part2;
-    result = ConverterTemplateUtils.replaceTokens(example);
+    example = part1 + TeilerConst.TOKEN_HEAD + "TIMESTAMP" + TeilerConst.TOKEN_EXTENSION_DELIMITER
+        + format + TeilerConst.TOKEN_END + part2;
+    result = converterTemplateUtils.replaceTokens(example);
     assertTrue(result.contains(part1) && result.contains(part2) && !example.equals(result)
         && result.length() == (part1 + part2 + format).length());
+
+    example = part1 + TeilerConst.TOKEN_HEAD + property1 + TeilerConst.TOKEN_END + "-"
+        + TeilerConst.TOKEN_HEAD + property2 + TeilerConst.TOKEN_END + part2;
+
+    result = converterTemplateUtils.replaceTokens(example);
+    assertEquals(part1 + value1 + "-" + value2 + part2, result);
+
+    String notDefinedProperty = "NOT_DEFINED";
+    example = part1 + TeilerConst.TOKEN_HEAD + property1 + TeilerConst.TOKEN_END + "-"
+        + TeilerConst.TOKEN_HEAD + notDefinedProperty + TeilerConst.TOKEN_END + part2;
+
+    result = converterTemplateUtils.replaceTokens(example);
+    assertEquals(
+        part1 + value1 + "-" + part2, result);
 
   }
 

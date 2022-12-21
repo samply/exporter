@@ -51,10 +51,6 @@ public class ConverterTemplate {
     return excelFilename;
   }
 
-  public String replaceTokenAndGetExcelFilename(){
-    return ConverterTemplateUtils.replaceTokens(excelFilename);
-  }
-
   public void setExcelFilename(String excelFilename) {
     this.excelFilename = excelFilename;
   }
