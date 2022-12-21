@@ -26,6 +26,10 @@ public class AttributeTemplate {
   @JsonProperty("parent-fhir-path")
   private String parentFhirPath;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "mdr")
+  @JsonProperty("mdr")
+  private String mdr;
+
 
   public AttributeTemplate() {
   }
@@ -81,6 +85,14 @@ public class AttributeTemplate {
 
   public void setParentFhirPath(String parentFhirPath) {
     this.parentFhirPath = parentFhirPath;
+  }
+
+  public String getMdr() {
+    return mdr;
+  }
+
+  public void setMdr(String mdr) {
+    this.mdr = mdr;
   }
 
 }
