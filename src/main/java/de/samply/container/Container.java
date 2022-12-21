@@ -42,6 +42,16 @@ public class Container {
     return attributeTemplatePositionMap.keySet().contains(attributeTemplate);
   }
 
+  public boolean containsAttribute (Attribute attribute){
+    String attributeValue = getAttributeValue(attribute.getAttributeTemplate());
+    return (attributeValue != null) ? attributeValue.equals(attribute.getValue()) : false;
+  }
+
+  public String getAttributeValue (AttributeTemplate attributeTemplate){
+    Integer index = attributeTemplatePositionMap.get(attributeTemplate);
+    return (index != null) ? attributes.get(index).getValue() : null;
+  }
+
   public void replaceAttribute(Attribute attribute){
     Integer index = attributeTemplatePositionMap.get(attribute.getAttributeTemplate());
     if (index == null){
