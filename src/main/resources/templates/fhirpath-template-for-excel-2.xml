@@ -1,4 +1,4 @@
-<template id="test-template4" excel-filename="generated-test-${TIMESTAMP}.xlsx">
+<template id="test-template2" excel-filename="generated-test-${TIMESTAMP}.xlsx">
     <container csv-filename="Patient-${TIMESTAMP}.csv" excel-sheet="Patient" order="71">
         <attribute csv-column="Patient_ID" excel-column="Patient_ID" fhir-path="Patient.id.value"
             order="2"/>
