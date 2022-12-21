@@ -141,7 +141,7 @@
       order="5"/>
     <attribute csv-column="TNM-M" excel-column="TNM-M"
       fhir-path="Observation.where(code.coding.code = '21908-9').component.where(code.coding.code = '21907-1').value.coding.code.value"
-      parent-fhir-path="Observation.where(code.coding.code = '21908-9')focus.reference.value"
+      parent-fhir-path="Observation.where(code.coding.code = '21908-9').focus.reference.value"
       order="6"/>
     <attribute csv-column="c/p/u-Präfix T" excel-column="c/p/u-Präfix T"
       fhir-path="Observation.where(code.coding.code = '21908-9').component.where(code.coding.code = '21905-5').extension('http://dktk.dkfz.de/fhir/StructureDefinition/onco-core-Extension-TNMcpuPraefix').value.coding.code.value"
