@@ -68,10 +68,15 @@ public class ContainerCsvWriterIterable implements Iterable<String> {
 
     private String fetchAttributeLine(){
       Container container = containerIterator.next();
-      container.getAttributes().sort(attributeOrderComparator);
+      List<AttributeTemplate> templates = containerTemplate.getAttributeTemplates();
+      templates.sort(attributeTemplateComparator);
       StringBuilder stringBuilder = new StringBuilder();
-      container.getAttributes().forEach(attribute -> {
-        stringBuilder.append(attribute.getValue());
+      templates.forEach(attributeTemplate -> {
+        String attributeValue = container.getAttributeValue(attributeTemplate);
+        if (attributeValue == null){
+          attributeValue = "";
+        }
+        stringBuilder.append(attributeValue);
         stringBuilder.append(converterTemplate.getCsvSeparator());
       });
       stringBuilder.deleteCharAt(stringBuilder.length()-1);
