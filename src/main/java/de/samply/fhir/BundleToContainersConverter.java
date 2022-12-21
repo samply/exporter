@@ -73,8 +73,9 @@ public class BundleToContainersConverter extends ConverterImpl<Bundle, Container
   private boolean isSameResourceType(Resource resource, AttributeTemplate attributeTemplate) {
     return (attributeTemplate.getParentFhirPath() != null &&
         isSameResourceType(resource, attributeTemplate.getParentFhirPath())) ||
+        (attributeTemplate.getChildFhirPath() != null &&
+            isSameResourceType(resource, attributeTemplate.getChildFhirPath())) ||
         isSameResourceType(resource, attributeTemplate.getFhirPath());
-
   }
 
   private boolean isSameResourceType(Resource resource, String fhirPath) {
@@ -92,31 +93,43 @@ public class BundleToContainersConverter extends ConverterImpl<Bundle, Container
       ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate,
       Map<String, Resource> idResourceMap) {
     List<ResourceAttribute> resourceAttributes = new ArrayList<>();
-    Resource realResource = fetchRealResource(resource, attributeTemplate, idResourceMap);
-    if (realResource != null) {
+    Resource relatedResource = fetchRelatedResource(resource, attributeTemplate, idResourceMap);
+    if (relatedResource != null) {
       ExpressionNode expressionNode = fhirPathEngine.parse(attributeTemplate.getFhirPath());
-      fhirPathEngine.evaluate(realResource, expressionNode)
+      Resource evalResource =
+          (attributeTemplate.getChildFhirPath() != null) ? relatedResource : resource;
+      Resource idResource =
+          (attributeTemplate.getParentFhirPath() != null) ? relatedResource : resource;
+      fhirPathEngine.evaluate(evalResource, expressionNode)
           .forEach(base -> resourceAttributes.add(
-              new ResourceAttribute(resource, base.toString(), containerTemplate,
+              new ResourceAttribute(idResource, base.toString(), containerTemplate,
                   attributeTemplate)));
     }
     return resourceAttributes;
   }
 
-  private Resource fetchRealResource(Resource currentResource, AttributeTemplate attributeTemplate,
+  private Resource fetchRelatedResource(Resource currentResource,
+      AttributeTemplate attributeTemplate,
       Map<String, Resource> idResourceMap) {
     AtomicReference<Resource> result = new AtomicReference<>(currentResource);
     if (attributeTemplate.getParentFhirPath() != null) {
       attributeTemplate.fetchParentFhirPaths().forEach(parentFhirPath -> {
         if (result.get() != null) {
-          result.set(fetchParentResource(result.get(), parentFhirPath, idResourceMap));
+          result.set(fetchRelatedResource(result.get(), parentFhirPath, idResourceMap));
+        }
+      });
+    }
+    if (attributeTemplate.getChildFhirPath() != null) {
+      attributeTemplate.fetchChildFhirPaths().forEach(childFhirPath -> {
+        if (result.get() != null) {
+          result.set(fetchRelatedResource(result.get(), childFhirPath, idResourceMap));
         }
       });
     }
     return result.get();
   }
 
-  private Resource fetchParentResource(Resource resource, String parentFhirPath,
+  private Resource fetchRelatedResource(Resource resource, String parentFhirPath,
       Map<String, Resource> idResourceMap) {
     Resource result = null;
     ExpressionNode expressionNode = fhirPathEngine.parse(parentFhirPath);

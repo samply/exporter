@@ -7,7 +7,7 @@ public class TeilerConst {
     public final static String TOKEN_END = "}";
     public final static String TOKEN_EXTENSION_DELIMITER = ":";
     public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyyMMdd-HH_mm";
-    public final static String PARENT_FHIR_PATH_DELIMITER = ",";
+    public final static String RELATED_FHIR_PATH_DELIMITER = ",";
 
     // Blaze Store Constants
     public final static String FHIR_STORE_NEXT_BUNDLE = "next";

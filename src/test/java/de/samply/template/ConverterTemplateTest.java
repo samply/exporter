@@ -58,6 +58,7 @@ class ConverterTemplateTest {
         "col-" + extension,
         "path.to.attribute." + extension);
     attributeTemplate.setParentFhirPath("path.to.parent.container-" + i);
+    attributeTemplate.setChildFhirPath("path.to.child.container-" + i);
     attributeTemplate.setMdr("urn:test:dataelement:" + i + ":" + j);
     return attributeTemplate;
   }

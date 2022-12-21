@@ -26,6 +26,10 @@ public class AttributeTemplate {
   @JsonProperty("parent-fhir-path")
   private String parentFhirPath;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "child-fhir-path")
+  @JsonProperty("child-fhir-path")
+  private String childFhirPath;
+
   @JacksonXmlProperty(isAttribute = true, localName = "mdr")
   @JsonProperty("mdr")
   private String mdr;
@@ -80,7 +84,20 @@ public class AttributeTemplate {
 
   public List<String> fetchParentFhirPaths() {
     return (parentFhirPath == null) ? new ArrayList<>() :
-        Arrays.asList(parentFhirPath.trim().split(TeilerConst.PARENT_FHIR_PATH_DELIMITER));
+        Arrays.asList(parentFhirPath.trim().split(TeilerConst.RELATED_FHIR_PATH_DELIMITER));
+  }
+
+  public String getChildFhirPath() {
+    return childFhirPath;
+  }
+
+  public List<String> fetchChildFhirPaths() {
+    return (childFhirPath == null) ? new ArrayList<>() :
+        Arrays.asList(childFhirPath.trim().split(TeilerConst.RELATED_FHIR_PATH_DELIMITER));
+  }
+
+  public void setChildFhirPath(String childFhirPath) {
+    this.childFhirPath = childFhirPath;
   }
 
   public void setParentFhirPath(String parentFhirPath) {

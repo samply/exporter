@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Environment variables for templates
 - Parent-fhir-path in attribute template
 - MDR URN in attribute template
+- Child fhir path
 
 ### Changed
 - Rename Conversion Template as Converter Template
