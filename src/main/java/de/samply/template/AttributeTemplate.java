@@ -2,6 +2,10 @@ package de.samply.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import de.samply.teiler.TeilerConst;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class AttributeTemplate {
 
@@ -17,6 +21,11 @@ public class AttributeTemplate {
   @JacksonXmlProperty(isAttribute = true, localName = "fhir-path")
   @JsonProperty("fhir-path")
   private String fhirPath;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "parent-fhir-path")
+  @JsonProperty("parent-fhir-path")
+  private String parentFhirPath;
+
 
   public AttributeTemplate() {
   }
@@ -61,21 +70,17 @@ public class AttributeTemplate {
     this.fhirPath = fhirPath;
   }
 
-/*
-  // TO DELETE:
-  public String fetchRootFhirPath() {
-    String rootFhirPath = fhirPath;
-    if (fhirPath != null) {
-      int index = fhirPath.indexOf('.');
-      if (index > 0) {
-        String firstElement = fhirPath.substring(0, index);
-        rootFhirPath =
-            "Bundle.entry.select(resource as " + firstElement + ")" + fhirPath.substring(index);
-      }
-    }
-    return rootFhirPath;
+  public String getParentFhirPath() {
+    return parentFhirPath;
   }
 
- */
+  public List<String> fetchParentFhirPaths() {
+    return (parentFhirPath == null) ? new ArrayList<>() :
+        Arrays.asList(parentFhirPath.trim().split(TeilerConst.PARENT_FHIR_PATH_DELIMITER));
+  }
+
+  public void setParentFhirPath(String parentFhirPath) {
+    this.parentFhirPath = parentFhirPath;
+  }
 
 }

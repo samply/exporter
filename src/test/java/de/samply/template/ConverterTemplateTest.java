@@ -54,8 +54,11 @@ class ConverterTemplateTest {
 
   private AttributeTemplate generateAttributeTemplate(int i, int j) {
     String extension = i + "." + j;
-    return new AttributeTemplate(j, "col-" + extension, "col-" + extension,
+    AttributeTemplate attributeTemplate = new AttributeTemplate(j, "col-" + extension,
+        "col-" + extension,
         "path.to.attribute." + extension);
+    attributeTemplate.setParentFhirPath("path.to.parent.container-"+i);
+    return attributeTemplate;
   }
 
   private List<String> generateFhirRevIncludes(){

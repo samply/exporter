@@ -12,7 +12,6 @@ public record ResourceAttribute (
 ) {
 
   public String fetchContainerId(){
-    //TODO
     return resource.getIdPart();
   }
 }

@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Docker
 - Timestamp variable for templates
 - Environment variables for templates
+- Parent-fhir-path in attribute template
 
 ### Changed
 - Rename Conversion Template as Converter Template
