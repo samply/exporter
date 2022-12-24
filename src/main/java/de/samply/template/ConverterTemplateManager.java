@@ -34,7 +34,8 @@ public class ConverterTemplateManager {
   private void loadTemplatesWithoutExceptionmanagement(Path templateDirectory)
       throws IOException {
     if (Files.exists(templateDirectory)) {
-      Files.list(templateDirectory).forEach(filePath -> loadTemplate(filePath));
+      Files.list(templateDirectory).filter(path -> !Files.isDirectory(path))
+          .forEach(filePath -> loadTemplate(filePath));
     }
   }
 
@@ -59,7 +60,7 @@ public class ConverterTemplateManager {
     return idConverterTemplateMap.get(converterTemplateId);
   }
 
-  public Set<String> getConverterTemplateIds(){
+  public Set<String> getConverterTemplateIds() {
     return idConverterTemplateMap.keySet();
   }
 
