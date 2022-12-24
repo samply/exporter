@@ -9,9 +9,6 @@ import java.util.List;
 
 public class AttributeTemplate {
 
-  @JacksonXmlProperty(isAttribute = true)
-  @JsonProperty("order")
-  private Integer order;
   @JacksonXmlProperty(isAttribute = true, localName = "csv-column")
   @JsonProperty("csv-column")
   private String csvColumnName;
@@ -38,20 +35,11 @@ public class AttributeTemplate {
   public AttributeTemplate() {
   }
 
-  public AttributeTemplate(Integer order, String csvColumnName, String excelColumnName,
+  public AttributeTemplate(String csvColumnName, String excelColumnName,
       String fhirPath) {
-    this.order = order;
     this.csvColumnName = csvColumnName;
     this.excelColumnName = excelColumnName;
     this.fhirPath = fhirPath;
-  }
-
-  public Integer getOrder() {
-    return order;
-  }
-
-  public void setOrder(Integer order) {
-    this.order = order;
   }
 
   public String getCsvColumnName() {

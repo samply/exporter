@@ -7,8 +7,6 @@ import java.util.List;
 
 public class ContainerTemplate {
 
-  @JacksonXmlProperty(isAttribute = true)@JsonProperty("order")
-  private Integer order;
   @JacksonXmlProperty(isAttribute = true, localName = "csv-filename")@JsonProperty("csv-filename")
   private String csvFilename;
   @JacksonXmlProperty(isAttribute = true, localName = "excel-sheet")@JsonProperty("excel-sheet")
@@ -19,20 +17,11 @@ public class ContainerTemplate {
   public ContainerTemplate() {
   }
 
-  public ContainerTemplate(Integer order, String csvFilename, String excelSheet,
+  public ContainerTemplate(String csvFilename, String excelSheet,
       List<AttributeTemplate> attributeTemplates) {
-    this.order = order;
     this.csvFilename = csvFilename;
     this.excelSheet = excelSheet;
     this.attributeTemplates = attributeTemplates;
-  }
-
-  public Integer getOrder() {
-    return order;
-  }
-
-  public void setOrder(Integer order) {
-    this.order = order;
   }
 
   public String getCsvFilename() {

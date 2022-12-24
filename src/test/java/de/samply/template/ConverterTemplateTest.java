@@ -3,9 +3,6 @@ package de.samply.template;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import de.samply.template.AttributeTemplate;
-import de.samply.template.ContainerTemplate;
-import de.samply.template.ConverterTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,13 +45,13 @@ class ConverterTemplateTest {
     int counter = 1;
     attributeTemplateList.add(generateAttributeTemplate(index, counter++));
     attributeTemplateList.add(generateAttributeTemplate(index, counter++));
-    return new ContainerTemplate(index, "container-" + index + ".csv", "Sheet-" + index,
+    return new ContainerTemplate("container-" + index + ".csv", "Sheet-" + index,
         attributeTemplateList);
   }
 
   private AttributeTemplate generateAttributeTemplate(int i, int j) {
     String extension = i + "." + j;
-    AttributeTemplate attributeTemplate = new AttributeTemplate(j, "col-" + extension,
+    AttributeTemplate attributeTemplate = new AttributeTemplate("col-" + extension,
         "col-" + extension,
         "path.to.attribute." + extension);
     attributeTemplate.setParentFhirPath("path.to.parent.container-" + i);
