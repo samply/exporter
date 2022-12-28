@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Parent-fhir-path in attribute template
 - MDR URN in attribute template
 - Child fhir path
+- Spring Boot 2.7.7
 
 ### Changed
 - Rename Conversion Template as Converter Template
