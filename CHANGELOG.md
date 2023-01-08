@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Apache POI
 - Excel Converter
 - Anonym Attributes
+- Operation in Attribute
+- EXTRACT_RELATIVE_ID attribute operation
 
 ### Changed
 - Rename Conversion Template as Converter Template

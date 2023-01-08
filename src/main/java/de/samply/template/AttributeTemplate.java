@@ -35,6 +35,9 @@ public class AttributeTemplate {
   @JsonProperty("mdr")
   private String mdr;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "op")
+  @JsonProperty("op")
+  private Operation operation;
 
   public AttributeTemplate() {
   }
@@ -110,6 +113,16 @@ public class AttributeTemplate {
 
   public void setAnonym(String anonym) {
     this.anonym = anonym;
+  }
+
+  public Operation getOperation() {
+    return operation;
+  }
+
+  public void setOperation(String operation) {
+    if (operation != null){
+      this.operation = Operation.valueOf(operation);
+    }
   }
 
 }

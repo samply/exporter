@@ -62,6 +62,10 @@ class ConverterTemplateTest {
     if (random.nextInt(2) == 0){
       attributeTemplate.setAnonym(attributeTemplate.getCsvColumnName());
     }
+    if (random.nextInt(2) == 0){
+      attributeTemplate.setOperation(Operation.EXTRACT_RELATIVE_ID.name());
+    }
+
     return attributeTemplate;
   }
 

@@ -186,10 +186,14 @@ public class BundleToContainersConverter extends
 
   private String fetchResourceAttributeValue(ResourceAttribute resourceAttribute,
       BundleContext context) {
-    return (resourceAttribute.attributeTemplate().getAnonym() == null)
-        ? resourceAttribute.attributeValue() :
-        context.fetchAnonym(resourceAttribute.attributeTemplate(),
-            resourceAttribute.attributeValue());
+    String result = resourceAttribute.attributeValue();
+    if (resourceAttribute.attributeTemplate().getOperation() != null){
+      result = resourceAttribute.attributeTemplate().getOperation().execute(result);
+    }
+    if (resourceAttribute.attributeTemplate().getAnonym() != null) {
+      result = context.fetchAnonym(resourceAttribute.attributeTemplate(), result);
+    }
+    return result;
   }
 
   private FHIRPathEngine createFhirPathEngine() {
