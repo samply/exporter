@@ -29,7 +29,7 @@ public class AttributeTemplate {
 
   @JacksonXmlProperty(isAttribute = true, localName = "anonym")
   @JsonProperty("anonym")
-  private Boolean anonym;
+  private String anonym;
 
   @JacksonXmlProperty(isAttribute = true, localName = "mdr")
   @JsonProperty("mdr")
@@ -104,11 +104,11 @@ public class AttributeTemplate {
     this.mdr = mdr;
   }
 
-  public Boolean isAnonym() {
+  public String getAnonym() {
     return anonym;
   }
 
-  public void setAnonym(boolean anonym) {
+  public void setAnonym(String anonym) {
     this.anonym = anonym;
   }
 

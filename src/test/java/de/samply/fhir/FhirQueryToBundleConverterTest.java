@@ -22,6 +22,7 @@ class FhirQueryToBundleConverterTest {
   private FhirQueryToBundleConverter fhirQueryToBundleConverter;
   private ConverterTemplateManager converterTemplateManager;
   private BundleToContainersConverter bundleToContainersConverter;
+  private BundleToContainersConverterSession bundleToContainersConverterSession;
   private ContainersToCsvConverter containersToCsvConverter;
   private Session containersToCsvConverterSession;
 
@@ -42,6 +43,7 @@ class FhirQueryToBundleConverterTest {
     this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory);
     this.converterTemplateManager = new ConverterTemplateManager(templateDirectory);
     this.bundleToContainersConverter = new BundleToContainersConverter();
+    this.bundleToContainersConverterSession = new BundleToContainersConverterSession();
   }
 
   @Test
@@ -50,7 +52,7 @@ class FhirQueryToBundleConverterTest {
     fhirQueryToBundleConverter.convert(Flux.just("Patient"), converterTemplate)
         .subscribe(bundle -> {
           Containers containers = bundleToContainersConverter.convertToContainers(bundle,
-              converterTemplate);
+              converterTemplate, bundleToContainersConverterSession);
           containersToCsvConverter.writeContainersInCsv(containers, converterTemplate,
               containersToCsvConverterSession);
         });

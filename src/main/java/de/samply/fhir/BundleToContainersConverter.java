@@ -2,6 +2,8 @@ package de.samply.fhir;
 
 
 import ca.uhn.fhir.context.FhirContext;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import de.samply.container.Attribute;
 import de.samply.container.Containers;
 import de.samply.converter.ConverterImpl;
@@ -33,10 +35,36 @@ public class BundleToContainersConverter extends
     this.fhirPathEngine = createFhirPathEngine();
   }
 
+  private class BundleContext {
+
+    private Map<String, Resource> idResourceMap;
+    private BundleToContainersConverterSession session;
+    private Table<String, String, String> idValueAnonymMap = HashBasedTable.create();
+
+    public BundleContext(Bundle bundle, BundleToContainersConverterSession session) {
+      this.idResourceMap = fetchIdResourceMap(bundle);
+      this.session = session;
+    }
+
+    public String fetchAnonym(AttributeTemplate attributeTemplate, String value) {
+      String anonym = idValueAnonymMap.get(attributeTemplate.getAnonym(), value);
+      if (anonym == null) {
+        anonym = session.generateAnonym(attributeTemplate);
+        idValueAnonymMap.put(attributeTemplate.getAnonym(), value, anonym);
+      }
+      return anonym;
+    }
+
+    public Resource getResource(String resourceId) {
+      return idResourceMap.get(resourceId);
+    }
+
+  }
+
   @Override
   public Flux<Containers> convert(Bundle bundle, ConverterTemplate converterTemplate,
       BundleToContainersConverterSession session) {
-    return Flux.just(convertToContainers(bundle, converterTemplate));
+    return Flux.just(convertToContainers(bundle, converterTemplate, session));
   }
 
   @Override
@@ -44,13 +72,14 @@ public class BundleToContainersConverter extends
     return new BundleToContainersConverterSession();
   }
 
-  public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate) {
+  public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate,
+      BundleToContainersConverterSession session) {
     Containers containers = new Containers();
-    Map<String, Resource> idResourceMap = fetchIdResourceMap(bundle);
+    BundleContext context = new BundleContext(bundle, session);
     if (converterTemplate != null) {
       converterTemplate.getContainerTemplates()
           .forEach(containerTemplate -> addContainers(bundle, containers, containerTemplate,
-              idResourceMap));
+              context));
     }
     return containers;
   }
@@ -66,13 +95,13 @@ public class BundleToContainersConverter extends
   }
 
   private void addContainers(Bundle bundle, Containers containers,
-      ContainerTemplate containerTemplate, Map<String, Resource> idResourceMap) {
+      ContainerTemplate containerTemplate, BundleContext context) {
     containerTemplate.getAttributeTemplates().forEach(attributeTemplate ->
         bundle.getEntry().forEach(bundleEntryComponent -> {
           if (isSameResourceType(bundleEntryComponent.getResource(), attributeTemplate)) {
             fetchResourceAttribute(bundleEntryComponent.getResource(), containerTemplate,
-                attributeTemplate, idResourceMap).forEach(resourceAttribute ->
-                addResourceAttributeToContainers(containers, resourceAttribute));
+                attributeTemplate, context).forEach(resourceAttribute ->
+                addResourceAttributeToContainers(containers, resourceAttribute, context));
           }
         }));
   }
@@ -98,9 +127,9 @@ public class BundleToContainersConverter extends
 
   private List<ResourceAttribute> fetchResourceAttribute(Resource resource,
       ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate,
-      Map<String, Resource> idResourceMap) {
+      BundleContext context) {
     List<ResourceAttribute> resourceAttributes = new ArrayList<>();
-    Resource relatedResource = fetchRelatedResource(resource, attributeTemplate, idResourceMap);
+    Resource relatedResource = fetchRelatedResource(resource, attributeTemplate, context);
     if (relatedResource != null) {
       ExpressionNode expressionNode = fhirPathEngine.parse(attributeTemplate.getFhirPath());
       Resource evalResource =
@@ -116,20 +145,19 @@ public class BundleToContainersConverter extends
   }
 
   private Resource fetchRelatedResource(Resource currentResource,
-      AttributeTemplate attributeTemplate,
-      Map<String, Resource> idResourceMap) {
+      AttributeTemplate attributeTemplate, BundleContext context) {
     AtomicReference<Resource> result = new AtomicReference<>(currentResource);
     if (attributeTemplate.getParentFhirPath() != null) {
       attributeTemplate.fetchParentFhirPaths().forEach(parentFhirPath -> {
         if (result.get() != null) {
-          result.set(fetchRelatedResource(result.get(), parentFhirPath, idResourceMap));
+          result.set(fetchRelatedResource(result.get(), parentFhirPath, context));
         }
       });
     }
     if (attributeTemplate.getChildFhirPath() != null) {
       attributeTemplate.fetchChildFhirPaths().forEach(childFhirPath -> {
         if (result.get() != null) {
-          result.set(fetchRelatedResource(result.get(), childFhirPath, idResourceMap));
+          result.set(fetchRelatedResource(result.get(), childFhirPath, context));
         }
       });
     }
@@ -137,22 +165,31 @@ public class BundleToContainersConverter extends
   }
 
   private Resource fetchRelatedResource(Resource resource, String parentFhirPath,
-      Map<String, Resource> idResourceMap) {
+      BundleContext context) {
     Resource result = null;
     ExpressionNode expressionNode = fhirPathEngine.parse(parentFhirPath);
     List<Base> resourceIds = fhirPathEngine.evaluate(resource, expressionNode);
     if (resourceIds.size() > 0) {
       String resourceId = resourceIds.get(0).toString();
-      result = idResourceMap.get(resourceId);
+      result = context.getResource(resourceId);
     }
     return result;
   }
 
   private void addResourceAttributeToContainers(Containers containers,
-      ResourceAttribute resourceAttribute) {
+      ResourceAttribute resourceAttribute, BundleContext context) {
     containers.addAttribute(resourceAttribute.containerTemplate(),
         resourceAttribute.fetchContainerId(),
-        new Attribute(resourceAttribute.attributeTemplate(), resourceAttribute.attributeValue()));
+        new Attribute(resourceAttribute.attributeTemplate(),
+            fetchResourceAttributeValue(resourceAttribute, context)));
+  }
+
+  private String fetchResourceAttributeValue(ResourceAttribute resourceAttribute,
+      BundleContext context) {
+    return (resourceAttribute.attributeTemplate().getAnonym() == null)
+        ? resourceAttribute.attributeValue() :
+        context.fetchAnonym(resourceAttribute.attributeTemplate(),
+            resourceAttribute.attributeValue());
   }
 
   private FHIRPathEngine createFhirPathEngine() {

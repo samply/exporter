@@ -60,7 +60,7 @@ class ConverterTemplateTest {
     attributeTemplate.setChildFhirPath("path.to.child.container-" + i);
     attributeTemplate.setMdr("urn:test:dataelement:" + i + ":" + j);
     if (random.nextInt(2) == 0){
-      attributeTemplate.setAnonym(true);
+      attributeTemplate.setAnonym(attributeTemplate.getCsvColumnName());
     }
     return attributeTemplate;
   }

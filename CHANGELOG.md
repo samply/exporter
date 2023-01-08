@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Converter Session
 - Apache POI
 - Excel Converter
+- Anonym Attributes
 
 ### Changed
 - Rename Conversion Template as Converter Template

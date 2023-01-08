@@ -46,4 +46,7 @@ public class TeilerConst {
     public static final String APP_NAME = "Teiler";
     public static final String EMPTY_EXCEL_CELL = "";
 
+    public static final Integer FIRST_ANONYM_ID = 0;
+    public static final String DEFAULT_ANONYM_ELEMENT = "VAL";
+
 }

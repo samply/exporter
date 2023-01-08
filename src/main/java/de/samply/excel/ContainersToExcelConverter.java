@@ -110,9 +110,8 @@ public class ContainersToExcelConverter extends ConverterImpl<Containers, Path, 
   @Override
   protected Runnable getSessionCompleter(ConverterTemplate template, Session session) {
     return () -> {
-      try {
-        session.fetchWorkbook()
-            .write(new FileOutputStream(session.getExcelPath(template).toString()));
+      try (FileOutputStream fileOutputStream = new FileOutputStream(session.getExcelPath(template).toString())) {
+        session.fetchWorkbook().write(fileOutputStream);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
