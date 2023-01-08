@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - MDR URN in attribute template
 - Child fhir path
 - Spring Boot 2.7.7
+- Anonym Attribute Template
 - Converter Session
 - Apache POI
 - Excel Converter

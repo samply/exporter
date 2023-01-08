@@ -27,6 +27,10 @@ public class AttributeTemplate {
   @JsonProperty("child-fhir-path")
   private String childFhirPath;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "anonym")
+  @JsonProperty("anonym")
+  private Boolean anonym;
+
   @JacksonXmlProperty(isAttribute = true, localName = "mdr")
   @JsonProperty("mdr")
   private String mdr;
@@ -98,6 +102,14 @@ public class AttributeTemplate {
 
   public void setMdr(String mdr) {
     this.mdr = mdr;
+  }
+
+  public Boolean isAnonym() {
+    return anonym;
+  }
+
+  public void setAnonym(boolean anonym) {
+    this.anonym = anonym;
   }
 
 }

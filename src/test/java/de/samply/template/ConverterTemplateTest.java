@@ -7,12 +7,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled
 class ConverterTemplateTest {
 
+  private Random random = new Random();
   private String filepath = "./test-templates/my-test";
   private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   private XmlMapper xmlMapper = (XmlMapper) new XmlMapper().enable(
@@ -57,6 +59,9 @@ class ConverterTemplateTest {
     attributeTemplate.setParentFhirPath("path.to.parent.container-" + i);
     attributeTemplate.setChildFhirPath("path.to.child.container-" + i);
     attributeTemplate.setMdr("urn:test:dataelement:" + i + ":" + j);
+    if (random.nextInt(2) == 0){
+      attributeTemplate.setAnonym(true);
+    }
     return attributeTemplate;
   }
 
