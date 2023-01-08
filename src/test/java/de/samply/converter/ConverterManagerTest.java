@@ -2,6 +2,7 @@ package de.samply.converter;
 
 import de.samply.EnvironmentTestUtils;
 import de.samply.csv.ContainersToCsvConverter;
+import de.samply.excel.ContainersToExcelConverter;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
@@ -22,19 +23,23 @@ class ConverterManagerTest {
 
   private BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
   private ContainersToCsvConverter containersToCsvConverter;
+  private ContainersToExcelConverter containersToExcelConverter;
 
   @BeforeEach
   void setUp() {
-    EnvironmentUtils environmentUtils = new EnvironmentUtils(EnvironmentTestUtils.getEmptyMockEnvironment());
+    EnvironmentUtils environmentUtils = new EnvironmentUtils(
+        EnvironmentTestUtils.getEmptyMockEnvironment());
     ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(environmentUtils);
     this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
         OUTPUT_DIRECTORY);
+    this.containersToExcelConverter = new ContainersToExcelConverter(30000000,
+        converterTemplateUtils, OUTPUT_DIRECTORY);
   }
 
   @Test
   void getConverter() {
     ConverterManager converterManager = new ConverterManager(bundleToContainersConverter,
-        containersToCsvConverter, CONVERTER_APPLICATION_CONTEXT_PATH);
+        containersToCsvConverter, containersToExcelConverter, CONVERTER_APPLICATION_CONTEXT_PATH);
     Converter converter = converterManager.getBestMatchConverter(Format.FHIR_QUERY, Format.CSV,
         sourceId);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager("./templates");

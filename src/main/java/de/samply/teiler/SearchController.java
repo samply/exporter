@@ -1,8 +1,8 @@
 package de.samply.teiler;
 
 import de.samply.converter.Format;
-import de.samply.ldm.LdmClient;
-import de.samply.ldm.LdmClientException;
+import de.samply.core.TeilerCore;
+import de.samply.core.TeilerCoreException;
 import de.samply.utils.ProjectVersion;
 import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +19,10 @@ import reactor.core.publisher.Flux;
 public class SearchController {
 
   private final String projectVersion = ProjectVersion.getProjectVersion();
-  private final LdmClient ldmClient;
+  private final TeilerCore teilerCore;
 
-  public SearchController(@Autowired LdmClient ldmClient) {
-    this.ldmClient = ldmClient;
+  public SearchController(@Autowired TeilerCore teilerCore) {
+    this.teilerCore = teilerCore;
   }
 
   @GetMapping(value = TeilerConst.INFO)
@@ -51,8 +51,8 @@ public class SearchController {
       @RequestParam(TeilerConst.OUTPUT_FORMAT) Format outputFormat
   ) {
     try {
-      return ldmClient.retrieveByQuery(sourceId, query, queryFormat, outputFormat, templateId);
-    } catch (LdmClientException e) {
+      return teilerCore.retrieveByQuery(sourceId, query, queryFormat, outputFormat, templateId);
+    } catch (TeilerCoreException e) {
       //TODO
       throw new RuntimeException(e);
     }

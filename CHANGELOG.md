@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Spring Boot 2.7.7
 - Converter Session
 - Apache POI
+- Excel Converter
 
 ### Changed
 - Rename Conversion Template as Converter Template

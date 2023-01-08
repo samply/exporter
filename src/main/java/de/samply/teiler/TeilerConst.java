@@ -15,6 +15,7 @@ public class TeilerConst {
     // Environment Variables
     public final static String CONVERTER_TEMPLATE_DIRECTORY = "CONVERTER_TEMPLATE_DIRECTORY";
     public final static String WRITE_FILE_DIRECTORY = "WRITE_FILE_DIRECTORY";
+    public final static String EXCEL_WORKBOOK_WINDOW = "EXCEL_WORKBOOK_WINDOW";
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH = "CONVERTER_XML_APPLICATION_CONTEXT_PATH";
 
     // Spring Values (SV)
@@ -23,6 +24,7 @@ public class TeilerConst {
     public final static String CONVERTER_TEMPLATE_DIRECTORY_SV = HEAD_SV + CONVERTER_TEMPLATE_DIRECTORY
         + ":#{'./templates'}" + BOTTOM_SV;
     public final static String WRITE_FILE_DIRECTORY_SV = HEAD_SV + WRITE_FILE_DIRECTORY + ":#{'./output'}" + BOTTOM_SV;
+    public final static String EXCEL_WORKBOOK_WINDOW_SV = HEAD_SV + EXCEL_WORKBOOK_WINDOW + ":#{'30000000'}" + BOTTOM_SV;
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV = HEAD_SV + CONVERTER_XML_APPLICATION_CONTEXT_PATH + ":#{'./converter/converter.xml'}" + BOTTOM_SV;
 
     // REST Paths
@@ -42,5 +44,6 @@ public class TeilerConst {
     // Other constants
     public static final String DEFAULT_CSV_SEPARATOR = "\t";
     public static final String APP_NAME = "Teiler";
+    public static final String EMPTY_EXCEL_CELL = "";
 
 }

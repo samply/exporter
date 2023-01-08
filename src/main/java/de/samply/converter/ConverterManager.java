@@ -7,6 +7,7 @@ import de.samply.converter.selector.ConverterSelectorCriteria;
 import de.samply.converter.selector.ExistentSource;
 import de.samply.converter.selector.LessWeight;
 import de.samply.csv.ContainersToCsvConverter;
+import de.samply.excel.ContainersToExcelConverter;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.teiler.TeilerConst;
 import java.util.ArrayList;
@@ -32,11 +33,13 @@ public class ConverterManager {
   public ConverterManager(
       @Autowired BundleToContainersConverter bundleToContainersConverter,
       @Autowired ContainersToCsvConverter containersToCsvConverter,
+      @Autowired ContainersToExcelConverter containersToExcelConverter,
       @Value(TeilerConst.CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV) String converterXmlApplicationContextPath
   ) {
     List<Converter> converters = new ArrayList<>();
     converters.add(bundleToContainersConverter);
     converters.add(containersToCsvConverter);
+    converters.add(containersToExcelConverter);
     converters.addAll(fetchConvertersFromApplicationContext(converterXmlApplicationContextPath));
 
     loadAllConverterCombinations(converters);
