@@ -3,6 +3,7 @@ package de.samply.fhir;
 import de.samply.EnvironmentTestUtils;
 import de.samply.container.Containers;
 import de.samply.csv.ContainersToCsvConverter;
+import de.samply.csv.Session;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
@@ -22,6 +23,7 @@ class FhirQueryToBundleConverterTest {
   private ConverterTemplateManager converterTemplateManager;
   private BundleToContainersConverter bundleToContainersConverter;
   private ContainersToCsvConverter containersToCsvConverter;
+  private Session containersToCsvConverterSession;
 
   private String blazeStoreUrl = "http://localhost:8091/fhir";
   private String sourceId = "blazeStore";
@@ -37,6 +39,7 @@ class FhirQueryToBundleConverterTest {
     ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(environmentUtils);
     this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
         outputDirectory);
+    this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory);
     this.converterTemplateManager = new ConverterTemplateManager(templateDirectory);
     this.bundleToContainersConverter = new BundleToContainersConverter();
   }
@@ -49,7 +52,7 @@ class FhirQueryToBundleConverterTest {
           Containers containers = bundleToContainersConverter.convertToContainers(bundle,
               converterTemplate);
           containersToCsvConverter.writeContainersInCsv(containers, converterTemplate,
-              new HashMap<>());
+              containersToCsvConverterSession);
         });
     //TODO
   }

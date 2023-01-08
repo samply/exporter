@@ -4,17 +4,18 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.IQuery;
+import de.samply.converter.EmptySession;
 import de.samply.converter.Format;
 import de.samply.converter.SourceConverterImpl;
-import de.samply.template.ConverterTemplate;
 import de.samply.teiler.TeilerConst;
+import de.samply.template.ConverterTemplate;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
 import reactor.core.publisher.Flux;
 
 
-public class FhirQueryToBundleConverter extends SourceConverterImpl<String,Bundle> {
+public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bundle, EmptySession> {
 
   private final IGenericClient client;
   private final String sourceId;
@@ -26,7 +27,7 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String,Bundl
   }
 
   @Override
-  public Flux<Bundle> convert(String fhirQuery, ConverterTemplate template) {
+  public Flux<Bundle> convert(String fhirQuery, ConverterTemplate template, EmptySession session) {
     return Flux.generate(
         () -> "",
         (nextUrl, sync) -> {
@@ -39,6 +40,11 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String,Bundl
           }
           return nextUrl;
         });
+  }
+
+  @Override
+  protected EmptySession initializeSession() {
+    return EmptySession.instance();
   }
 
   private Bundle fetchFirstBundle(String fhirQuery, ConverterTemplate template) {

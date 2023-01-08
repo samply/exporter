@@ -24,7 +24,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class BundleToContainersConverter extends ConverterImpl<Bundle, Containers> {
+public class BundleToContainersConverter extends
+    ConverterImpl<Bundle, Containers, BundleToContainersConverterSession> {
 
   private final FHIRPathEngine fhirPathEngine;
 
@@ -33,8 +34,14 @@ public class BundleToContainersConverter extends ConverterImpl<Bundle, Container
   }
 
   @Override
-  public Flux<Containers> convert(Bundle bundle, ConverterTemplate converterTemplate) {
+  public Flux<Containers> convert(Bundle bundle, ConverterTemplate converterTemplate,
+      BundleToContainersConverterSession session) {
     return Flux.just(convertToContainers(bundle, converterTemplate));
+  }
+
+  @Override
+  protected BundleToContainersConverterSession initializeSession() {
+    return new BundleToContainersConverterSession();
   }
 
   public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate) {

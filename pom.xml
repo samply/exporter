@@ -48,6 +48,7 @@
     <guava.version>31.1-jre</guava.version>
     <maven-model.version>3.8.6</maven-model.version>
     <mockito.version>4.10.0</mockito.version>
+    <poi.version>5.2.3</poi.version>
   </properties>
 
   <dependencies>
@@ -122,6 +123,11 @@
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+      <version>${poi.version}</version>
     </dependency>
 
   </dependencies>
