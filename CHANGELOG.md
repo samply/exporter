@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Api Key
 - Java 19
 - Template in request body
+- Attribute condition fhir path
 
 ### Changed
 - Rename Conversion Template as Converter Template

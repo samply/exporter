@@ -2,8 +2,6 @@ package de.samply.fhir;
 
 
 import ca.uhn.fhir.context.FhirContext;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import de.samply.container.Attribute;
 import de.samply.container.Containers;
 import de.samply.converter.ConverterImpl;
@@ -12,12 +10,11 @@ import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
 import org.hl7.fhir.r4.model.Base;
+import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.ExpressionNode;
 import org.hl7.fhir.r4.model.Resource;
@@ -33,32 +30,6 @@ public class BundleToContainersConverter extends
 
   public BundleToContainersConverter() {
     this.fhirPathEngine = createFhirPathEngine();
-  }
-
-  private class BundleContext {
-
-    private Map<String, Resource> idResourceMap;
-    private BundleToContainersConverterSession session;
-    private Table<String, String, String> idValueAnonymMap = HashBasedTable.create();
-
-    public BundleContext(Bundle bundle, BundleToContainersConverterSession session) {
-      this.idResourceMap = fetchIdResourceMap(bundle);
-      this.session = session;
-    }
-
-    public String fetchAnonym(AttributeTemplate attributeTemplate, String value) {
-      String anonym = idValueAnonymMap.get(attributeTemplate.getAnonym(), value);
-      if (anonym == null) {
-        anonym = session.generateAnonym(attributeTemplate);
-        idValueAnonymMap.put(attributeTemplate.getAnonym(), value, anonym);
-      }
-      return anonym;
-    }
-
-    public Resource getResource(String resourceId) {
-      return idResourceMap.get(resourceId);
-    }
-
   }
 
   @Override
@@ -84,15 +55,6 @@ public class BundleToContainersConverter extends
     return containers;
   }
 
-  private Map<String, Resource> fetchIdResourceMap(Bundle bundle) {
-    Map<String, Resource> result = new HashMap<>();
-    bundle.getEntry().forEach(bundleEntryComponent -> {
-      Resource resource = bundleEntryComponent.getResource();
-      String id = resource.getResourceType() + "/" + resource.getIdPart();
-      result.put(id, resource);
-    });
-    return result;
-  }
 
   private void addContainers(Bundle bundle, Containers containers,
       ContainerTemplate containerTemplate, BundleContext context) {
@@ -136,12 +98,29 @@ public class BundleToContainersConverter extends
           (attributeTemplate.getChildFhirPath() != null) ? relatedResource : resource;
       Resource idResource =
           (attributeTemplate.getParentFhirPath() != null) ? relatedResource : resource;
-      fhirPathEngine.evaluate(evalResource, expressionNode)
-          .forEach(base -> resourceAttributes.add(
-              new ResourceAttribute(idResource, base.toString(), containerTemplate,
-                  attributeTemplate)));
+      if (isToBeEvaluated(evalResource, attributeTemplate)) {
+        fhirPathEngine.evaluate(evalResource, expressionNode)
+            .forEach(base -> resourceAttributes.add(
+                new ResourceAttribute(idResource, base.toString(), containerTemplate,
+                    attributeTemplate)));
+      }
     }
     return resourceAttributes;
+  }
+
+  private boolean isToBeEvaluated(Resource resource, AttributeTemplate attributeTemplate) {
+    boolean result = true;
+    if (attributeTemplate.getConditionFhirPath() != null) {
+      ExpressionNode expression = fhirPathEngine.parse(attributeTemplate.getConditionFhirPath());
+      List<Base> baseList = fhirPathEngine.evaluate(resource, expression);
+      if (baseList.size() > 0) {
+        Base base = baseList.get(0);
+        if (base instanceof BooleanType){
+          result = ((BooleanType) base).booleanValue();
+        }
+      }
+    }
+    return result;
   }
 
   private Resource fetchRelatedResource(Resource currentResource,
@@ -187,7 +166,7 @@ public class BundleToContainersConverter extends
   private String fetchResourceAttributeValue(ResourceAttribute resourceAttribute,
       BundleContext context) {
     String result = resourceAttribute.attributeValue();
-    if (resourceAttribute.attributeTemplate().getOperation() != null){
+    if (resourceAttribute.attributeTemplate().getOperation() != null) {
       result = resourceAttribute.attributeTemplate().getOperation().execute(result);
     }
     if (resourceAttribute.attributeTemplate().getAnonym() != null) {

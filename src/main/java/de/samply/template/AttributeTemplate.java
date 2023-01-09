@@ -27,6 +27,10 @@ public class AttributeTemplate {
   @JsonProperty("child-fhir-path")
   private String childFhirPath;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "condition-fhir-path")
+  @JsonProperty("condition-fhir-path")
+  private String conditionFhirPath;
+
   @JacksonXmlProperty(isAttribute = true, localName = "anonym")
   @JsonProperty("anonym")
   private String anonym;
@@ -123,6 +127,18 @@ public class AttributeTemplate {
     if (operation != null){
       this.operation = Operation.valueOf(operation);
     }
+  }
+
+  public void setOperation(Operation operation) {
+    this.operation = operation;
+  }
+
+  public String getConditionFhirPath() {
+    return conditionFhirPath;
+  }
+
+  public void setConditionFhirPath(String conditionFhirPath) {
+    this.conditionFhirPath = conditionFhirPath;
   }
 
 }
