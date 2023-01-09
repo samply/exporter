@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Anonym Attributes
 - Operation in Attribute
 - EXTRACT_RELATIVE_ID attribute operation
+- Api Key
 
 ### Changed
 - Rename Conversion Template as Converter Template

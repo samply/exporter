@@ -2,6 +2,9 @@ package de.samply.teiler;
 
 public class TeilerConst {
 
+    // HTTP Headers
+    public final static String API_KEY_HEADER = "x-api-key";
+
     // Token variables
     public final static String TOKEN_HEAD = "${";
     public final static String TOKEN_END = "}";
@@ -17,6 +20,7 @@ public class TeilerConst {
     public final static String WRITE_FILE_DIRECTORY = "WRITE_FILE_DIRECTORY";
     public final static String EXCEL_WORKBOOK_WINDOW = "EXCEL_WORKBOOK_WINDOW";
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH = "CONVERTER_XML_APPLICATION_CONTEXT_PATH";
+    public final static String TEILER_API_KEY = "TEILER_API_KEY";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -26,12 +30,13 @@ public class TeilerConst {
     public final static String WRITE_FILE_DIRECTORY_SV = HEAD_SV + WRITE_FILE_DIRECTORY + ":#{'./output'}" + BOTTOM_SV;
     public final static String EXCEL_WORKBOOK_WINDOW_SV = HEAD_SV + EXCEL_WORKBOOK_WINDOW + ":#{'30000000'}" + BOTTOM_SV;
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV = HEAD_SV + CONVERTER_XML_APPLICATION_CONTEXT_PATH + ":#{'./converter/converter.xml'}" + BOTTOM_SV;
+    public final static String TEILER_API_KEY_SV = HEAD_SV + TEILER_API_KEY + BOTTOM_SV;
 
     // REST Paths
-    public static final String INFO = "info";
-    public static final String REQUEST = "request";
-    public static final String RESPONSE = "response";
-    public static final String RETRIEVE_QUERY = "retrieve-query";
+    public static final String INFO = "/info";
+    public static final String REQUEST = "/request";
+    public static final String RESPONSE = "/response";
+    public static final String RETRIEVE_QUERY = "/retrieve-query";
     public static final String PAGE = "page";
     public static final String STATS = "stats";
     public static final String QUERY_ID = "query-id";
