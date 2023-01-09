@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - EXTRACT_RELATIVE_ID attribute operation
 - Api Key
 - Java 19
+- Template in request body
 
 ### Changed
 - Rename Conversion Template as Converter Template

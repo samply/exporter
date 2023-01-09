@@ -48,8 +48,9 @@ class TeilerCoreTest {
 
   @Test
   void retrieveByQueryId() throws TeilerCoreException {
-    Flux<Path> resultFlux = teilerCore.retrieveByQuery(sourceId, "Patient", Format.FHIR_QUERY,
-        Format.CSV, converterTemplateId);
+    TeilerParameters teilerParameters = new TeilerParameters(null, "Patient", sourceId,
+        converterTemplateId, null, null, Format.FHIR_QUERY, Format.CSV);
+    Flux<Path> resultFlux = teilerCore.retrieveQuery(teilerParameters);
     resultFlux.blockLast();
   }
 

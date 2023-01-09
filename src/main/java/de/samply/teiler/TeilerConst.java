@@ -53,5 +53,6 @@ public class TeilerConst {
 
     public static final Integer FIRST_ANONYM_ID = 0;
     public static final String DEFAULT_ANONYM_ELEMENT = "VAL";
+    public static final String DEFAULT_QUERY_ID = "EMBEDDED_QUERY";
 
 }

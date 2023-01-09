@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -48,12 +49,23 @@ public class ConverterTemplateManager {
   }
 
   private void loadTemplateWithoutExceptionManagement(Path templatePath) throws IOException {
-    ObjectMapper objectMapper =
-        (templatePath.getFileName().toString().contains(".xml")) ? new XmlMapper()
-            : new ObjectMapper();
-    ConverterTemplate converterTemplate = objectMapper.readValue(templatePath.toFile(),
-        ConverterTemplate.class);
+    ConverterTemplate converterTemplate = fetchConverterTemplate(templatePath);
     idConverterTemplateMap.put(converterTemplate.getId(), converterTemplate);
+  }
+
+  public ConverterTemplate fetchConverterTemplate(Path templatePath) throws IOException {
+    String contentType =
+        (templatePath.getFileName().toString().contains(".xml")) ? MediaType.APPLICATION_XML_VALUE
+            : MediaType.APPLICATION_JSON_VALUE;
+    return fetchConverterTemplate(Files.readString(templatePath), contentType);
+  }
+
+  public ConverterTemplate fetchConverterTemplate(String template, String contentType)
+      throws IOException {
+    ObjectMapper objectMapper =
+        (contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ? new XmlMapper()
+            : new ObjectMapper();
+    return objectMapper.readValue(template, ConverterTemplate.class);
   }
 
   public ConverterTemplate getConverterTemplate(String converterTemplateId) {
