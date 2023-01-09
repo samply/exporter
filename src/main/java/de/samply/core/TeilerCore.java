@@ -8,6 +8,7 @@ import de.samply.teiler.TeilerConst;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import java.io.IOException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,8 @@ import reactor.core.publisher.Flux;
 
 @Component
 public class TeilerCore {
+
+
 
   private ConverterManager converterManager;
   private final ConverterTemplateManager converterTemplateManager;
@@ -80,7 +83,7 @@ public class TeilerCore {
         fetchTemplate = false;
       }
       if (fetchTemplate) {
-        template = fetchTemplate(teilerParameters);
+        template = fetchTemplate(teilerParameters, errors);
       }
     }
 
@@ -108,13 +111,14 @@ public class TeilerCore {
 
   }
 
-  private ConverterTemplate fetchTemplate(TeilerParameters teilerParameters)
-      throws TeilerCoreException {
+  private ConverterTemplate fetchTemplate(TeilerParameters teilerParameters, Errors errors) {
     try {
       return converterTemplateManager.fetchConverterTemplate(teilerParameters.template(),
           teilerParameters.contentType());
     } catch (IOException e) {
-      throw new TeilerCoreException("Error deserializing template", e);
+      errors.addError("Error deserializing template");
+      errors.addError(ExceptionUtils.getStackTrace(e));
+      return null;
     }
   }
 
