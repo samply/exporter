@@ -1,7 +1,7 @@
 package de.samply.security;
 
 import de.samply.teiler.TeilerConst;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
 /**

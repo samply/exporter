@@ -33,12 +33,12 @@ public class ApiKeySecurityConfiguration {
   public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
     httpSecurity
-        .antMatcher(TeilerConst.RETRIEVE_QUERY)
+        .securityMatcher(TeilerConst.RETRIEVE_QUERY)
         .csrf().disable()
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
         .addFilter(createApiKeyFilter())
-        .authorizeRequests()
+        .authorizeHttpRequests()
         .anyRequest()
         .authenticated();
 
