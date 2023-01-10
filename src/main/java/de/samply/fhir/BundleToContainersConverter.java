@@ -96,7 +96,7 @@ public class BundleToContainersConverter extends
           (attributeTemplate.isDirectChildFhirPath()) ? resource : relatedResource;
       Resource idResource =
           (attributeTemplate.isDirectChildFhirPath()) ? relatedResource : resource;
-      if (isToBeEvaluated(evalResource, attributeTemplate)) {
+      if (isToBeEvaluated(evalResource, idResource, attributeTemplate)) {
         fhirPathEngine.evaluate(evalResource, expressionNode)
             .forEach(base -> resourceAttributes.add(
                 new ResourceAttribute(idResource, base.toString(), containerTemplate,
@@ -106,19 +106,28 @@ public class BundleToContainersConverter extends
     return resourceAttributes;
   }
 
-  private boolean isToBeEvaluated(Resource resource, AttributeTemplate attributeTemplate) {
+  private boolean isToBeEvaluated(Resource evalResource, Resource idResource,
+      AttributeTemplate attributeTemplate) {
     boolean result = true;
-    if (attributeTemplate.getConditionFhirPath() != null) {
-      ExpressionNode expression = fhirPathEngine.parse(attributeTemplate.getConditionFhirPath());
-      List<Base> baseList = fhirPathEngine.evaluate(resource, expression);
-      if (baseList.size() > 0) {
-        Base base = baseList.get(0);
-        if (base instanceof BooleanType) {
-          result = ((BooleanType) base).booleanValue();
-        }
-      }
+    if (attributeTemplate.getConditionValueFhirPath() != null) {
+      result = evaluateCondition(evalResource, attributeTemplate.getConditionValueFhirPath());
+    }
+    if (attributeTemplate.getConditionIdFhirPath() != null) {
+      result = result && evaluateCondition(idResource, attributeTemplate.getConditionIdFhirPath());
     }
     return result;
+  }
+
+  private boolean evaluateCondition(Resource resource, String conditionFhirPath) {
+    ExpressionNode expression = fhirPathEngine.parse(conditionFhirPath);
+    List<Base> baseList = fhirPathEngine.evaluate(resource, expression);
+    if (baseList.size() > 0) {
+      Base base = baseList.get(0);
+      if (base instanceof BooleanType) {
+        return ((BooleanType) base).booleanValue();
+      }
+    }
+    return true;
   }
 
   private void addResourceAttributeToContainers(Containers containers,

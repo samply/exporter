@@ -1,5 +1,6 @@
 package de.samply.template;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import de.samply.teiler.TeilerConst;
@@ -23,9 +24,13 @@ public class AttributeTemplate {
   @JsonProperty("join-fhir-path")
   private String joinFhirPath;
 
-  @JacksonXmlProperty(isAttribute = true, localName = "condition-fhir-path")
-  @JsonProperty("condition-fhir-path")
-  private String conditionFhirPath;
+  @JacksonXmlProperty(isAttribute = true, localName = "condition-value-fhir-path")
+  @JsonProperty("condition-value-fhir-path")
+  private String conditionValueFhirPath;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "condition-id-fhir-path")
+  @JsonProperty("condition-id-fhir-path")
+  private String conditionIdFhirPath;
 
   @JacksonXmlProperty(isAttribute = true, localName = "anonym")
   @JsonProperty("anonym")
@@ -103,12 +108,12 @@ public class AttributeTemplate {
     this.operation = operation;
   }
 
-  public String getConditionFhirPath() {
-    return conditionFhirPath;
+  public String getConditionValueFhirPath() {
+    return conditionValueFhirPath;
   }
 
-  public void setConditionFhirPath(String conditionFhirPath) {
-    this.conditionFhirPath = conditionFhirPath;
+  public void setConditionValueFhirPath(String conditionValueFhirPath) {
+    this.conditionValueFhirPath = conditionValueFhirPath;
   }
 
   public String getJoinFhirPath() {
@@ -124,8 +129,10 @@ public class AttributeTemplate {
         Arrays.asList(joinFhirPath.trim().split(TeilerConst.RELATED_FHIR_PATH_DELIMITER));
   }
 
+  @JsonIgnore
   private Boolean isDirectJoinFhirPath;
 
+  @JsonIgnore
   public boolean isDirectJoinFhirPath() {
     if (joinFhirPath == null) {
       return false;
@@ -148,10 +155,12 @@ public class AttributeTemplate {
     return isDirectJoinFhirPath;
   }
 
+  @JsonIgnore
   private Boolean isChildFhirPath = null;
 
+  @JsonIgnore
   public boolean isDirectParentFhirPath() {
-    if (joinFhirPath == null){
+    if (joinFhirPath == null) {
       return false;
     }
     if (isChildFhirPath == null) {
@@ -160,6 +169,7 @@ public class AttributeTemplate {
     return !isChildFhirPath && isDirectJoinFhirPath();
   }
 
+  @JsonIgnore
   public boolean isDirectChildFhirPath() {
     if (joinFhirPath == null) {
       return false;
@@ -179,6 +189,12 @@ public class AttributeTemplate {
         : joinFhirPath;
   }
 
+  public String getConditionIdFhirPath() {
+    return conditionIdFhirPath;
+  }
 
+  public void setConditionIdFhirPath(String conditionIdFhirPath) {
+    this.conditionIdFhirPath = conditionIdFhirPath;
+  }
 
 }

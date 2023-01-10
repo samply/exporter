@@ -63,8 +63,8 @@ public class ConverterTemplateManager {
   public ConverterTemplate fetchConverterTemplate(String template, String contentType)
       throws IOException {
     ObjectMapper objectMapper =
-        (contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ? new XmlMapper()
-            : new ObjectMapper();
+        (contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ?
+            new XmlMapper() : new ObjectMapper();
     return objectMapper.readValue(template, ConverterTemplate.class);
   }
 
