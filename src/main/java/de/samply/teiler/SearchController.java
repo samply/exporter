@@ -6,7 +6,9 @@ import de.samply.core.TeilerCoreException;
 import de.samply.core.TeilerParameters;
 import de.samply.utils.ProjectVersion;
 import java.nio.file.Path;
+import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +35,16 @@ public class SearchController {
     return new ResponseEntity<>(projectVersion, HttpStatus.OK);
   }
 
-  @PostMapping(TeilerConst.REQUEST)
-  public String createRequest() {
+  @PostMapping(TeilerConst.CREATE_QUERY)
+  public String createQuery(
+      @RequestParam(name = TeilerConst.QUERY) String query,
+      @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
+      @RequestParam(name = TeilerConst.QUERY_LABEL) String queryLabel,
+      @RequestParam(name = TeilerConst.QUERY_DESCRIPTION) String queryDescription,
+      @RequestParam(name = TeilerConst.QUERY_CONTACT_ID) String queryContactId,
+      @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date queryExpirationDate
+  ) {
     //TODO
     return null;
   }

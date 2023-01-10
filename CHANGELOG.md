@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2022-12-09]
+## [1.0.0 - 2023-01-10]
 ### Added
 - Search Controller
 - Blaze Store Client
@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Java 19
 - Template in request body
 - Attribute condition fhir path
+- Teiler DB
 - Attribute join fhir path
 - Attribute condition id and value fhir path
 - Excel Format
