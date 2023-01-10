@@ -11,7 +11,6 @@ import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
 import org.hl7.fhir.r4.model.Base;
 import org.hl7.fhir.r4.model.BooleanType;
@@ -46,7 +45,7 @@ public class BundleToContainersConverter extends
   public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate,
       BundleToContainersConverterSession session) {
     Containers containers = new Containers();
-    BundleContext context = new BundleContext(bundle, session);
+    BundleContext context = new BundleContext(bundle, session, fhirPathEngine);
     if (converterTemplate != null) {
       converterTemplate.getContainerTemplates()
           .forEach(containerTemplate -> addContainers(bundle, containers, containerTemplate,
@@ -69,11 +68,11 @@ public class BundleToContainersConverter extends
   }
 
   private boolean isSameResourceType(Resource resource, AttributeTemplate attributeTemplate) {
-    return (attributeTemplate.getParentFhirPath() != null &&
-        isSameResourceType(resource, attributeTemplate.getParentFhirPath())) ||
-        (attributeTemplate.getChildFhirPath() != null &&
-            isSameResourceType(resource, attributeTemplate.getChildFhirPath())) ||
-        isSameResourceType(resource, attributeTemplate.getFhirPath());
+    return
+        (attributeTemplate.getJoinFhirPath() != null && attributeTemplate.isDirectJoinFhirPath() &&
+            isSameResourceType(resource,
+                AttributeTemplate.removeChildFhirPathHead(attributeTemplate.getJoinFhirPath()))) ||
+            isSameResourceType(resource, attributeTemplate.getFhirPath());
   }
 
   private boolean isSameResourceType(Resource resource, String fhirPath) {
@@ -91,20 +90,19 @@ public class BundleToContainersConverter extends
       ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate,
       BundleContext context) {
     List<ResourceAttribute> resourceAttributes = new ArrayList<>();
-    Resource relatedResource = fetchRelatedResource(resource, attributeTemplate, context);
-    if (relatedResource != null) {
+    context.fetchRelatedResources(resource, attributeTemplate).forEach(relatedResource -> {
       ExpressionNode expressionNode = fhirPathEngine.parse(attributeTemplate.getFhirPath());
       Resource evalResource =
-          (attributeTemplate.getChildFhirPath() != null) ? relatedResource : resource;
+          (attributeTemplate.isDirectChildFhirPath()) ? resource : relatedResource;
       Resource idResource =
-          (attributeTemplate.getParentFhirPath() != null) ? relatedResource : resource;
+          (attributeTemplate.isDirectChildFhirPath()) ? relatedResource : resource;
       if (isToBeEvaluated(evalResource, attributeTemplate)) {
         fhirPathEngine.evaluate(evalResource, expressionNode)
             .forEach(base -> resourceAttributes.add(
                 new ResourceAttribute(idResource, base.toString(), containerTemplate,
                     attributeTemplate)));
       }
-    }
+    });
     return resourceAttributes;
   }
 
@@ -115,42 +113,10 @@ public class BundleToContainersConverter extends
       List<Base> baseList = fhirPathEngine.evaluate(resource, expression);
       if (baseList.size() > 0) {
         Base base = baseList.get(0);
-        if (base instanceof BooleanType){
+        if (base instanceof BooleanType) {
           result = ((BooleanType) base).booleanValue();
         }
       }
-    }
-    return result;
-  }
-
-  private Resource fetchRelatedResource(Resource currentResource,
-      AttributeTemplate attributeTemplate, BundleContext context) {
-    AtomicReference<Resource> result = new AtomicReference<>(currentResource);
-    if (attributeTemplate.getParentFhirPath() != null) {
-      attributeTemplate.fetchParentFhirPaths().forEach(parentFhirPath -> {
-        if (result.get() != null) {
-          result.set(fetchRelatedResource(result.get(), parentFhirPath, context));
-        }
-      });
-    }
-    if (attributeTemplate.getChildFhirPath() != null) {
-      attributeTemplate.fetchChildFhirPaths().forEach(childFhirPath -> {
-        if (result.get() != null) {
-          result.set(fetchRelatedResource(result.get(), childFhirPath, context));
-        }
-      });
-    }
-    return result.get();
-  }
-
-  private Resource fetchRelatedResource(Resource resource, String parentFhirPath,
-      BundleContext context) {
-    Resource result = null;
-    ExpressionNode expressionNode = fhirPathEngine.parse(parentFhirPath);
-    List<Base> resourceIds = fhirPathEngine.evaluate(resource, expressionNode);
-    if (resourceIds.size() > 0) {
-      String resourceId = resourceIds.get(0).toString();
-      result = context.getResource(resourceId);
     }
     return result;
   }
