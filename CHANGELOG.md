@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Attribute condition fhir path
 - Attribute join fhir path
 - Attribute condition id and value fhir path
+- Excel Format
 
 ### Changed
 - Rename Conversion Template as Converter Template

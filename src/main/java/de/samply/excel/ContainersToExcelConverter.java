@@ -13,9 +13,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
+import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,12 +116,79 @@ public class ContainersToExcelConverter extends ConverterImpl<Containers, Path, 
   @Override
   protected Runnable getSessionCompleter(ConverterTemplate template, Session session) {
     return () -> {
-      try (FileOutputStream fileOutputStream = new FileOutputStream(session.getExcelPath(template).toString())) {
-        session.fetchWorkbook().write(fileOutputStream);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      autoSizeWorkbook(template, session);
+      addAutoFilter(session);
+      freezeHeaderInWorkbook(session);
+      boldHeaderRow(session);
+      writeWorkbook(template, session);
     };
+  }
+
+  private void autoSizeWorkbook(ConverterTemplate template, Session session) {
+    Workbook workbook = session.fetchWorkbook();
+    for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+      Sheet sheet = workbook.getSheetAt(i);
+      Row headerRow = sheet.getRow(0);
+      if (headerRow != null) {
+        for (int j = 0; j <= headerRow.getLastCellNum(); j++) {
+          sheet.autoSizeColumn(j);
+        }
+      }
+    }
+  }
+
+  private void freezeHeaderInWorkbook(Session session) {
+    Workbook workbook = session.fetchWorkbook();
+    for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+      Sheet sheet = workbook.getSheetAt(i);
+      sheet.createFreezePane(0, 1);
+    }
+  }
+
+  private void addAutoFilter(Session session) {
+    Workbook workbook = session.fetchWorkbook();
+    for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+      addAutoFilter(workbook, i);
+    }
+  }
+
+  private void addAutoFilter(Workbook workbook, int sheetIndex) {
+    Sheet sheet = workbook.getSheetAt(sheetIndex);
+    int rowStartIndex = 0;
+    int rowEndIndex = sheet.getLastRowNum();
+
+    int columnStartIndex = 0;
+    int columnEndIndex = sheet.getRow(0).getLastCellNum() - 1;
+
+    CellRangeAddress cra = new CellRangeAddress(rowStartIndex, rowEndIndex, columnStartIndex,
+        columnEndIndex);
+    sheet.setAutoFilter(cra);
+  }
+
+  private void boldHeaderRow(Session session) {
+    Workbook workbook = session.fetchWorkbook();
+    for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+      CellStyle cellStyle = workbook.createCellStyle();
+      Font font = workbook.createFont();
+      font.setBold(true);
+      cellStyle.setFont(font);
+      Row titleRow = workbook.getSheetAt(i).getRow(0);
+
+      for (int j = 0; j < titleRow.getLastCellNum(); j++) {
+        Cell cell = titleRow.getCell(j);
+        cell.setCellStyle(cellStyle);
+      }
+    }
+  }
+
+
+  private void writeWorkbook(ConverterTemplate template, Session session) {
+    try (FileOutputStream fileOutputStream = new FileOutputStream(
+        session.getExcelPath(template).toString())) {
+      session.fetchWorkbook().write(fileOutputStream);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
