@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Attribute condition id and value fhir path
 - Excel Format
 - Flyway config
+- Query entity
 
 ### Changed
 - Rename Conversion Template as Converter Template

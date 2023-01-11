@@ -4,7 +4,6 @@ import de.samply.converter.Converter;
 import de.samply.converter.ConverterManager;
 import de.samply.query.Query;
 import de.samply.query.QueryManager;
-import de.samply.teiler.TeilerConst;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import java.io.IOException;
@@ -16,7 +15,6 @@ import reactor.core.publisher.Flux;
 
 @Component
 public class TeilerCore {
-
 
 
   private ConverterManager converterManager;
@@ -36,7 +34,19 @@ public class TeilerCore {
   public <O> Flux<O> retrieveQuery(TeilerParameters teilerParameters) throws TeilerCoreException {
     Errors errors = new Errors();
 
-    // Fetch query.
+    Query query = checkParametersAndFetchQuery(teilerParameters, errors);
+    ConverterTemplate template = checkParametersAndFetchTemplate(teilerParameters, errors);
+    Converter converter = checkParametersAndFetchConverter(teilerParameters, errors);
+
+    if (errors.isEmpty()) {
+      return retrieve(Flux.just(query.getQuery()), converter, template);
+    } else {
+      throw new TeilerCoreException(errors.getMessages());
+    }
+
+  }
+
+  private Query checkParametersAndFetchQuery(TeilerParameters teilerParameters, Errors errors) {
     Query query = null;
     if (teilerParameters.queryFormat() == null) {
       errors.addError("Query format not provided");
@@ -56,12 +66,22 @@ public class TeilerCore {
       if (teilerParameters.query() == null) {
         errors.addError("Query not defined");
       } else {
-        query = new Query(TeilerConst.DEFAULT_QUERY_ID, teilerParameters.query(),
-            teilerParameters.queryFormat());
+        query = createTemporalQuery(teilerParameters);
       }
     }
+    return query;
 
-    // Fetch template.
+  }
+
+  private Query createTemporalQuery(TeilerParameters teilerParameters) {
+    Query query = new Query();
+    query.setQuery(teilerParameters.query());
+    query.setFormat(teilerParameters.queryFormat());
+    return query;
+  }
+
+  private ConverterTemplate checkParametersAndFetchTemplate(TeilerParameters teilerParameters,
+      Errors errors) {
     ConverterTemplate template = null;
     if (teilerParameters.templateId() != null) {
       template = converterTemplateManager.getConverterTemplate(teilerParameters.templateId());
@@ -86,8 +106,22 @@ public class TeilerCore {
         template = fetchTemplate(teilerParameters, errors);
       }
     }
+    return template;
+  }
 
-    // Fetch converter.
+  private ConverterTemplate fetchTemplate(TeilerParameters teilerParameters, Errors errors) {
+    try {
+      return converterTemplateManager.fetchConverterTemplate(teilerParameters.template(),
+          teilerParameters.contentType());
+    } catch (IOException e) {
+      errors.addError("Error deserializing template");
+      errors.addError(ExceptionUtils.getStackTrace(e));
+      return null;
+    }
+  }
+
+  private Converter checkParametersAndFetchConverter(TeilerParameters teilerParameters,
+      Errors errors) {
     Converter converter = null;
     if (teilerParameters.queryFormat() != null && teilerParameters.outputFormat() != null
         && teilerParameters.sourceId() != null) {
@@ -101,25 +135,7 @@ public class TeilerCore {
                 + "and source id " + teilerParameters.sourceId());
       }
     }
-
-    // Retrieve results if parameters are OK.
-    if (errors.isEmpty()) {
-      return retrieve(Flux.just(query.query()), converter, template);
-    } else {
-      throw new TeilerCoreException(errors.getMessages());
-    }
-
-  }
-
-  private ConverterTemplate fetchTemplate(TeilerParameters teilerParameters, Errors errors) {
-    try {
-      return converterTemplateManager.fetchConverterTemplate(teilerParameters.template(),
-          teilerParameters.contentType());
-    } catch (IOException e) {
-      errors.addError("Error deserializing template");
-      errors.addError(ExceptionUtils.getStackTrace(e));
-      return null;
-    }
+    return converter;
   }
 
   public <I, O> Flux<O> retrieve(Flux<I> inputFlux, Converter<I, O> converter,

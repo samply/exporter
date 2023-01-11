@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS samply;
 
 CREATE TABLE samply.query
 (
-    id              SERIAL PRIMARY KEY,
+    id              SERIAL NOT NULL PRIMARY KEY,
     query           text,
     format          text,
     label           text,
