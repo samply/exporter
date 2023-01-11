@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS samply;
 
-CREATE TABLE query
+CREATE TABLE samply.query
 (
     id              SERIAL PRIMARY KEY,
     query           text,
