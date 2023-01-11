@@ -1,5 +1,9 @@
 package de.samply.teiler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.converter.Format;
 import de.samply.core.TeilerCore;
 import de.samply.core.TeilerCoreException;
@@ -10,6 +14,8 @@ import de.samply.utils.ProjectVersion;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -26,11 +32,15 @@ import reactor.core.publisher.Flux;
 @RestController
 public class TeilerController {
 
+  private ObjectMapper objectMapper = new ObjectMapper()
+      .enable(SerializationFeature.INDENT_OUTPUT)
+      .registerModule(new JavaTimeModule());
   private final String projectVersion = ProjectVersion.getProjectVersion();
   private final TeilerCore teilerCore;
   private TeilerDbService teilerDbService;
 
-  public TeilerController(@Autowired TeilerCore teilerCore, @Autowired TeilerDbService teilerDbService) {
+  public TeilerController(@Autowired TeilerCore teilerCore,
+      @Autowired TeilerDbService teilerDbService) {
     this.teilerCore = teilerCore;
     this.teilerDbService = teilerDbService;
   }
@@ -41,7 +51,7 @@ public class TeilerController {
   }
 
   @PostMapping(TeilerConst.CREATE_QUERY)
-  public String createQuery(
+  public ResponseEntity<String> createQuery(
       @RequestParam(name = TeilerConst.QUERY) String query,
       @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
       @RequestParam(name = TeilerConst.QUERY_LABEL) String queryLabel,
@@ -58,7 +68,58 @@ public class TeilerController {
     tempQuery.setContactId(queryContactId);
     tempQuery.setExpirationDate(queryExpirationDate);
     tempQuery.setCreatedAt(Instant.now());
-    return teilerDbService.saveQueryAndGetQueryId(tempQuery);
+    String queryId = teilerDbService.saveQueryAndGetQueryId(tempQuery);
+
+    return ResponseEntity.ok(queryId);
+  }
+
+  @GetMapping(value = TeilerConst.FETCH_QUERIES, produces = MediaType.APPLICATION_NDJSON_VALUE)
+  public ResponseEntity<String> getQueries(
+      @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
+      @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize
+  ) {
+    if (page == null && pageSize == null) {
+      return fetchAllEntities();
+    } else if (page != null && pageSize != null) {
+      return fetchAllEntities(page, pageSize);
+    } else {
+      return ResponseEntity.badRequest()
+          .body((page == null) ? "Page not provided" : "Page size not provided");
+    }
+  }
+
+  private ResponseEntity fetchAllEntities() {
+    try {
+      return fetchAllEntitiesWithoutExceptionManagement();
+    } catch (JsonProcessingException e) {
+      return createInternalServerError(e);
+    }
+  }
+
+  private ResponseEntity createInternalServerError(Exception e) {
+    return ResponseEntity.internalServerError().body(ExceptionUtils.getStackTrace(e));
+  }
+
+  private ResponseEntity fetchAllEntitiesWithoutExceptionManagement()
+      throws JsonProcessingException {
+    List<Query> queries = teilerDbService.fetchAllQueries();
+    String result = objectMapper.writeValueAsString(queries);
+    return ResponseEntity.ok(result);
+  }
+
+  private ResponseEntity fetchAllEntities(int page, int pageSize) {
+    try {
+      return fetchAllEntitiesWithoutExceptionManagement(page, pageSize);
+    } catch (JsonProcessingException e) {
+      return createInternalServerError(e);
+    }
+  }
+
+  private ResponseEntity fetchAllEntitiesWithoutExceptionManagement(int page, int pageSize)
+      throws JsonProcessingException {
+    List<Query> queries = teilerDbService.fetchAllQueries(page, pageSize);
+    String result = objectMapper.writeValueAsString(queries);
+    return ResponseEntity.ok(result);
   }
 
   @GetMapping(value = TeilerConst.RESPONSE, produces = MediaType.APPLICATION_NDJSON_VALUE)

@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Flyway config
 - Query entity
 - JPA config (Hibernate)
+- Get all queries (paging)
 
 ### Changed
 - Rename Conversion Template as Converter Template

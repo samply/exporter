@@ -43,7 +43,7 @@
     <ucum.version>1.0.3</ucum.version>
     <org.hl7.fhir.r4.version>5.6.84</org.hl7.fhir.r4.version>
     <caffeine.version>3.1.2</caffeine.version>
-    <jackson-dataformat-xml.version>2.14.1</jackson-dataformat-xml.version>
+    <jackson.version>2.14.1</jackson.version>
     <reactor-core.version>3.5.0</reactor-core.version>
     <guava.version>31.1-jre</guava.version>
     <maven-model.version>3.8.6</maven-model.version>
@@ -129,17 +129,16 @@
       <version>${postgresql.version}</version>
     </dependency>
 
-
     <!-- Other dependencies -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
       <version>${caffeine.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-xml</artifactId>
-      <version>${jackson-dataformat-xml.version}</version>
     </dependency>
     <dependency>
       <groupId>io.projectreactor</groupId>
