@@ -9,5 +9,6 @@ CREATE TABLE samply.query
     description     text,
     contact_id      text,
     expiration_date date,
+    created_at      timestamp,
     archived_at     timestamp
 );

@@ -4,9 +4,11 @@ import de.samply.converter.Format;
 import de.samply.core.TeilerCore;
 import de.samply.core.TeilerCoreException;
 import de.samply.core.TeilerParameters;
+import de.samply.db.crud.TeilerDbService;
+import de.samply.db.model.Query;
 import de.samply.utils.ProjectVersion;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -21,13 +23,15 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 @RestController
-public class SearchController {
+public class TeilerController {
 
   private final String projectVersion = ProjectVersion.getProjectVersion();
   private final TeilerCore teilerCore;
+  private TeilerDbService teilerDbService;
 
-  public SearchController(@Autowired TeilerCore teilerCore) {
+  public TeilerController(@Autowired TeilerCore teilerCore, @Autowired TeilerDbService teilerDbService) {
     this.teilerCore = teilerCore;
+    this.teilerDbService = teilerDbService;
   }
 
   @GetMapping(value = TeilerConst.INFO)
@@ -43,10 +47,17 @@ public class SearchController {
       @RequestParam(name = TeilerConst.QUERY_DESCRIPTION) String queryDescription,
       @RequestParam(name = TeilerConst.QUERY_CONTACT_ID) String queryContactId,
       @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE)
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date queryExpirationDate
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate
   ) {
-    //TODO
-    return null;
+    Query tempQuery = new Query();
+    tempQuery.setQuery(query);
+    tempQuery.setFormat(queryFormat);
+    tempQuery.setLabel(queryLabel);
+    tempQuery.setDescription(queryDescription);
+    tempQuery.setContactId(queryContactId);
+    tempQuery.setExpirationDate(queryExpirationDate);
+    tempQuery.setCreatedAt(LocalDate.now());
+    return teilerDbService.saveQueryAndGetQueryId(tempQuery);
   }
 
   @GetMapping(value = TeilerConst.RESPONSE, produces = MediaType.APPLICATION_NDJSON_VALUE)

@@ -63,5 +63,6 @@ public class TeilerConst {
   public static final Integer FIRST_ANONYM_ID = 1;
   public static final String DEFAULT_ANONYM_ELEMENT = "VAL";
   public static final String CHILD_FHIR_PATH_HEAD = "/";
+  public static final String PERSISTENCE_UNIT_NAME = "TeilerDB";
 
 }

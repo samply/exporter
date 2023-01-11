@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Excel Format
 - Flyway config
 - Query entity
+- JPA config (Hibernate)
 
 ### Changed
 - Rename Conversion Template as Converter Template

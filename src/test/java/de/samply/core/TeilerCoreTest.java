@@ -4,9 +4,10 @@ import de.samply.EnvironmentTestUtils;
 import de.samply.converter.ConverterManager;
 import de.samply.converter.Format;
 import de.samply.csv.ContainersToCsvConverter;
+import de.samply.db.repository.QueryRepository;
 import de.samply.excel.ContainersToExcelConverter;
 import de.samply.fhir.BundleToContainersConverter;
-import de.samply.query.QueryManager;
+import de.samply.db.crud.TeilerDbService;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
@@ -41,9 +42,10 @@ class TeilerCoreTest {
         containersToCsvConverter, containersToExcelConverter, converterXmlApplicationContextPath);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager(
         templateDirectory);
-    QueryManager queryManager = new QueryManager();
+    QueryRepository queryRepository = null;
+    TeilerDbService teilerDbService = new TeilerDbService(queryRepository);
 
-    teilerCore = new TeilerCore(converterManager, converterTemplateManager, queryManager);
+    teilerCore = new TeilerCore(converterManager, converterTemplateManager, teilerDbService);
   }
 
   @Test

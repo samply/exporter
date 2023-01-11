@@ -1,4 +1,4 @@
-package de.samply.query;
+package de.samply.db.model;
 
 import de.samply.converter.Format;
 import jakarta.persistence.Column;
@@ -7,12 +7,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "query")
-public class Query {
+@Table(name = "query", schema = "samply")
+public class Query implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,10 +35,13 @@ public class Query {
   private String contactId;
 
   @Column(name = "expiration_date")
-  private Date expirationDate;
+  private LocalDate expirationDate;
+
+  @Column(name = "created_at")
+  private LocalDate createdAt;
 
   @Column(name = "archived_at")
-  private Timestamp archivedAt;
+  private Instant archivedAt;
 
   public Long getId() {
     return id;
@@ -87,20 +91,28 @@ public class Query {
     this.contactId = contactId;
   }
 
-  public Date getExpirationDate() {
+  public LocalDate getExpirationDate() {
     return expirationDate;
   }
 
-  public void setExpirationDate(Date expirationDate) {
+  public void setExpirationDate(LocalDate expirationDate) {
     this.expirationDate = expirationDate;
   }
 
-  public Timestamp getArchivedAt() {
+  public Instant getArchivedAt() {
     return archivedAt;
   }
 
-  public void setArchivedAt(Timestamp archivedAt) {
+  public void setArchivedAt(Instant archivedAt) {
     this.archivedAt = archivedAt;
+  }
+
+  public LocalDate getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(LocalDate createdAt) {
+    this.createdAt = createdAt;
   }
 
 }

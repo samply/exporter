@@ -2,8 +2,8 @@ package de.samply.core;
 
 import de.samply.converter.Converter;
 import de.samply.converter.ConverterManager;
-import de.samply.query.Query;
-import de.samply.query.QueryManager;
+import de.samply.db.model.Query;
+import de.samply.db.crud.TeilerDbService;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import java.io.IOException;
@@ -19,15 +19,15 @@ public class TeilerCore {
 
   private ConverterManager converterManager;
   private final ConverterTemplateManager converterTemplateManager;
-  private final QueryManager queryManager;
+  private final TeilerDbService teilerDbService;
 
   public TeilerCore(
       @Autowired ConverterManager converterManager,
       @Autowired ConverterTemplateManager converterTemplateManager,
-      @Autowired QueryManager queryManager
+      @Autowired TeilerDbService teilerDbService
   ) {
     this.converterManager = converterManager;
-    this.queryManager = queryManager;
+    this.teilerDbService = teilerDbService;
     this.converterTemplateManager = converterTemplateManager;
   }
 
@@ -58,7 +58,7 @@ public class TeilerCore {
       errors.addError("Source ID not provided");
     }
     if (teilerParameters.queryId() != null) {
-      query = queryManager.fetchQuery(teilerParameters.queryId());
+      query = teilerDbService.fetchQuery(teilerParameters.queryId());
       if (query == null) {
         errors.addError("Query " + teilerParameters.queryId() + " not found");
       }
