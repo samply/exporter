@@ -37,23 +37,26 @@ public class TeilerConst {
           + BOTTOM_SV;
   public final static String TEILER_API_KEY_SV = HEAD_SV + TEILER_API_KEY + BOTTOM_SV;
 
-    // REST Paths
-    public static final String INFO = "/info";
-    public static final String CREATE_QUERY = "/create-query";
-    public static final String RESPONSE = "/response";
-    public static final String RETRIEVE_QUERY = "/retrieve-query";
-    public static final String PAGE = "page";
-    public static final String STATS = "stats";
-    public static final String QUERY_ID = "query-id";
-    public static final String QUERY = "query";
-    public static final String QUERY_LABEL = "query-label";
-    public static final String QUERY_DESCRIPTION = "query-description";
-    public static final String QUERY_CONTACT_ID = "query-contact-id";
-    public static final String QUERY_EXPIRATION_DATE = "query-expiration-date";
-    public static final String SOURCE_ID = "source-id";
-    public static final String TEMPLATE_ID = "template-id";
-    public static final String QUERY_FORMAT = "query-format";
-    public static final String OUTPUT_FORMAT = "output-format";
+  // REST Paths
+  public static final String INFO = "/info";
+  public static final String CREATE_QUERY = "/create-query";
+  public static final String RESPONSE = "/response";
+  public static final String RETRIEVE_QUERY = "/retrieve-query";
+  public static final String[] URL_PATHS = new String[]{CREATE_QUERY, RETRIEVE_QUERY};
+
+  // REST Parameters
+  public static final String PAGE = "page";
+  public static final String STATS = "stats";
+  public static final String QUERY_ID = "query-id";
+  public static final String QUERY = "query";
+  public static final String QUERY_LABEL = "query-label";
+  public static final String QUERY_DESCRIPTION = "query-description";
+  public static final String QUERY_CONTACT_ID = "query-contact-id";
+  public static final String QUERY_EXPIRATION_DATE = "query-expiration-date";
+  public static final String SOURCE_ID = "source-id";
+  public static final String TEMPLATE_ID = "template-id";
+  public static final String QUERY_FORMAT = "query-format";
+  public static final String OUTPUT_FORMAT = "output-format";
 
   // Other constants
   public static final String DEFAULT_CSV_SEPARATOR = "\t";
@@ -63,6 +66,6 @@ public class TeilerConst {
   public static final Integer FIRST_ANONYM_ID = 1;
   public static final String DEFAULT_ANONYM_ELEMENT = "VAL";
   public static final String CHILD_FHIR_PATH_HEAD = "/";
-  public static final String PERSISTENCE_UNIT_NAME = "TeilerDB";
+
 
 }

@@ -3,6 +3,8 @@ package de.samply.db.model;
 import de.samply.converter.Format;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,6 +25,7 @@ public class Query implements Serializable {
   private String query;
 
   @Column(name = "format")
+  @Enumerated(EnumType.STRING)
   private Format format;
 
   @Column(name = "label")
@@ -38,7 +41,7 @@ public class Query implements Serializable {
   private LocalDate expirationDate;
 
   @Column(name = "created_at")
-  private LocalDate createdAt;
+  private Instant createdAt;
 
   @Column(name = "archived_at")
   private Instant archivedAt;
@@ -107,11 +110,11 @@ public class Query implements Serializable {
     this.archivedAt = archivedAt;
   }
 
-  public LocalDate getCreatedAt() {
+  public Instant getCreatedAt() {
     return createdAt;
   }
 
-  public void setCreatedAt(LocalDate createdAt) {
+  public void setCreatedAt(Instant createdAt) {
     this.createdAt = createdAt;
   }
 

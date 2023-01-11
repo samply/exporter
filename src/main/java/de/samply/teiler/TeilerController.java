@@ -8,6 +8,7 @@ import de.samply.db.crud.TeilerDbService;
 import de.samply.db.model.Query;
 import de.samply.utils.ProjectVersion;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -56,7 +57,7 @@ public class TeilerController {
     tempQuery.setDescription(queryDescription);
     tempQuery.setContactId(queryContactId);
     tempQuery.setExpirationDate(queryExpirationDate);
-    tempQuery.setCreatedAt(LocalDate.now());
+    tempQuery.setCreatedAt(Instant.now());
     return teilerDbService.saveQueryAndGetQueryId(tempQuery);
   }
 
