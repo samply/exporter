@@ -21,7 +21,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
-import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,9 +55,13 @@ public class ContainersToExcelConverter extends ConverterImpl<Containers, Path, 
 
   @Override
   protected Flux<Path> convert(Containers input, ConverterTemplate template, Session session) {
-    Flux<Path> pathFlux = Flux.just(session.getExcelPath(template));
-    addConvertersToWorkbook(input, template, session);
-    return pathFlux;
+    return Flux.generate(
+        sync -> {
+          addConvertersToWorkbook(input, template, session);
+          sync.next(session.getExcelPath(template));
+          sync.complete();
+        }
+    );
   }
 
   private void addConvertersToWorkbook(Containers input, ConverterTemplate template,

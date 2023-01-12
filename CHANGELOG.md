@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Query entity
 - JPA config (Hibernate)
 - Get all queries (paging)
+- Query Execution and Query Execution File
 
 ### Changed
 - Rename Conversion Template as Converter Template

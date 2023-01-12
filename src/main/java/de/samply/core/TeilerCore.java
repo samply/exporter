@@ -7,6 +7,7 @@ import de.samply.db.crud.TeilerDbService;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import java.io.IOException;
+import java.time.Instant;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -31,7 +32,8 @@ public class TeilerCore {
     this.converterTemplateManager = converterTemplateManager;
   }
 
-  public <O> Flux<O> retrieveQuery(TeilerParameters teilerParameters) throws TeilerCoreException {
+  public TeilerCoreParameters extractParameters(TeilerParameters teilerParameters)
+      throws TeilerCoreException {
     Errors errors = new Errors();
 
     Query query = checkParametersAndFetchQuery(teilerParameters, errors);
@@ -39,11 +41,16 @@ public class TeilerCore {
     Converter converter = checkParametersAndFetchConverter(teilerParameters, errors);
 
     if (errors.isEmpty()) {
-      return retrieve(Flux.just(query.getQuery()), converter, template);
+      return new TeilerCoreParameters(query, template, converter);
     } else {
       throw new TeilerCoreException(errors.getMessages());
     }
+  }
 
+  public <O> Flux<O> retrieveQuery(TeilerCoreParameters teilerCoreParameters)
+      throws TeilerCoreException {
+    return retrieve(Flux.just(teilerCoreParameters.query().getQuery()), teilerCoreParameters.converter(),
+        teilerCoreParameters.template());
   }
 
   private Query checkParametersAndFetchQuery(TeilerParameters teilerParameters, Errors errors) {
@@ -66,17 +73,24 @@ public class TeilerCore {
       if (teilerParameters.query() == null) {
         errors.addError("Query not defined");
       } else {
-        query = createTemporalQuery(teilerParameters);
+        query = createNewQuery(teilerParameters);
       }
     }
     return query;
 
   }
 
-  private Query createTemporalQuery(TeilerParameters teilerParameters) {
+  private Query createNewQuery(TeilerParameters teilerParameters) {
     Query query = new Query();
     query.setQuery(teilerParameters.query());
     query.setFormat(teilerParameters.queryFormat());
+    query.setCreatedAt(Instant.now());
+    query.setLabel(teilerParameters.queryLabel());
+    query.setDescription(teilerParameters.queryDescription());
+    query.setContactId(teilerParameters.queryContactId());
+    query.setExpirationDate(teilerParameters.queryExpirationDate());
+    Long queryId = teilerDbService.saveQueryAndGetQueryId(query);
+    query.setId(queryId);
     return query;
   }
 

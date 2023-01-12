@@ -4,6 +4,8 @@ import de.samply.EnvironmentTestUtils;
 import de.samply.converter.ConverterManager;
 import de.samply.converter.Format;
 import de.samply.csv.ContainersToCsvConverter;
+import de.samply.db.repository.QueryExecutionFileRepository;
+import de.samply.db.repository.QueryExecutionRepository;
 import de.samply.db.repository.QueryRepository;
 import de.samply.excel.ContainersToExcelConverter;
 import de.samply.fhir.BundleToContainersConverter;
@@ -42,8 +44,12 @@ class TeilerCoreTest {
         containersToCsvConverter, containersToExcelConverter, converterXmlApplicationContextPath);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager(
         templateDirectory);
+    //TODO
     QueryRepository queryRepository = null;
-    TeilerDbService teilerDbService = new TeilerDbService(queryRepository);
+    QueryExecutionRepository queryExecutionRepository = null;
+    QueryExecutionFileRepository queryExecutionFileRepository = null;
+    TeilerDbService teilerDbService = new TeilerDbService(queryRepository, queryExecutionRepository,
+        queryExecutionFileRepository);
 
     teilerCore = new TeilerCore(converterManager, converterTemplateManager, teilerDbService);
   }
@@ -52,7 +58,8 @@ class TeilerCoreTest {
   void retrieveByQueryId() throws TeilerCoreException {
     TeilerParameters teilerParameters = new TeilerParameters(null, "Patient", sourceId,
         converterTemplateId, null, null, Format.FHIR_QUERY, Format.CSV);
-    Flux<Path> resultFlux = teilerCore.retrieveQuery(teilerParameters);
+    TeilerCoreParameters teilerCoreParameters = teilerCore.extractParameters(teilerParameters);
+    Flux<Path> resultFlux = teilerCore.retrieveQuery(teilerCoreParameters);
     resultFlux.blockLast();
   }
 
