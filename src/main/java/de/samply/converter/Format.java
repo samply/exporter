@@ -41,4 +41,8 @@ public enum Format {
     return isQuery;
   }
 
+  public boolean isPath(){
+    return zClass == Path.class;
+  }
+
 }

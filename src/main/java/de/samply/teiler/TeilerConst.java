@@ -41,10 +41,11 @@ public class TeilerConst {
   public static final String INFO = "/info";
   public static final String CREATE_QUERY = "/create-query";
   public static final String FETCH_QUERIES = "/queries";
+  public static final String REQUEST = "/request";
   public static final String RESPONSE = "/response";
   public static final String RETRIEVE_QUERY = "/retrieve-query";
-  public static final String[] URL_PATHS = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
-      FETCH_QUERIES};
+  public static final String[] REST_PATHS = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
+      FETCH_QUERIES, REQUEST, RESPONSE};
 
   // REST Parameters
   public static final String PAGE = "page";

@@ -7,15 +7,23 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.converter.Format;
 import de.samply.core.TeilerCore;
 import de.samply.core.TeilerCoreException;
+import de.samply.core.TeilerCoreParameters;
 import de.samply.core.TeilerParameters;
 import de.samply.db.crud.TeilerDbService;
 import de.samply.db.model.Query;
+import de.samply.db.model.QueryExecution;
+import de.samply.db.model.QueryExecutionFile;
+import de.samply.db.model.Status;
+import de.samply.teiler.response.entity.CreateQueryResponseEntity;
+import de.samply.teiler.response.entity.RequestResponseEntity;
 import de.samply.utils.ProjectVersion;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -31,6 +39,8 @@ import reactor.core.publisher.Flux;
 
 @RestController
 public class TeilerController {
+
+  private final static Logger logger = LoggerFactory.getLogger(TeilerController.class);
 
   private ObjectMapper objectMapper = new ObjectMapper()
       .enable(SerializationFeature.INDENT_OUTPUT)
@@ -50,14 +60,15 @@ public class TeilerController {
     return new ResponseEntity<>(projectVersion, HttpStatus.OK);
   }
 
-  @PostMapping(TeilerConst.CREATE_QUERY)
+  //TODO: Add , produces = MediaType.APPLICATION_JSON_VALUE
+  @PostMapping(value = TeilerConst.CREATE_QUERY)
   public ResponseEntity<String> createQuery(
       @RequestParam(name = TeilerConst.QUERY) String query,
       @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
       @RequestParam(name = TeilerConst.QUERY_LABEL) String queryLabel,
       @RequestParam(name = TeilerConst.QUERY_DESCRIPTION) String queryDescription,
       @RequestParam(name = TeilerConst.QUERY_CONTACT_ID) String queryContactId,
-      @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE)
+      @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE, required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate
   ) {
     Query tempQuery = new Query();
@@ -68,12 +79,24 @@ public class TeilerController {
     tempQuery.setContactId(queryContactId);
     tempQuery.setExpirationDate(queryExpirationDate);
     tempQuery.setCreatedAt(Instant.now());
-    String queryId = teilerDbService.saveQueryAndGetQueryId(tempQuery);
+    Long queryId = teilerDbService.saveQueryAndGetQueryId(tempQuery);
 
-    return ResponseEntity.ok(queryId);
+    try {
+      return ResponseEntity.ok(createCreateQueryResponseEntity(queryId));
+    } catch (TeilerControllerException e) {
+      return createInternalServerError(e);
+    }
   }
 
-  @GetMapping(value = TeilerConst.FETCH_QUERIES, produces = MediaType.APPLICATION_NDJSON_VALUE)
+  private String createCreateQueryResponseEntity(Long queryId) throws TeilerControllerException {
+    try {
+      return objectMapper.writeValueAsString(new CreateQueryResponseEntity(queryId));
+    } catch (JsonProcessingException e) {
+      throw new TeilerControllerException(e);
+    }
+  }
+
+  @GetMapping(value = TeilerConst.FETCH_QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getQueries(
       @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
       @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize
@@ -122,6 +145,81 @@ public class TeilerController {
     return ResponseEntity.ok(result);
   }
 
+  @PostMapping(value = TeilerConst.REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> postRequest(
+      @RequestParam(name = TeilerConst.QUERY_ID, required = false) Long queryId,
+      @RequestParam(name = TeilerConst.QUERY, required = false) String query,
+      @RequestParam(name = TeilerConst.SOURCE_ID) String sourceId,
+      @RequestParam(name = TeilerConst.QUERY_FORMAT, required = false) Format queryFormat,
+      @RequestParam(name = TeilerConst.QUERY_LABEL, required = false) String queryLabel,
+      @RequestParam(name = TeilerConst.QUERY_DESCRIPTION, required = false) String queryDescription,
+      @RequestParam(name = TeilerConst.QUERY_CONTACT_ID, required = false) String queryContactId,
+      @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE, required = false)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
+      @RequestParam(name = TeilerConst.OUTPUT_FORMAT) Format outputFormat,
+      @RequestParam(name = TeilerConst.TEMPLATE_ID, required = false) String templateId,
+      @RequestHeader(name = "Content-Type", required = false) String contentType,
+      @RequestBody(required = false) String template
+  ) {
+    if (!outputFormat.isPath()) {
+      return ResponseEntity.badRequest().body("Output format is not a file");
+    }
+    TeilerCoreParameters teilerCoreParameters = null;
+    try {
+      teilerCoreParameters = teilerCore.extractParameters(
+          new TeilerParameters(queryId, query, sourceId, templateId, template, contentType,
+              queryFormat, queryLabel, queryDescription, queryContactId, queryExpirationDate,
+              outputFormat));
+    } catch (TeilerCoreException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+    Long queryExecutionId = teilerDbService.saveQueryExecutionAndGetExecutionId(
+        createQueryExecution(teilerCoreParameters));
+    final TeilerCoreParameters tempTeilerCoreParameters = teilerCoreParameters;
+    new Thread(() -> generateFiles(tempTeilerCoreParameters, queryExecutionId)).start();
+    try {
+      return ResponseEntity.ok().body(createRequestResponseEntity(queryExecutionId));
+    } catch (TeilerControllerException e) {
+      return createInternalServerError(e);
+    }
+  }
+
+  private void generateFiles (TeilerCoreParameters teilerCoreParameters, Long queryExecutionId){
+    try {
+      teilerCore.retrieveQuery(teilerCoreParameters).subscribe(path ->
+          teilerDbService.saveQueryExecutionFile(createQueryExecutionFile(queryExecutionId,
+              ((Path) path).toString())));
+      teilerDbService.setQueryExecutionOk(queryExecutionId);
+    } catch (TeilerCoreException e) {
+      teilerDbService.setQueryExecutionError(queryExecutionId);
+      logger.error(ExceptionUtils.getStackTrace(e));
+    }
+  }
+
+  private String createRequestResponseEntity(Long queryExecutionId)
+      throws TeilerControllerException {
+    try {
+      return objectMapper.writeValueAsString(new RequestResponseEntity(queryExecutionId));
+    } catch (JsonProcessingException e) {
+      throw new TeilerControllerException(e);
+    }
+  }
+
+  private QueryExecution createQueryExecution(TeilerCoreParameters teilerCoreParameters) {
+    QueryExecution queryExecution = new QueryExecution();
+    queryExecution.setQueryId(teilerCoreParameters.query().getId());
+    queryExecution.setExecutedAt(Instant.now());
+    queryExecution.setStatus(Status.RUNNING);
+    return queryExecution;
+  }
+
+  private QueryExecutionFile createQueryExecutionFile(Long queryExecutionId, String filePath) {
+    QueryExecutionFile queryExecutionFile = new QueryExecutionFile();
+    queryExecutionFile.setQueryExecutionId(queryExecutionId);
+    queryExecutionFile.setFilePath(filePath);
+    return queryExecutionFile;
+  }
+
   @GetMapping(value = TeilerConst.RESPONSE, produces = MediaType.APPLICATION_NDJSON_VALUE)
   public Flux<Path> getResponse() {
     //TODO
@@ -130,19 +228,26 @@ public class TeilerController {
 
   @GetMapping(value = TeilerConst.RETRIEVE_QUERY, produces = MediaType.APPLICATION_NDJSON_VALUE)
   public Flux<Path> retrieveQuery(
-      @RequestParam(name = TeilerConst.QUERY_ID, required = false) String queryId,
+      @RequestParam(name = TeilerConst.QUERY_ID, required = false) Long queryId,
       @RequestParam(name = TeilerConst.QUERY, required = false) String query,
       @RequestParam(name = TeilerConst.SOURCE_ID) String sourceId,
       @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
       @RequestParam(name = TeilerConst.OUTPUT_FORMAT) Format outputFormat,
+      @RequestParam(name = TeilerConst.QUERY_LABEL, required = false) String queryLabel,
+      @RequestParam(name = TeilerConst.QUERY_DESCRIPTION, required = false) String queryDescription,
+      @RequestParam(name = TeilerConst.QUERY_CONTACT_ID, required = false) String queryContactId,
+      @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE, required = false)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
       @RequestParam(name = TeilerConst.TEMPLATE_ID, required = false) String templateId,
       @RequestHeader(name = "Content-Type", required = false) String contentType,
       @RequestBody(required = false) String template
   ) {
     try {
-      return teilerCore.retrieveQuery(
+      TeilerCoreParameters teilerCoreParameters = teilerCore.extractParameters(
           new TeilerParameters(queryId, query, sourceId, templateId, template, contentType,
-              queryFormat, outputFormat));
+              queryFormat, queryLabel, queryDescription, queryContactId, queryExpirationDate,
+              outputFormat));
+      return teilerCore.retrieveQuery(teilerCoreParameters);
     } catch (TeilerCoreException e) {
       //TODO
       throw new RuntimeException(e);
