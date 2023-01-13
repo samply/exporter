@@ -50,6 +50,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Get all queries (paging)
 - Query Execution and Query Execution File
 - Download files (also as zip)
+- Clean Temp and Write Files Jobs
+- GET active, error and archived inquiries
 
 ### Changed
 - Rename Conversion Template as Converter Template

@@ -31,6 +31,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,8 +79,7 @@ public class TeilerController {
     return new ResponseEntity<>(projectVersion, HttpStatus.OK);
   }
 
-  //TODO: Add , produces = MediaType.APPLICATION_JSON_VALUE
-  @PostMapping(value = TeilerConst.CREATE_QUERY)
+  @PostMapping(value = TeilerConst.CREATE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> createQuery(
       @RequestParam(name = TeilerConst.QUERY) String query,
       @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
@@ -113,53 +114,75 @@ public class TeilerController {
     }
   }
 
-  @GetMapping(value = TeilerConst.FETCH_QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> getQueries(
+  @GetMapping(value = TeilerConst.QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> fetchQueries(
       @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
       @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize
   ) {
-    if (page == null && pageSize == null) {
-      return fetchAllEntities();
-    } else if (page != null && pageSize != null) {
-      return fetchAllEntities(page, pageSize);
-    } else {
-      return ResponseEntity.badRequest()
-          .body((page == null) ? "Page not provided" : "Page size not provided");
-    }
+    return convertToResponseEntity(page, pageSize, teilerDbService::fetchAllQueries,
+        teilerDbService::fetchAllQueries);
   }
 
-  private ResponseEntity fetchAllEntities() {
-    try {
-      return fetchAllEntitiesWithoutExceptionManagement();
-    } catch (JsonProcessingException e) {
-      return createInternalServerError(e);
-    }
+  @GetMapping(value = TeilerConst.ACTIVE_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> fetchActiveInquiries(
+      @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
+      @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize
+  ) {
+    return convertToResponseEntity(page, pageSize, teilerDbService::fetchActiveInquiries,
+        teilerDbService::fetchActiveInquiries);
+  }
+
+  @GetMapping(value = TeilerConst.ARCHIVED_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> fetchArchivedInquiries(
+      @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
+      @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize
+  ) {
+    return convertToResponseEntity(page, pageSize, teilerDbService::fetchArchivedInquiries,
+        teilerDbService::fetchArchivedInquiries);
+  }
+
+  @GetMapping(value = TeilerConst.ERROR_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> fetchErrorInquiries(
+      @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
+      @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize
+  ) {
+    return convertToResponseEntity(page, pageSize, teilerDbService::fetchErrorInquiries,
+        teilerDbService::fetchErrorInquiries);
   }
 
   private ResponseEntity createInternalServerError(Exception e) {
     return ResponseEntity.internalServerError().body(ExceptionUtils.getStackTrace(e));
   }
 
-  private ResponseEntity fetchAllEntitiesWithoutExceptionManagement()
-      throws JsonProcessingException {
-    List<Query> queries = teilerDbService.fetchAllQueries();
-    String result = objectMapper.writeValueAsString(queries);
-    return ResponseEntity.ok(result);
+  private <T> ResponseEntity convertToResponseEntity(Integer page, Integer pageSize,
+      Supplier<T> supplier,
+      BiFunction<Integer, Integer, T> pagePageSizeBifunction) {
+    if (page == null && pageSize == null) {
+      return convertToResponseEntity(supplier);
+    } else if (page != null && pageSize != null) {
+      return convertToResponseEntity(page, pageSize, pagePageSizeBifunction);
+    } else {
+      return ResponseEntity.badRequest()
+          .body((page == null) ? "Page not provided" : "Page size not provided");
+    }
   }
 
-  private ResponseEntity fetchAllEntities(int page, int pageSize) {
+  private <T> ResponseEntity convertToResponseEntity(Supplier<T> supplier) {
     try {
-      return fetchAllEntitiesWithoutExceptionManagement(page, pageSize);
+      return ResponseEntity.ok(objectMapper.writeValueAsString(supplier.get()));
     } catch (JsonProcessingException e) {
       return createInternalServerError(e);
     }
   }
 
-  private ResponseEntity fetchAllEntitiesWithoutExceptionManagement(int page, int pageSize)
-      throws JsonProcessingException {
-    List<Query> queries = teilerDbService.fetchAllQueries(page, pageSize);
-    String result = objectMapper.writeValueAsString(queries);
-    return ResponseEntity.ok(result);
+  private <T> ResponseEntity convertToResponseEntity(int page, int pageSize,
+      BiFunction<Integer, Integer, T> pagePageSizeBifunction) {
+    try {
+      return ResponseEntity.ok(
+          objectMapper.writeValueAsString(pagePageSizeBifunction.apply(page, pageSize)));
+    } catch (JsonProcessingException e) {
+      return createInternalServerError(e);
+    }
   }
 
   @PostMapping(value = TeilerConst.REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -167,7 +190,6 @@ public class TeilerController {
       HttpServletRequest httpServletRequest,
       @RequestParam(name = TeilerConst.QUERY_ID, required = false) Long queryId,
       @RequestParam(name = TeilerConst.QUERY, required = false) String query,
-      @RequestParam(name = TeilerConst.SOURCE_ID) String sourceId,
       @RequestParam(name = TeilerConst.QUERY_FORMAT, required = false) Format queryFormat,
       @RequestParam(name = TeilerConst.QUERY_LABEL, required = false) String queryLabel,
       @RequestParam(name = TeilerConst.QUERY_DESCRIPTION, required = false) String queryDescription,
@@ -185,9 +207,8 @@ public class TeilerController {
     TeilerCoreParameters teilerCoreParameters = null;
     try {
       teilerCoreParameters = teilerCore.extractParameters(
-          new TeilerParameters(queryId, query, sourceId, templateId, template, contentType,
-              queryFormat, queryLabel, queryDescription, queryContactId, queryExpirationDate,
-              outputFormat));
+          new TeilerParameters(queryId, query, templateId, template, contentType, queryFormat,
+              queryLabel, queryDescription, queryContactId, queryExpirationDate, outputFormat));
     } catch (TeilerCoreException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }
@@ -245,6 +266,8 @@ public class TeilerController {
     queryExecution.setQueryId(teilerCoreParameters.query().getId());
     queryExecution.setExecutedAt(Instant.now());
     queryExecution.setStatus(Status.RUNNING);
+    queryExecution.setOutputFormat(teilerCoreParameters.converter().getOutputFormat());
+    queryExecution.setTemplateId(teilerCoreParameters.template().getId());
     return queryExecution;
   }
 
@@ -328,7 +351,6 @@ public class TeilerController {
   public Flux<Path> retrieveQuery(
       @RequestParam(name = TeilerConst.QUERY_ID, required = false) Long queryId,
       @RequestParam(name = TeilerConst.QUERY, required = false) String query,
-      @RequestParam(name = TeilerConst.SOURCE_ID) String sourceId,
       @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
       @RequestParam(name = TeilerConst.OUTPUT_FORMAT) Format outputFormat,
       @RequestParam(name = TeilerConst.QUERY_LABEL, required = false) String queryLabel,
@@ -342,9 +364,8 @@ public class TeilerController {
   ) {
     try {
       TeilerCoreParameters teilerCoreParameters = teilerCore.extractParameters(
-          new TeilerParameters(queryId, query, sourceId, templateId, template, contentType,
-              queryFormat, queryLabel, queryDescription, queryContactId, queryExpirationDate,
-              outputFormat));
+          new TeilerParameters(queryId, query, templateId, template, contentType, queryFormat,
+              queryLabel, queryDescription, queryContactId, queryExpirationDate, outputFormat));
       return teilerCore.retrieveQuery(teilerCoreParameters);
     } catch (TeilerCoreException e) {
       //TODO

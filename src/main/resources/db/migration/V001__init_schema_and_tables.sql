@@ -18,10 +18,12 @@ CREATE TABLE samply.query
 
 CREATE TABLE samply.query_execution
 (
-    id          SERIAL NOT NULL PRIMARY KEY,
-    query_id    SERIAL,
-    status      TEXT,
-    executed_at TIMESTAMP
+    id            SERIAL NOT NULL PRIMARY KEY,
+    query_id      SERIAL,
+    template_id   TEXT,
+    output_format TEXT,
+    status        TEXT,
+    executed_at   TIMESTAMP
 );
 
 CREATE INDEX idx_query_execution_query_id ON samply.query_execution (query_id);

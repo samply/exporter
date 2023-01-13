@@ -1,15 +1,16 @@
 package de.samply.db.crud;
 
+import de.samply.db.model.Inquiry;
 import de.samply.db.model.Query;
 import de.samply.db.model.QueryExecution;
 import de.samply.db.model.QueryExecutionError;
 import de.samply.db.model.QueryExecutionFile;
 import de.samply.db.model.Status;
+import de.samply.db.repository.InquiryRespository;
 import de.samply.db.repository.QueryExecutionErrorRepository;
 import de.samply.db.repository.QueryExecutionFileRepository;
 import de.samply.db.repository.QueryExecutionRepository;
 import de.samply.db.repository.QueryRepository;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,16 +25,19 @@ public class TeilerDbService {
   private QueryExecutionRepository queryExecutionRepository;
   private QueryExecutionFileRepository queryExecutionFileRepository;
   private QueryExecutionErrorRepository queryExecutionErrorRepository;
+  private InquiryRespository inquiryRespository;
 
   public TeilerDbService(
       @Autowired QueryRepository queryRepository,
       @Autowired QueryExecutionRepository queryExecutionRepository,
       @Autowired QueryExecutionFileRepository queryExecutionFileRepository,
-      @Autowired QueryExecutionErrorRepository queryExecutionErrorRepository) {
+      @Autowired QueryExecutionErrorRepository queryExecutionErrorRepository,
+      @Autowired InquiryRespository inquiryRespository) {
     this.queryRepository = queryRepository;
     this.queryExecutionRepository = queryExecutionRepository;
     this.queryExecutionFileRepository = queryExecutionFileRepository;
     this.queryExecutionErrorRepository = queryExecutionErrorRepository;
+    this.inquiryRespository = inquiryRespository;
   }
 
   @Transactional
@@ -52,8 +56,41 @@ public class TeilerDbService {
   }
 
   @Transactional
-  public List<Query> fetchAllQueries(int page, int pageSize) {
-    return queryRepository.findAll(PageRequest.of(page, pageSize)).stream().toList();
+  public Page<Query> fetchAllQueries(int page, int pageSize) {
+    return new Page<>(queryRepository.findAll(PageRequest.of(page, pageSize)));
+  }
+
+  @Transactional
+  public List<Inquiry> fetchActiveInquiries() {
+    return inquiryRespository.findByArchivedAtIsNullAndErrorIsNull();
+  }
+
+  @Transactional
+  public Page<Inquiry> fetchActiveInquiries(int page, int pageSize) {
+    return new Page<>(
+        inquiryRespository.findByArchivedAtIsNullAndErrorIsNull(PageRequest.of(page, pageSize)));
+  }
+
+
+  @Transactional
+  public List<Inquiry> fetchErrorInquiries() {
+    return inquiryRespository.findByArchivedAtIsNullAndErrorIsNotNull();
+  }
+
+  @Transactional
+  public Page<Inquiry> fetchErrorInquiries(int page, int pageSize) {
+    return new Page<>(
+        inquiryRespository.findByArchivedAtIsNullAndErrorIsNotNull(PageRequest.of(page, pageSize)));
+  }
+
+  @Transactional
+  public List<Inquiry> fetchArchivedInquiries() {
+    return inquiryRespository.findByArchivedAtIsNotNull();
+  }
+
+  @Transactional
+  public Page<Inquiry> fetchArchivedInquiries(int page, int pageSize) {
+    return new Page<>(inquiryRespository.findByArchivedAtIsNotNull(PageRequest.of(page, pageSize)));
   }
 
   @Transactional

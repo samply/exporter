@@ -4,6 +4,7 @@ import de.samply.EnvironmentTestUtils;
 import de.samply.converter.ConverterManager;
 import de.samply.converter.Format;
 import de.samply.csv.ContainersToCsvConverter;
+import de.samply.db.repository.InquiryRespository;
 import de.samply.db.repository.QueryExecutionErrorRepository;
 import de.samply.db.repository.QueryExecutionFileRepository;
 import de.samply.db.repository.QueryExecutionRepository;
@@ -26,7 +27,6 @@ class TeilerCoreTest {
   private final String converterXmlApplicationContextPath = "./converter/converter.xml";
   private final String templateDirectory = "./templates";
   private final String writeDirectory = "./output";
-  private final String sourceId = "blaze-store";
   private final String converterTemplateId = "test-template1";
   private TeilerCore teilerCore;
 
@@ -49,15 +49,16 @@ class TeilerCoreTest {
     QueryExecutionRepository queryExecutionRepository = null;
     QueryExecutionFileRepository queryExecutionFileRepository = null;
     QueryExecutionErrorRepository queryExecutionErrorRepository = null;
+    InquiryRespository inquiryRespository = null;
     TeilerDbService teilerDbService = new TeilerDbService(queryRepository, queryExecutionRepository,
-        queryExecutionFileRepository, queryExecutionErrorRepository);
+        queryExecutionFileRepository, queryExecutionErrorRepository, inquiryRespository);
 
     teilerCore = new TeilerCore(converterManager, converterTemplateManager, teilerDbService);
   }
 
   @Test
   void retrieveByQueryId() throws TeilerCoreException {
-    TeilerParameters teilerParameters = new TeilerParameters(null, "Patient", sourceId,
+    TeilerParameters teilerParameters = new TeilerParameters(null, "Patient",
         converterTemplateId, null, null, Format.FHIR_QUERY, null, null, null, null, Format.CSV);
     TeilerCoreParameters teilerCoreParameters = teilerCore.extractParameters(teilerParameters);
     Flux<Path> resultFlux = teilerCore.retrieveQuery(teilerCoreParameters);

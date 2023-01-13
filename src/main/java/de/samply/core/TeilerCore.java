@@ -38,8 +38,9 @@ public class TeilerCore {
 
     Query query = checkParametersAndFetchQuery(teilerParameters, errors);
     ConverterTemplate template = checkParametersAndFetchTemplate(teilerParameters, errors);
-    Converter converter = checkParametersAndFetchConverter(teilerParameters, errors);
-
+    Converter converter =
+        (template != null) ? checkParametersAndFetchConverter(teilerParameters, template, errors)
+            : null;
     if (errors.isEmpty()) {
       return new TeilerCoreParameters(query, template, converter);
     } else {
@@ -49,7 +50,8 @@ public class TeilerCore {
 
   public <O> Flux<O> retrieveQuery(TeilerCoreParameters teilerCoreParameters)
       throws TeilerCoreException {
-    return retrieve(Flux.just(teilerCoreParameters.query().getQuery()), teilerCoreParameters.converter(),
+    return retrieve(Flux.just(teilerCoreParameters.query().getQuery()),
+        teilerCoreParameters.converter(),
         teilerCoreParameters.template());
   }
 
@@ -60,9 +62,6 @@ public class TeilerCore {
     }
     if (teilerParameters.outputFormat() == null) {
       errors.addError("Output format not provided");
-    }
-    if (teilerParameters.sourceId() == null) {
-      errors.addError("Source ID not provided");
     }
     if (teilerParameters.queryId() != null) {
       query = teilerDbService.fetchQuery(teilerParameters.queryId());
@@ -135,18 +134,17 @@ public class TeilerCore {
   }
 
   private Converter checkParametersAndFetchConverter(TeilerParameters teilerParameters,
-      Errors errors) {
+      ConverterTemplate template, Errors errors) {
     Converter converter = null;
-    if (teilerParameters.queryFormat() != null && teilerParameters.outputFormat() != null
-        && teilerParameters.sourceId() != null) {
+    if (teilerParameters.queryFormat() != null && teilerParameters.outputFormat() != null) {
       converter = converterManager.getBestMatchConverter(teilerParameters.queryFormat(),
           teilerParameters.outputFormat(),
-          teilerParameters.sourceId());
+          template.getSourceId());
       if (converter == null) {
         errors.addError(
             "No converter found for query format " + teilerParameters.queryFormat()
                 + ", output format " + teilerParameters.outputFormat()
-                + "and source id " + teilerParameters.sourceId());
+                + "and source id " + template.getSourceId());
       }
     }
     return converter;

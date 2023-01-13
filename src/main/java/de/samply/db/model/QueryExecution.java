@@ -1,5 +1,6 @@
 package de.samply.db.model;
 
+import de.samply.converter.Format;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,6 +21,13 @@ public class QueryExecution {
 
   @Column(name = "query_id")
   private Long queryId;
+
+  @Column(name = "template_id")
+  private String templateId;
+
+  @Column (name = "output_format")
+  @Enumerated(EnumType.STRING)
+  private Format outputFormat;
 
   @Column(name = "status")
   @Enumerated(EnumType.STRING)
@@ -42,6 +50,22 @@ public class QueryExecution {
 
   public void setQueryId(Long queryId) {
     this.queryId = queryId;
+  }
+
+  public String getTemplateId() {
+    return templateId;
+  }
+
+  public void setTemplateId(String templateId) {
+    this.templateId = templateId;
+  }
+
+  public Format getOutputFormat() {
+    return outputFormat;
+  }
+
+  public void setOutputFormat(Format outputFormat) {
+    this.outputFormat = outputFormat;
   }
 
   public Status getStatus() {
