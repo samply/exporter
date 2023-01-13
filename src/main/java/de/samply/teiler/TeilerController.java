@@ -12,19 +12,31 @@ import de.samply.core.TeilerParameters;
 import de.samply.db.crud.TeilerDbService;
 import de.samply.db.model.Query;
 import de.samply.db.model.QueryExecution;
+import de.samply.db.model.QueryExecutionError;
 import de.samply.db.model.QueryExecutionFile;
 import de.samply.db.model.Status;
 import de.samply.teiler.response.entity.CreateQueryResponseEntity;
 import de.samply.teiler.response.entity.RequestResponseEntity;
 import de.samply.utils.ProjectVersion;
+import de.samply.zip.Zipper;
+import de.samply.zip.ZipperException;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.util.Pair;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,6 +47,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
 @RestController
@@ -48,11 +61,15 @@ public class TeilerController {
   private final String projectVersion = ProjectVersion.getProjectVersion();
   private final TeilerCore teilerCore;
   private TeilerDbService teilerDbService;
+  private Zipper zipper;
 
-  public TeilerController(@Autowired TeilerCore teilerCore,
-      @Autowired TeilerDbService teilerDbService) {
+  public TeilerController(
+      @Autowired TeilerCore teilerCore,
+      @Autowired TeilerDbService teilerDbService,
+      @Autowired Zipper zipper) {
     this.teilerCore = teilerCore;
     this.teilerDbService = teilerDbService;
+    this.zipper = zipper;
   }
 
   @GetMapping(value = TeilerConst.INFO)
@@ -147,6 +164,7 @@ public class TeilerController {
 
   @PostMapping(value = TeilerConst.REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> postRequest(
+      HttpServletRequest httpServletRequest,
       @RequestParam(name = TeilerConst.QUERY_ID, required = false) Long queryId,
       @RequestParam(name = TeilerConst.QUERY, required = false) String query,
       @RequestParam(name = TeilerConst.SOURCE_ID) String sourceId,
@@ -178,31 +196,48 @@ public class TeilerController {
     final TeilerCoreParameters tempTeilerCoreParameters = teilerCoreParameters;
     new Thread(() -> generateFiles(tempTeilerCoreParameters, queryExecutionId)).start();
     try {
-      return ResponseEntity.ok().body(createRequestResponseEntity(queryExecutionId));
+      return ResponseEntity.ok()
+          .body(createRequestResponseEntity(httpServletRequest, queryExecutionId));
     } catch (TeilerControllerException e) {
       return createInternalServerError(e);
     }
   }
 
-  private void generateFiles (TeilerCoreParameters teilerCoreParameters, Long queryExecutionId){
+  private void generateFiles(TeilerCoreParameters teilerCoreParameters, Long queryExecutionId) {
     try {
       teilerCore.retrieveQuery(teilerCoreParameters).subscribe(path ->
           teilerDbService.saveQueryExecutionFile(createQueryExecutionFile(queryExecutionId,
               ((Path) path).toString())));
-      teilerDbService.setQueryExecutionOk(queryExecutionId);
+      teilerDbService.setQueryExecutionAsOk(queryExecutionId);
     } catch (TeilerCoreException e) {
-      teilerDbService.setQueryExecutionError(queryExecutionId);
+      teilerDbService.setQueryExecutionAsError(queryExecutionId);
+      teilerDbService.saveQueryExecutionErrorAndGetId(
+          createQueryExecutionError(e, queryExecutionId));
       logger.error(ExceptionUtils.getStackTrace(e));
     }
   }
 
-  private String createRequestResponseEntity(Long queryExecutionId)
+  private QueryExecutionError createQueryExecutionError(Exception e, Long queryExecutionId) {
+    QueryExecutionError queryExecutionError = new QueryExecutionError();
+    queryExecutionError.setQueryExecutionId(queryExecutionId);
+    queryExecutionError.setError(ExceptionUtils.getStackTrace(e));
+    return queryExecutionError;
+  }
+
+  private String createRequestResponseEntity(HttpServletRequest request, Long queryExecutionId)
       throws TeilerControllerException {
     try {
-      return objectMapper.writeValueAsString(new RequestResponseEntity(queryExecutionId));
+      return objectMapper.writeValueAsString(
+          new RequestResponseEntity(fetchResponseUrl(request, queryExecutionId)));
     } catch (JsonProcessingException e) {
       throw new TeilerControllerException(e);
     }
+  }
+
+  private String fetchResponseUrl(HttpServletRequest httpServletRequest, Long queryExecutionId) {
+    return ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
+        .replacePath(TeilerConst.RESPONSE)
+        .queryParam(TeilerConst.QUERY_EXECUTION_ID, queryExecutionId).toUriString();
   }
 
   private QueryExecution createQueryExecution(TeilerCoreParameters teilerCoreParameters) {
@@ -220,10 +255,73 @@ public class TeilerController {
     return queryExecutionFile;
   }
 
-  @GetMapping(value = TeilerConst.RESPONSE, produces = MediaType.APPLICATION_NDJSON_VALUE)
-  public Flux<Path> getResponse() {
-    //TODO
-    return null;
+  @GetMapping(value = TeilerConst.RESPONSE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+  public ResponseEntity<InputStreamResource> getResponse(
+      @RequestParam(name = TeilerConst.QUERY_EXECUTION_ID) Long queryExecutionId
+  ) {
+    Optional<QueryExecution> queryExecution = teilerDbService.fetchQueryExecution(queryExecutionId);
+    if (queryExecution.isPresent()) {
+      return switch (queryExecution.get().getStatus()) {
+        case RUNNING -> ResponseEntity.accepted().build();
+        case ERROR -> {
+          List<QueryExecutionError> queryExecutionErrors = teilerDbService.fetchQueryExecutionErrorByQueryExecutionId(
+              queryExecutionId);
+          yield (queryExecutionErrors.size() > 0) ? ResponseEntity.internalServerError()
+              .body(fetchErrorAsInputStreamResource(queryExecutionErrors.get(0)))
+              : ResponseEntity.internalServerError().build();
+        }
+        case OK -> {
+          try {
+            yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId);
+          } catch (TeilerControllerException | ZipperException | FileNotFoundException e) {
+            yield createInternalServerError(e);
+          }
+        }
+      };
+    } else {
+      return ResponseEntity.notFound().build();
+    }
+  }
+
+  private InputStreamResource fetchErrorAsInputStreamResource(
+      QueryExecutionError queryExecutionError) {
+    return new InputStreamResource(new ByteArrayInputStream(queryExecutionError.getError().getBytes(
+        StandardCharsets.UTF_8)));
+  }
+
+  private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipIfNecessary(
+      Long queryExecutionFileId)
+      throws TeilerControllerException, ZipperException, FileNotFoundException {
+    List<QueryExecutionFile> queryExecutionFiles = teilerDbService.fetchQueryExecutionFilesByQueryExecutionId(
+        queryExecutionFileId);
+    if (queryExecutionFiles.size() > 0) {
+      if (queryExecutionFiles.size() == 1) {
+        return createResponseEntity(
+            new InputStreamResource(new FileInputStream(queryExecutionFiles.get(0).getFilePath())),
+            fetchFilename(queryExecutionFiles.get(0).getFilePath()));
+      } else {
+        Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(
+            queryExecutionFiles.stream().map(queryExecutionFile -> queryExecutionFile.getFilePath())
+                .toList());
+        return createResponseEntity(inputStreamResourceFilenamePair.getFirst(),
+            fetchFilename(inputStreamResourceFilenamePair.getSecond()));
+      }
+    } else {
+      return ResponseEntity.notFound().build();
+    }
+  }
+
+  private String fetchFilename(String filePath) {
+    int index = filePath.lastIndexOf(File.separator);
+    return (index < 0) ? filePath : filePath.substring(index + 1);
+  }
+
+  private ResponseEntity<InputStreamResource> createResponseEntity(
+      InputStreamResource inputStreamResource, String filename) {
+    return ResponseEntity
+        .ok()
+        .header("Content-Disposition", "attachment; filename=" + filename)
+        .body(inputStreamResource);
   }
 
   @GetMapping(value = TeilerConst.RETRIEVE_QUERY, produces = MediaType.APPLICATION_NDJSON_VALUE)

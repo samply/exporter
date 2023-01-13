@@ -8,6 +8,7 @@ test-templates
 output
 converter
 test-converters
+temp-files
 
 ### STS ###
 .apt_generated

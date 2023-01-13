@@ -18,9 +18,11 @@ public class TeilerConst {
   // Environment Variables
   public final static String CONVERTER_TEMPLATE_DIRECTORY = "CONVERTER_TEMPLATE_DIRECTORY";
   public final static String WRITE_FILE_DIRECTORY = "WRITE_FILE_DIRECTORY";
+  public final static String TEMPORAL_FILE_DIRECTORY = "TEMPORAL_FILE_DIRECTORY";
   public final static String EXCEL_WORKBOOK_WINDOW = "EXCEL_WORKBOOK_WINDOW";
   public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH = "CONVERTER_XML_APPLICATION_CONTEXT_PATH";
   public final static String TEILER_API_KEY = "TEILER_API_KEY";
+  public final static String ZIP_FILENAME = "ZIP_FILENAME";
 
   // Spring Values (SV)
   public final static String HEAD_SV = "${";
@@ -30,12 +32,16 @@ public class TeilerConst {
           + ":#{'./templates'}" + BOTTOM_SV;
   public final static String WRITE_FILE_DIRECTORY_SV =
       HEAD_SV + WRITE_FILE_DIRECTORY + ":#{'./output'}" + BOTTOM_SV;
+  public final static String TEMPORAL_FILE_DIRECTORY_SV =
+      HEAD_SV + TEMPORAL_FILE_DIRECTORY + ":#{'./temp-files'}" + BOTTOM_SV;
   public final static String EXCEL_WORKBOOK_WINDOW_SV =
       HEAD_SV + EXCEL_WORKBOOK_WINDOW + ":#{'30000000'}" + BOTTOM_SV;
   public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV =
       HEAD_SV + CONVERTER_XML_APPLICATION_CONTEXT_PATH + ":#{'./converter/converter.xml'}"
           + BOTTOM_SV;
   public final static String TEILER_API_KEY_SV = HEAD_SV + TEILER_API_KEY + BOTTOM_SV;
+  public final static String ZIP_FILENAME_SV =
+      HEAD_SV + ZIP_FILENAME + ":#{'teiler-files-${TIMESTAMP}.zip'}" + BOTTOM_SV;
 
   // REST Paths
   public static final String INFO = "/info";
@@ -45,7 +51,7 @@ public class TeilerConst {
   public static final String RESPONSE = "/response";
   public static final String RETRIEVE_QUERY = "/retrieve-query";
   public static final String[] REST_PATHS = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
-      FETCH_QUERIES, REQUEST, RESPONSE};
+      FETCH_QUERIES, REQUEST};
 
   // REST Parameters
   public static final String PAGE = "page";
@@ -61,6 +67,7 @@ public class TeilerConst {
   public static final String TEMPLATE_ID = "template-id";
   public static final String QUERY_FORMAT = "query-format";
   public static final String OUTPUT_FORMAT = "output-format";
+  public static final String QUERY_EXECUTION_ID = "query-execution-id";
 
   // Other constants
   public static final String DEFAULT_CSV_SEPARATOR = "\t";
