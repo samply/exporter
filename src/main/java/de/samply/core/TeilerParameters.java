@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public record TeilerParameters(
     Long queryId,
     String query,
-    String sourceId,
     String templateId,
     String template,
     String contentType,

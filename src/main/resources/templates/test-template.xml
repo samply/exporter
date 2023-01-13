@@ -1,4 +1,4 @@
-<template id="test-template1" excel-filename="my-test-${TIMESTAMP}.xlsx">
+<template id="test-template1" excel-filename="my-test-${TIMESTAMP}.xlsx" source-id="blaze-store">
   <container csv-filename="patient-${TIMESTAMP}.csv" excel-sheet="Patient">
     <attribute csv-column="Pat-ID" excel-column="Pat-ID" fhir-path="Patient.id"/>
     <attribute csv-column="Pseudonym" excel-column="Pseudonym" fhir-path="Patient.identifier.value"/>

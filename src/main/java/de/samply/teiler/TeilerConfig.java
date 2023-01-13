@@ -9,7 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 public class TeilerConfig {
 
   @Bean
-  public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+  public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
     PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
     propertySourcesPlaceholderConfigurer.setLocations(
         new ClassPathResource("application.properties"));

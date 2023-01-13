@@ -22,6 +22,10 @@ public class ConverterTemplate {
   @JsonProperty(value = "csv-separator")
   private String csvSeparator = TeilerConst.DEFAULT_CSV_SEPARATOR;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "source-id")
+  @JsonProperty(value = "source-id")
+  private String sourceId;
+
   @JacksonXmlElementWrapper(useWrapping = false)
   @JsonProperty("container")
   private List<ContainerTemplate> containerTemplates = new ArrayList<>();
@@ -78,6 +82,14 @@ public class ConverterTemplate {
 
   public void setFhirRevIncludes(List<String> fhirRevIncludes) {
     this.fhirRevIncludes = fhirRevIncludes;
+  }
+
+  public String getSourceId() {
+    return sourceId;
+  }
+
+  public void setSourceId(String sourceId) {
+    this.sourceId = sourceId;
   }
 
 }

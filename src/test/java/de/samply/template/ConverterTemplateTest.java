@@ -29,6 +29,7 @@ class ConverterTemplateTest {
     containerTemplates.add(generateContainerTemplate(counter++));
     ConverterTemplate converterTemplate = new ConverterTemplate("test-template", "my-test.xml",
         containerTemplates);
+    converterTemplate.setSourceId("my-source");
     List<String> fhirRevIncludes = generateFhirRevIncludes();
     converterTemplate.setFhirRevIncludes(fhirRevIncludes);
     var jsonFile = new File(filepath + ".json");
