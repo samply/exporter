@@ -4,6 +4,7 @@ import de.samply.EnvironmentTestUtils;
 import de.samply.converter.ConverterManager;
 import de.samply.converter.Format;
 import de.samply.csv.ContainersToCsvConverter;
+import de.samply.db.repository.QueryExecutionErrorRepository;
 import de.samply.db.repository.QueryExecutionFileRepository;
 import de.samply.db.repository.QueryExecutionRepository;
 import de.samply.db.repository.QueryRepository;
@@ -35,8 +36,7 @@ class TeilerCoreTest {
         EnvironmentTestUtils.getEmptyMockEnvironment());
     ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(environmentUtils);
     ContainersToCsvConverter containersToCsvConverter = new ContainersToCsvConverter(
-        converterTemplateUtils,
-        writeDirectory);
+        converterTemplateUtils, writeDirectory);
     ContainersToExcelConverter containersToExcelConverter = new ContainersToExcelConverter(30000000,
         converterTemplateUtils, writeDirectory);
     BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
@@ -48,8 +48,9 @@ class TeilerCoreTest {
     QueryRepository queryRepository = null;
     QueryExecutionRepository queryExecutionRepository = null;
     QueryExecutionFileRepository queryExecutionFileRepository = null;
+    QueryExecutionErrorRepository queryExecutionErrorRepository = null;
     TeilerDbService teilerDbService = new TeilerDbService(queryRepository, queryExecutionRepository,
-        queryExecutionFileRepository);
+        queryExecutionFileRepository, queryExecutionErrorRepository);
 
     teilerCore = new TeilerCore(converterManager, converterTemplateManager, teilerDbService);
   }
@@ -57,7 +58,7 @@ class TeilerCoreTest {
   @Test
   void retrieveByQueryId() throws TeilerCoreException {
     TeilerParameters teilerParameters = new TeilerParameters(null, "Patient", sourceId,
-        converterTemplateId, null, null, Format.FHIR_QUERY, Format.CSV);
+        converterTemplateId, null, null, Format.FHIR_QUERY, null, null, null, null, Format.CSV);
     TeilerCoreParameters teilerCoreParameters = teilerCore.extractParameters(teilerParameters);
     Flux<Path> resultFlux = teilerCore.retrieveQuery(teilerCoreParameters);
     resultFlux.blockLast();
