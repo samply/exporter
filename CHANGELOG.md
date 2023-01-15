@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Download files (also as zip)
 - Clean Temp and Write Files Jobs
 - GET active, error and archived inquiries
+- Format inquiry timestamp
 
 ### Changed
 - Rename Conversion Template as Converter Template
