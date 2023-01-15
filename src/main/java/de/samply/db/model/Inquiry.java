@@ -36,17 +36,17 @@ public class Inquiry {
   @Column(name = "contact_id")
   private String contactId;
 
-  @Column(name = "created_at")
-  private Instant receivedAt;
+  @Formula("TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI')")
+  private String receivedAt;
 
-  @Column(name = "archived_at")
-  private Instant archivedAt;
+  @Formula("TO_CHAR(archived_at, 'YYYY-MM-DD HH24:MI')")
+  private String archivedAt;
 
   @Formula("(SELECT e.template_id FROM samply.query q JOIN samply.query_execution e ON q.id = e.query_id ORDER BY e.executed_at DESC LIMIT 1)")
   private String templateId;
 
-  @Formula("(SELECT e.executed_at FROM samply.query q JOIN samply.query_execution e ON q.id = e.query_id ORDER BY e.executed_at DESC LIMIT 1)")
-  private Instant lastExecutedAt;
+  @Formula("(SELECT TO_CHAR(e.executed_at, 'YYYY-MM-DD HH24:MI') FROM samply.query q JOIN samply.query_execution e ON q.id = e.query_id ORDER BY e.executed_at DESC LIMIT 1)")
+  private String lastExecutedAt;
 
   @Formula("(SELECT er.error FROM samply.query q JOIN samply.query_execution e ON q.id = e.query_id LEFT JOIN samply.query_execution_error er ON e.id = er.query_execution_id ORDER BY e.executed_at DESC LIMIT 1)")
   private String error;
@@ -99,19 +99,19 @@ public class Inquiry {
     this.contactId = contactId;
   }
 
-  public Instant getReceivedAt() {
+  public String getReceivedAt() {
     return receivedAt;
   }
 
-  public void setReceivedAt(Instant receivedAt) {
+  public void setReceivedAt(String receivedAt) {
     this.receivedAt = receivedAt;
   }
 
-  public Instant getArchivedAt() {
+  public String getArchivedAt() {
     return archivedAt;
   }
 
-  public void setArchivedAt(Instant archivedAt) {
+  public void setArchivedAt(String archivedAt) {
     this.archivedAt = archivedAt;
   }
 
@@ -123,11 +123,11 @@ public class Inquiry {
     this.templateId = templateId;
   }
 
-  public Instant getLastExecutedAt() {
+  public String getLastExecutedAt() {
     return lastExecutedAt;
   }
 
-  public void setLastExecutedAt(Instant lastExecutedAt) {
+  public void setLastExecutedAt(String lastExecutedAt) {
     this.lastExecutedAt = lastExecutedAt;
   }
 
