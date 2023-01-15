@@ -27,6 +27,7 @@ public class TeilerConst {
   public final static String TEMP_FILES_LIFETIME_IN_DAYS = "TEMP_FILES_LIFETIME_IN_DAYS";
   public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION = "CLEAN_WRITE_FILES_CRON_EXPRESSION";
   public final static String WRITE_FILES_LIFETIME_IN_DAYS = "WRITE_FILES_LIFETIME_IN_DAYS";
+  public final static String TEILER_ROOT_CONFIG_URL = "TEILER_ROOT_CONFIG_URL";
 
   // Spring Values (SV)
   public final static String HEAD_SV = "${";
@@ -55,6 +56,10 @@ public class TeilerConst {
   public final static String WRITE_FILES_LIFETIME_IN_DAYS_SV =
       HEAD_SV + WRITE_FILES_LIFETIME_IN_DAYS + ":#{30}" + BOTTOM_SV;
 
+  public final static String TEILER_ROOT_CONFIG_URL_SV =
+      HEAD_SV + TEILER_ROOT_CONFIG_URL + ":#{null}" + BOTTOM_SV;
+
+  public final static String[] CROS_ORIGINS = new String[]{TEILER_ROOT_CONFIG_URL_SV};
 
   // REST Paths
   public static final String INFO = "/info";
@@ -63,11 +68,13 @@ public class TeilerConst {
   public static final String REQUEST = "/request";
   public static final String RESPONSE = "/response";
   public static final String RETRIEVE_QUERY = "/retrieve-query";
+  public static final String INQUIRY = "/inquiry";
   public static final String ACTIVE_INQUIRIES = "/active-inquiries";
   public static final String ARCHIVED_INQUIRIES = "/archived-inquiries";
   public static final String ERROR_INQUIRIES = "/error-inquiries";
+
   public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
-      QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES};
+      QUERIES /*, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES */};
   // TODO: RESPONSE ??? Only with UUID enough?
 
   // REST Parameters

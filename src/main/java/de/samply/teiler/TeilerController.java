@@ -10,6 +10,7 @@ import de.samply.core.TeilerCoreException;
 import de.samply.core.TeilerCoreParameters;
 import de.samply.core.TeilerParameters;
 import de.samply.db.crud.TeilerDbService;
+import de.samply.db.model.Inquiry;
 import de.samply.db.model.Query;
 import de.samply.db.model.QueryExecution;
 import de.samply.db.model.QueryExecutionError;
@@ -29,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -43,6 +45,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -123,6 +126,21 @@ public class TeilerController {
         teilerDbService::fetchAllQueries);
   }
 
+  @CrossOrigin(origins = {"http://localhost:9000"})
+  @GetMapping(value = TeilerConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> fetchInquiry(
+      @RequestParam(name = TeilerConst.QUERY_ID) Long queryId
+  ) {
+    try {
+      Optional<Inquiry> inquiryOptional = teilerDbService.fetchInquiry(queryId);
+      return (inquiryOptional.isPresent()) ? ResponseEntity.ok()
+          .body(objectMapper.writeValueAsString(inquiryOptional.get())) : ResponseEntity.notFound().build();
+    } catch (JsonProcessingException e) {
+      return createInternalServerError(e);
+    }
+  }
+
+  @CrossOrigin(origins = {"http://localhost:9000"})
   @GetMapping(value = TeilerConst.ACTIVE_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> fetchActiveInquiries(
       @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
@@ -185,6 +203,7 @@ public class TeilerController {
     }
   }
 
+  @CrossOrigin(origins = {"http://localhost:9000"})
   @PostMapping(value = TeilerConst.REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> postRequest(
       HttpServletRequest httpServletRequest,
@@ -278,6 +297,7 @@ public class TeilerController {
     return queryExecutionFile;
   }
 
+  @CrossOrigin(origins = {"http://localhost:9000"}, exposedHeaders = {"Content-Disposition"})
   @GetMapping(value = TeilerConst.RESPONSE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   public ResponseEntity<InputStreamResource> getResponse(
       @RequestParam(name = TeilerConst.QUERY_EXECUTION_ID) Long queryExecutionId
@@ -348,7 +368,7 @@ public class TeilerController {
   }
 
   @GetMapping(value = TeilerConst.RETRIEVE_QUERY, produces = MediaType.APPLICATION_NDJSON_VALUE)
-  public Flux<Path> retrieveQuery(
+  public ResponseEntity<Flux<Path>> retrieveQuery(
       @RequestParam(name = TeilerConst.QUERY_ID, required = false) Long queryId,
       @RequestParam(name = TeilerConst.QUERY, required = false) String query,
       @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
@@ -366,10 +386,9 @@ public class TeilerController {
       TeilerCoreParameters teilerCoreParameters = teilerCore.extractParameters(
           new TeilerParameters(queryId, query, templateId, template, contentType, queryFormat,
               queryLabel, queryDescription, queryContactId, queryExpirationDate, outputFormat));
-      return teilerCore.retrieveQuery(teilerCoreParameters);
+      return ResponseEntity.ok().body(teilerCore.retrieveQuery(teilerCoreParameters));
     } catch (TeilerCoreException e) {
-      //TODO
-      throw new RuntimeException(e);
+      return createInternalServerError(e);
     }
   }
 

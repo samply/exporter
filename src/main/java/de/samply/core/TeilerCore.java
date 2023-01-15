@@ -39,8 +39,8 @@ public class TeilerCore {
     Query query = checkParametersAndFetchQuery(teilerParameters, errors);
     ConverterTemplate template = checkParametersAndFetchTemplate(teilerParameters, errors);
     Converter converter =
-        (template != null) ? checkParametersAndFetchConverter(teilerParameters, template, errors)
-            : null;
+        (template != null) ? checkParametersAndFetchConverter(teilerParameters, query, template,
+            errors) : null;
     if (errors.isEmpty()) {
       return new TeilerCoreParameters(query, template, converter);
     } else {
@@ -57,8 +57,8 @@ public class TeilerCore {
 
   private Query checkParametersAndFetchQuery(TeilerParameters teilerParameters, Errors errors) {
     Query query = null;
-    if (teilerParameters.queryFormat() == null) {
-      errors.addError("Query format not provided");
+    if (teilerParameters.queryId() == null && teilerParameters.queryFormat() == null) {
+      errors.addError("Query id nor query format not provided");
     }
     if (teilerParameters.outputFormat() == null) {
       errors.addError("Output format not provided");
@@ -134,10 +134,11 @@ public class TeilerCore {
   }
 
   private Converter checkParametersAndFetchConverter(TeilerParameters teilerParameters,
-      ConverterTemplate template, Errors errors) {
+      Query query, ConverterTemplate template, Errors errors) {
     Converter converter = null;
-    if (teilerParameters.queryFormat() != null && teilerParameters.outputFormat() != null) {
-      converter = converterManager.getBestMatchConverter(teilerParameters.queryFormat(),
+    if (query != null && query.getFormat() != null && teilerParameters.outputFormat() != null
+        && template != null) {
+      converter = converterManager.getBestMatchConverter(query.getFormat(),
           teilerParameters.outputFormat(),
           template.getSourceId());
       if (converter == null) {
@@ -146,6 +147,8 @@ public class TeilerCore {
                 + ", output format " + teilerParameters.outputFormat()
                 + "and source id " + template.getSourceId());
       }
+    } else {
+      errors.addError("No converter could be found");
     }
     return converter;
   }

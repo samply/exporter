@@ -94,6 +94,11 @@ public class TeilerDbService {
   }
 
   @Transactional
+  public Optional<Inquiry> fetchInquiry(Long queryId) {
+    return inquiryRespository.findById(queryId);
+  }
+
+  @Transactional
   public Long saveQueryExecutionAndGetExecutionId(QueryExecution queryExecution) {
     return queryExecutionRepository.saveAndFlush(queryExecution).getId();
   }
