@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Clean Temp and Write Files Jobs
 - GET active, error and archived inquiries
 - Format inquiry timestamp
+- Allow Cors
 
 ### Changed
 - Rename Conversion Template as Converter Template
