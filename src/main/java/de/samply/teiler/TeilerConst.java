@@ -101,5 +101,8 @@ public class TeilerConst {
   public static final String DEFAULT_ANONYM_ELEMENT = "VAL";
   public static final String CHILD_FHIR_PATH_HEAD = "/";
 
+  public static final String INQUIRY_NULL_LABEL = "Anonym";
+  public static final String INQUIRY_NULL_DESCRIPTION = "No description provided";
+
 
 }
