@@ -1,5 +1,8 @@
 package de.samply.teiler;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class TeilerConst {
 
   // HTTP Headers
@@ -18,9 +21,16 @@ public class TeilerConst {
   // Environment Variables
   public final static String CONVERTER_TEMPLATE_DIRECTORY = "CONVERTER_TEMPLATE_DIRECTORY";
   public final static String WRITE_FILE_DIRECTORY = "WRITE_FILE_DIRECTORY";
+  public final static String TEMPORAL_FILE_DIRECTORY = "TEMPORAL_FILE_DIRECTORY";
   public final static String EXCEL_WORKBOOK_WINDOW = "EXCEL_WORKBOOK_WINDOW";
   public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH = "CONVERTER_XML_APPLICATION_CONTEXT_PATH";
   public final static String TEILER_API_KEY = "TEILER_API_KEY";
+  public final static String ZIP_FILENAME = "ZIP_FILENAME";
+  public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION = "CLEAN_TEMP_FILES_CRON_EXPRESSION";
+  public final static String TEMP_FILES_LIFETIME_IN_DAYS = "TEMP_FILES_LIFETIME_IN_DAYS";
+  public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION = "CLEAN_WRITE_FILES_CRON_EXPRESSION";
+  public final static String WRITE_FILES_LIFETIME_IN_DAYS = "WRITE_FILES_LIFETIME_IN_DAYS";
+  public final static String CROSS_ORIGINS = "CROSS_ORIGINS";
 
   // Spring Values (SV)
   public final static String HEAD_SV = "${";
@@ -30,26 +40,62 @@ public class TeilerConst {
           + ":#{'./templates'}" + BOTTOM_SV;
   public final static String WRITE_FILE_DIRECTORY_SV =
       HEAD_SV + WRITE_FILE_DIRECTORY + ":#{'./output'}" + BOTTOM_SV;
+  public final static String TEMPORAL_FILE_DIRECTORY_SV =
+      HEAD_SV + TEMPORAL_FILE_DIRECTORY + ":#{'./temp-files'}" + BOTTOM_SV;
   public final static String EXCEL_WORKBOOK_WINDOW_SV =
       HEAD_SV + EXCEL_WORKBOOK_WINDOW + ":#{'30000000'}" + BOTTOM_SV;
   public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV =
       HEAD_SV + CONVERTER_XML_APPLICATION_CONTEXT_PATH + ":#{'./converter/converter.xml'}"
           + BOTTOM_SV;
   public final static String TEILER_API_KEY_SV = HEAD_SV + TEILER_API_KEY + BOTTOM_SV;
+  public final static String ZIP_FILENAME_SV =
+      HEAD_SV + ZIP_FILENAME + ":#{'teiler-files-${TIMESTAMP}.zip'}" + BOTTOM_SV;
+  public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION_SV =
+      HEAD_SV + CLEAN_TEMP_FILES_CRON_EXPRESSION + ":#{'0 0 1 * * *'}" + BOTTOM_SV;
+  public final static String TEMP_FILES_LIFETIME_IN_DAYS_SV =
+      HEAD_SV + TEMP_FILES_LIFETIME_IN_DAYS + ":#{1}" + BOTTOM_SV;
+  public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION_SV =
+      HEAD_SV + CLEAN_WRITE_FILES_CRON_EXPRESSION + ":#{'0 0 2 * * *'}" + BOTTOM_SV;
+  public final static String WRITE_FILES_LIFETIME_IN_DAYS_SV =
+      HEAD_SV + WRITE_FILES_LIFETIME_IN_DAYS + ":#{30}" + BOTTOM_SV;
+
+  public final static String CROSS_ORIGINS_SV =
+      "#{'"+HEAD_SV + CROSS_ORIGINS + ":#{null}" + BOTTOM_SV + "'.split(',')}";
 
   // REST Paths
   public static final String INFO = "/info";
+  public static final String CREATE_QUERY = "/create-query";
+  public static final String QUERIES = "/queries";
   public static final String REQUEST = "/request";
   public static final String RESPONSE = "/response";
   public static final String RETRIEVE_QUERY = "/retrieve-query";
+  public static final String INQUIRY = "/inquiry";
+  public static final String ACTIVE_INQUIRIES = "/active-inquiries";
+  public static final String ARCHIVED_INQUIRIES = "/archived-inquiries";
+  public static final String ERROR_INQUIRIES = "/error-inquiries";
+
+  public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
+      QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES, INQUIRY};
+  // TODO: RESPONSE ??? Only with UUID enough?
+
+  // REST Parameters
   public static final String PAGE = "page";
+  public static final String PAGE_SIZE = "page-size";
   public static final String STATS = "stats";
   public static final String QUERY_ID = "query-id";
   public static final String QUERY = "query";
-  public static final String SOURCE_ID = "source-id";
+  public static final String QUERY_LABEL = "query-label";
+  public static final String QUERY_DESCRIPTION = "query-description";
+  public static final String QUERY_CONTACT_ID = "query-contact-id";
+  public static final String QUERY_EXPIRATION_DATE = "query-expiration-date";
   public static final String TEMPLATE_ID = "template-id";
   public static final String QUERY_FORMAT = "query-format";
   public static final String OUTPUT_FORMAT = "output-format";
+  public static final String QUERY_EXECUTION_ID = "query-execution-id";
+
+  public static final List<String> CROSS_PARAMETERS = Arrays.asList(PAGE, PAGE_SIZE, STATS,
+      QUERY_ID, QUERY, QUERY_LABEL, QUERY_DESCRIPTION, QUERY_CONTACT_ID, QUERY_EXPIRATION_DATE,
+      TEMPLATE_ID, QUERY_FORMAT, OUTPUT_FORMAT, QUERY_EXECUTION_ID);
 
   // Other constants
   public static final String DEFAULT_CSV_SEPARATOR = "\t";
@@ -58,7 +104,11 @@ public class TeilerConst {
 
   public static final Integer FIRST_ANONYM_ID = 1;
   public static final String DEFAULT_ANONYM_ELEMENT = "VAL";
-  public static final String DEFAULT_QUERY_ID = "EMBEDDED_QUERY";
   public static final String CHILD_FHIR_PATH_HEAD = "/";
+
+  public static final String INQUIRY_NULL_LABEL = "Anonym";
+  public static final String INQUIRY_NULL_DESCRIPTION = "No description provided";
+  public static final String CROSS_ORIGINS_SEPARATOR = ",";
+
 
 }

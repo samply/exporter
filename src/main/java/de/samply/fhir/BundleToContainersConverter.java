@@ -34,7 +34,11 @@ public class BundleToContainersConverter extends
   @Override
   public Flux<Containers> convert(Bundle bundle, ConverterTemplate converterTemplate,
       BundleToContainersConverterSession session) {
-    return Flux.just(convertToContainers(bundle, converterTemplate, session));
+    return Flux.generate(
+        sync -> {
+          sync.next(convertToContainers(bundle, converterTemplate, session));
+          sync.complete();
+        });
   }
 
   @Override

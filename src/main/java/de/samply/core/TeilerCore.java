@@ -2,12 +2,12 @@ package de.samply.core;
 
 import de.samply.converter.Converter;
 import de.samply.converter.ConverterManager;
-import de.samply.query.Query;
-import de.samply.query.QueryManager;
-import de.samply.teiler.TeilerConst;
+import de.samply.db.model.Query;
+import de.samply.db.crud.TeilerDbService;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import java.io.IOException;
+import java.time.Instant;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,37 +18,53 @@ import reactor.core.publisher.Flux;
 public class TeilerCore {
 
 
-
   private ConverterManager converterManager;
   private final ConverterTemplateManager converterTemplateManager;
-  private final QueryManager queryManager;
+  private final TeilerDbService teilerDbService;
 
   public TeilerCore(
       @Autowired ConverterManager converterManager,
       @Autowired ConverterTemplateManager converterTemplateManager,
-      @Autowired QueryManager queryManager
+      @Autowired TeilerDbService teilerDbService
   ) {
     this.converterManager = converterManager;
-    this.queryManager = queryManager;
+    this.teilerDbService = teilerDbService;
     this.converterTemplateManager = converterTemplateManager;
   }
 
-  public <O> Flux<O> retrieveQuery(TeilerParameters teilerParameters) throws TeilerCoreException {
+  public TeilerCoreParameters extractParameters(TeilerParameters teilerParameters)
+      throws TeilerCoreException {
     Errors errors = new Errors();
 
-    // Fetch query.
+    Query query = checkParametersAndFetchQuery(teilerParameters, errors);
+    ConverterTemplate template = checkParametersAndFetchTemplate(teilerParameters, errors);
+    Converter converter =
+        (template != null) ? checkParametersAndFetchConverter(teilerParameters, query, template,
+            errors) : null;
+    if (errors.isEmpty()) {
+      return new TeilerCoreParameters(query, template, converter);
+    } else {
+      throw new TeilerCoreException(errors.getMessages());
+    }
+  }
+
+  public <O> Flux<O> retrieveQuery(TeilerCoreParameters teilerCoreParameters)
+      throws TeilerCoreException {
+    return retrieve(Flux.just(teilerCoreParameters.query().getQuery()),
+        teilerCoreParameters.converter(),
+        teilerCoreParameters.template());
+  }
+
+  private Query checkParametersAndFetchQuery(TeilerParameters teilerParameters, Errors errors) {
     Query query = null;
-    if (teilerParameters.queryFormat() == null) {
-      errors.addError("Query format not provided");
+    if (teilerParameters.queryId() == null && teilerParameters.queryFormat() == null) {
+      errors.addError("Query id nor query format not provided");
     }
     if (teilerParameters.outputFormat() == null) {
       errors.addError("Output format not provided");
     }
-    if (teilerParameters.sourceId() == null) {
-      errors.addError("Source ID not provided");
-    }
     if (teilerParameters.queryId() != null) {
-      query = queryManager.fetchQuery(teilerParameters.queryId());
+      query = teilerDbService.fetchQuery(teilerParameters.queryId());
       if (query == null) {
         errors.addError("Query " + teilerParameters.queryId() + " not found");
       }
@@ -56,12 +72,29 @@ public class TeilerCore {
       if (teilerParameters.query() == null) {
         errors.addError("Query not defined");
       } else {
-        query = new Query(TeilerConst.DEFAULT_QUERY_ID, teilerParameters.query(),
-            teilerParameters.queryFormat());
+        query = createNewQuery(teilerParameters);
       }
     }
+    return query;
 
-    // Fetch template.
+  }
+
+  private Query createNewQuery(TeilerParameters teilerParameters) {
+    Query query = new Query();
+    query.setQuery(teilerParameters.query());
+    query.setFormat(teilerParameters.queryFormat());
+    query.setCreatedAt(Instant.now());
+    query.setLabel(teilerParameters.queryLabel());
+    query.setDescription(teilerParameters.queryDescription());
+    query.setContactId(teilerParameters.queryContactId());
+    query.setExpirationDate(teilerParameters.queryExpirationDate());
+    Long queryId = teilerDbService.saveQueryAndGetQueryId(query);
+    query.setId(queryId);
+    return query;
+  }
+
+  private ConverterTemplate checkParametersAndFetchTemplate(TeilerParameters teilerParameters,
+      Errors errors) {
     ConverterTemplate template = null;
     if (teilerParameters.templateId() != null) {
       template = converterTemplateManager.getConverterTemplate(teilerParameters.templateId());
@@ -86,29 +119,7 @@ public class TeilerCore {
         template = fetchTemplate(teilerParameters, errors);
       }
     }
-
-    // Fetch converter.
-    Converter converter = null;
-    if (teilerParameters.queryFormat() != null && teilerParameters.outputFormat() != null
-        && teilerParameters.sourceId() != null) {
-      converter = converterManager.getBestMatchConverter(teilerParameters.queryFormat(),
-          teilerParameters.outputFormat(),
-          teilerParameters.sourceId());
-      if (converter == null) {
-        errors.addError(
-            "No converter found for query format " + teilerParameters.queryFormat()
-                + ", output format " + teilerParameters.outputFormat()
-                + "and source id " + teilerParameters.sourceId());
-      }
-    }
-
-    // Retrieve results if parameters are OK.
-    if (errors.isEmpty()) {
-      return retrieve(Flux.just(query.query()), converter, template);
-    } else {
-      throw new TeilerCoreException(errors.getMessages());
-    }
-
+    return template;
   }
 
   private ConverterTemplate fetchTemplate(TeilerParameters teilerParameters, Errors errors) {
@@ -120,6 +131,26 @@ public class TeilerCore {
       errors.addError(ExceptionUtils.getStackTrace(e));
       return null;
     }
+  }
+
+  private Converter checkParametersAndFetchConverter(TeilerParameters teilerParameters,
+      Query query, ConverterTemplate template, Errors errors) {
+    Converter converter = null;
+    if (query != null && query.getFormat() != null && teilerParameters.outputFormat() != null
+        && template != null) {
+      converter = converterManager.getBestMatchConverter(query.getFormat(),
+          teilerParameters.outputFormat(),
+          template.getSourceId());
+      if (converter == null) {
+        errors.addError(
+            "No converter found for query format " + teilerParameters.queryFormat()
+                + ", output format " + teilerParameters.outputFormat()
+                + "and source id " + template.getSourceId());
+      }
+    } else {
+      errors.addError("No converter could be found");
+    }
+    return converter;
   }
 
   public <I, O> Flux<O> retrieve(Flux<I> inputFlux, Converter<I, O> converter,
