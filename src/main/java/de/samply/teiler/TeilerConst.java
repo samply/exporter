@@ -1,5 +1,8 @@
 package de.samply.teiler;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class TeilerConst {
 
   // HTTP Headers
@@ -27,7 +30,7 @@ public class TeilerConst {
   public final static String TEMP_FILES_LIFETIME_IN_DAYS = "TEMP_FILES_LIFETIME_IN_DAYS";
   public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION = "CLEAN_WRITE_FILES_CRON_EXPRESSION";
   public final static String WRITE_FILES_LIFETIME_IN_DAYS = "WRITE_FILES_LIFETIME_IN_DAYS";
-  public final static String TEILER_ROOT_CONFIG_URL = "TEILER_ROOT_CONFIG_URL";
+  public final static String CROSS_ORIGINS = "CROSS_ORIGINS";
 
   // Spring Values (SV)
   public final static String HEAD_SV = "${";
@@ -56,10 +59,8 @@ public class TeilerConst {
   public final static String WRITE_FILES_LIFETIME_IN_DAYS_SV =
       HEAD_SV + WRITE_FILES_LIFETIME_IN_DAYS + ":#{30}" + BOTTOM_SV;
 
-  public final static String TEILER_ROOT_CONFIG_URL_SV =
-      HEAD_SV + TEILER_ROOT_CONFIG_URL + ":#{null}" + BOTTOM_SV;
-
-  public final static String[] CROS_ORIGINS = new String[]{TEILER_ROOT_CONFIG_URL_SV};
+  public final static String CROSS_ORIGINS_SV =
+      "#{'"+HEAD_SV + CROSS_ORIGINS + ":#{null}" + BOTTOM_SV + "'.split(',')}";
 
   // REST Paths
   public static final String INFO = "/info";
@@ -74,7 +75,7 @@ public class TeilerConst {
   public static final String ERROR_INQUIRIES = "/error-inquiries";
 
   public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
-      QUERIES /*, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES */};
+      QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES, INQUIRY};
   // TODO: RESPONSE ??? Only with UUID enough?
 
   // REST Parameters
@@ -92,6 +93,10 @@ public class TeilerConst {
   public static final String OUTPUT_FORMAT = "output-format";
   public static final String QUERY_EXECUTION_ID = "query-execution-id";
 
+  public static final List<String> CROSS_PARAMETERS = Arrays.asList(PAGE, PAGE_SIZE, STATS,
+      QUERY_ID, QUERY, QUERY_LABEL, QUERY_DESCRIPTION, QUERY_CONTACT_ID, QUERY_EXPIRATION_DATE,
+      TEMPLATE_ID, QUERY_FORMAT, OUTPUT_FORMAT, QUERY_EXECUTION_ID);
+
   // Other constants
   public static final String DEFAULT_CSV_SEPARATOR = "\t";
   public static final String APP_NAME = "Teiler";
@@ -103,6 +108,7 @@ public class TeilerConst {
 
   public static final String INQUIRY_NULL_LABEL = "Anonym";
   public static final String INQUIRY_NULL_DESCRIPTION = "No description provided";
+  public static final String CROSS_ORIGINS_SEPARATOR = ",";
 
 
 }
