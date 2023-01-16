@@ -1,6 +1,7 @@
 package de.samply.db.model;
 
 import de.samply.converter.Format;
+import de.samply.teiler.TeilerConst;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,10 +28,13 @@ public class Inquiry {
   @Enumerated(EnumType.STRING)
   private Format format;
 
-  @Column(name = "label")
+  //@Column(name = "label")
+  @Formula("(CASE WHEN label IS NULL THEN '" + TeilerConst.INQUIRY_NULL_LABEL + "' ELSE label END)")
   private String label;
 
-  @Column(name = "description")
+  //@Column(name = "description")
+  @Formula("(CASE WHEN description IS NULL THEN '" + TeilerConst.INQUIRY_NULL_DESCRIPTION
+      + "' ELSE description END)")
   private String description;
 
   @Column(name = "contact_id")
