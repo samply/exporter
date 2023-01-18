@@ -1,4 +1,4 @@
-package de.samply.teiler;
+  package de.samply.teiler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +47,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -128,6 +129,17 @@ public class TeilerController {
           .body(objectMapper.writeValueAsString(inquiryOptional.get()))
           : ResponseEntity.notFound().build();
     } catch (JsonProcessingException e) {
+      return createInternalServerError(e);
+    }
+  }
+
+  @PutMapping(value = TeilerConst.ARCHIVE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> archiveQuery(
+      @RequestParam(name = TeilerConst.QUERY_ID) Long queryId) {
+    try {
+      teilerDbService.archiveQuery(queryId);
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
       return createInternalServerError(e);
     }
   }

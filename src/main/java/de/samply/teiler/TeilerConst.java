@@ -60,7 +60,7 @@ public class TeilerConst {
       HEAD_SV + WRITE_FILES_LIFETIME_IN_DAYS + ":#{30}" + BOTTOM_SV;
 
   public final static String CROSS_ORIGINS_SV =
-      "#{'"+HEAD_SV + CROSS_ORIGINS + ":#{null}" + BOTTOM_SV + "'.split(',')}";
+      "#{'" + HEAD_SV + CROSS_ORIGINS + ":#{null}" + BOTTOM_SV + "'.split(',')}";
 
   // REST Paths
   public static final String INFO = "/info";
@@ -70,12 +70,14 @@ public class TeilerConst {
   public static final String RESPONSE = "/response";
   public static final String RETRIEVE_QUERY = "/retrieve-query";
   public static final String INQUIRY = "/inquiry";
+  public static final String ARCHIVE_QUERY = "/archive-query";
   public static final String ACTIVE_INQUIRIES = "/active-inquiries";
   public static final String ARCHIVED_INQUIRIES = "/archived-inquiries";
   public static final String ERROR_INQUIRIES = "/error-inquiries";
 
   public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
-      QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES, INQUIRY};
+      QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES, INQUIRY,
+      ARCHIVE_QUERY};
   // TODO: RESPONSE ??? Only with UUID enough?
 
   // REST Parameters

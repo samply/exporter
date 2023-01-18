@@ -11,6 +11,7 @@ import de.samply.db.repository.QueryExecutionErrorRepository;
 import de.samply.db.repository.QueryExecutionFileRepository;
 import de.samply.db.repository.QueryExecutionRepository;
 import de.samply.db.repository.QueryRepository;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +92,11 @@ public class TeilerDbService {
   @Transactional
   public Page<Inquiry> fetchArchivedInquiries(int page, int pageSize) {
     return new Page<>(inquiryRespository.findByArchivedAtIsNotNull(PageRequest.of(page, pageSize)));
+  }
+
+  @Transactional
+  public void archiveQuery(Long queryId) {
+    queryRepository.setArchiveQuery(queryId, Instant.now());
   }
 
   @Transactional

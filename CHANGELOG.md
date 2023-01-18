@@ -55,6 +55,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Format inquiry timestamp
 - Allow Cors
 - Default value for inquiry label and decription
+- Archive Query
 
 ### Changed
 - Rename Conversion Template as Converter Template
