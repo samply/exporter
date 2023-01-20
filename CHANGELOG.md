@@ -56,6 +56,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Allow Cors
 - Default value for inquiry label and decription
 - Archive Query
+- Send execution file url in inquiry
 
 ### Changed
 - Rename Conversion Template as Converter Template

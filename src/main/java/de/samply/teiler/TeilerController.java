@@ -1,4 +1,4 @@
-  package de.samply.teiler;
+package de.samply.teiler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -122,14 +122,24 @@ public class TeilerController {
 
   @GetMapping(value = TeilerConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> fetchInquiry(
+      HttpServletRequest httpServletRequest,
       @RequestParam(name = TeilerConst.QUERY_ID) Long queryId) {
     try {
       Optional<Inquiry> inquiryOptional = teilerDbService.fetchInquiry(queryId);
-      return (inquiryOptional.isPresent()) ? ResponseEntity.ok()
-          .body(objectMapper.writeValueAsString(inquiryOptional.get()))
-          : ResponseEntity.notFound().build();
+      if (inquiryOptional.isPresent()) {
+        addExecutionFileUrl(httpServletRequest, inquiryOptional.get());
+        return ResponseEntity.ok().body(objectMapper.writeValueAsString(inquiryOptional.get()));
+      } else {
+        return ResponseEntity.notFound().build();
+      }
     } catch (JsonProcessingException e) {
       return createInternalServerError(e);
+    }
+  }
+
+  private void addExecutionFileUrl(HttpServletRequest request, Inquiry inquiry) {
+    if (inquiry.getQueryExecutionId() != null) {
+      inquiry.setExecutionFileUrl(fetchResponseUrl(request, inquiry.getQueryExecutionId()));
     }
   }
 
