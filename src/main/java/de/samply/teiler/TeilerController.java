@@ -47,6 +47,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -121,13 +122,34 @@ public class TeilerController {
 
   @GetMapping(value = TeilerConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> fetchInquiry(
+      HttpServletRequest httpServletRequest,
       @RequestParam(name = TeilerConst.QUERY_ID) Long queryId) {
     try {
       Optional<Inquiry> inquiryOptional = teilerDbService.fetchInquiry(queryId);
-      return (inquiryOptional.isPresent()) ? ResponseEntity.ok()
-          .body(objectMapper.writeValueAsString(inquiryOptional.get()))
-          : ResponseEntity.notFound().build();
+      if (inquiryOptional.isPresent()) {
+        addExecutionFileUrl(httpServletRequest, inquiryOptional.get());
+        return ResponseEntity.ok().body(objectMapper.writeValueAsString(inquiryOptional.get()));
+      } else {
+        return ResponseEntity.notFound().build();
+      }
     } catch (JsonProcessingException e) {
+      return createInternalServerError(e);
+    }
+  }
+
+  private void addExecutionFileUrl(HttpServletRequest request, Inquiry inquiry) {
+    if (inquiry.getQueryExecutionId() != null) {
+      inquiry.setExecutionFileUrl(fetchResponseUrl(request, inquiry.getQueryExecutionId()));
+    }
+  }
+
+  @PutMapping(value = TeilerConst.ARCHIVE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> archiveQuery(
+      @RequestParam(name = TeilerConst.QUERY_ID) Long queryId) {
+    try {
+      teilerDbService.archiveQuery(queryId);
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
       return createInternalServerError(e);
     }
   }

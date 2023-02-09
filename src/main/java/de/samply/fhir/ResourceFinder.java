@@ -2,14 +2,12 @@ package de.samply.fhir;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import de.samply.teiler.TeilerConst;
 import de.samply.template.AttributeTemplate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import org.hl7.fhir.r4.model.Base;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.ExpressionNode;
 import org.hl7.fhir.r4.model.Resource;
@@ -46,33 +44,23 @@ public class ResourceFinder {
     if (attributeTemplate.getJoinFhirPath() != null) {
       attributeTemplate.fetchJoinFhirPaths().forEach(joinFhirPath -> {
         AtomicReference<List<Resource>> tempResults = new AtomicReference<>(new ArrayList<>());
-        results.get().forEach(resource -> {
-          if (AttributeTemplate.isChildFhirPath(joinFhirPath)
-              && !attributeTemplate.isDirectJoinFhirPath()) {
-            tempResults.get()
-                .addAll(fetchChildRelatedResources(resource, joinFhirPath));
-          } else {
-            Resource tempResult = fetchParentRelatedResource(resource, joinFhirPath);
-            if (tempResult != null) {
-              tempResults.get().add(tempResult);
-            }
-          }
-        });
+        results.get().forEach(resource -> tempResults.get().addAll(
+            (AttributeTemplate.isChildFhirPath(joinFhirPath)
+                && !attributeTemplate.isDirectJoinFhirPath()) ?
+                fetchChildRelatedResources(resource, joinFhirPath)
+                : fetchParentRelatedResources(resource, joinFhirPath)));
         results.set(tempResults.get());
       });
     }
     return results.get();
   }
 
-  private Resource fetchParentRelatedResource(Resource resource, String joinFhirPath) {
+  private List<Resource> fetchParentRelatedResources(Resource resource, String joinFhirPath) {
     joinFhirPath = AttributeTemplate.removeChildFhirPathHead(joinFhirPath);
-    Resource result = null;
+    List<Resource> result = new ArrayList<>();
     ExpressionNode expressionNode = fhirPathEngine.parse(joinFhirPath);
-    List<Base> resourceIds = fhirPathEngine.evaluate(resource, expressionNode);
-    if (resourceIds.size() > 0) {
-      String resourceId = resourceIds.get(0).toString();
-      result = getResource(resourceId);
-    }
+    fhirPathEngine.evaluate(resource, expressionNode)
+        .forEach(base -> result.add(getResource(base.toString())));
     return result;
   }
 
@@ -83,12 +71,10 @@ public class ResourceFinder {
       AtomicReference<List<Resource>> resultsReference = new AtomicReference<>(new ArrayList<>());
       results = resultsReference.get();
       joinFhirPathParentResourceChildResources.put(joinFhirPath2, resource, results);
-      idResourceMap.values().forEach(tempResource -> {
-        Resource parentRelatedResource = fetchParentRelatedResource(tempResource, joinFhirPath2);
-        if (parentRelatedResource == resource) {
-          resultsReference.get().add(tempResource);
-        }
-      });
+      idResourceMap.values().forEach(
+          tempResource -> fetchParentRelatedResources(tempResource, joinFhirPath2).stream()
+              .filter(resource::equals)
+              .forEach(parentRelatedResource -> resultsReference.get().add(tempResource)));
     }
     return results;
   }
