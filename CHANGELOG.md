@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2023-01-10]
+## [1.0.0 - 2023-02-09]
 ### Added
 - Search Controller
 - Blaze Store Client
@@ -62,3 +62,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename Conversion Template as Converter Template
 - First anonym: 1
 - Cors config
+- Bugfix: Allow join-fhir-path parent with many children
