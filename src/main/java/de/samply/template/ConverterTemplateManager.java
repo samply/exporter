@@ -2,7 +2,7 @@ package de.samply.template;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,7 +20,7 @@ public class ConverterTemplateManager {
   private Map<String, ConverterTemplate> idConverterTemplateMap = new HashMap<>();
 
   public ConverterTemplateManager(
-      @Value(TeilerConst.CONVERTER_TEMPLATE_DIRECTORY_SV) String templateDirectory) {
+      @Value(ExporterConst.CONVERTER_TEMPLATE_DIRECTORY_SV) String templateDirectory) {
     loadTemplates(Paths.get(templateDirectory));
   }
 

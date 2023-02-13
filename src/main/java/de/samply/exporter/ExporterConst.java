@@ -1,9 +1,9 @@
-package de.samply.teiler;
+package de.samply.exporter;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class TeilerConst {
+public class ExporterConst {
 
   // HTTP Headers
   public final static String API_KEY_HEADER = "x-api-key";
@@ -24,7 +24,7 @@ public class TeilerConst {
   public final static String TEMPORAL_FILE_DIRECTORY = "TEMPORAL_FILE_DIRECTORY";
   public final static String EXCEL_WORKBOOK_WINDOW = "EXCEL_WORKBOOK_WINDOW";
   public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH = "CONVERTER_XML_APPLICATION_CONTEXT_PATH";
-  public final static String TEILER_API_KEY = "TEILER_API_KEY";
+  public final static String EXPORTER_API_KEY = "EXPORTER_API_KEY";
   public final static String ZIP_FILENAME = "ZIP_FILENAME";
   public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION = "CLEAN_TEMP_FILES_CRON_EXPRESSION";
   public final static String TEMP_FILES_LIFETIME_IN_DAYS = "TEMP_FILES_LIFETIME_IN_DAYS";
@@ -47,9 +47,9 @@ public class TeilerConst {
   public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV =
       HEAD_SV + CONVERTER_XML_APPLICATION_CONTEXT_PATH + ":#{'./converter/converter.xml'}"
           + BOTTOM_SV;
-  public final static String TEILER_API_KEY_SV = HEAD_SV + TEILER_API_KEY + BOTTOM_SV;
+  public final static String EXPORTER_API_KEY_SV = HEAD_SV + EXPORTER_API_KEY + BOTTOM_SV;
   public final static String ZIP_FILENAME_SV =
-      HEAD_SV + ZIP_FILENAME + ":#{'teiler-files-${TIMESTAMP}.zip'}" + BOTTOM_SV;
+      HEAD_SV + ZIP_FILENAME + ":#{'exporter-files-${TIMESTAMP}.zip'}" + BOTTOM_SV;
   public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION_SV =
       HEAD_SV + CLEAN_TEMP_FILES_CRON_EXPRESSION + ":#{'0 0 1 * * *'}" + BOTTOM_SV;
   public final static String TEMP_FILES_LIFETIME_IN_DAYS_SV =
@@ -101,7 +101,7 @@ public class TeilerConst {
 
   // Other constants
   public static final String DEFAULT_CSV_SEPARATOR = "\t";
-  public static final String APP_NAME = "Teiler";
+  public static final String APP_NAME = "Exporter";
   public static final String EMPTY_EXCEL_CELL = "";
 
   public static final Integer FIRST_ANONYM_ID = 1;

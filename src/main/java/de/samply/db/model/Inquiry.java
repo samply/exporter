@@ -3,7 +3,7 @@ package de.samply.db.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.converter.Format;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,11 +31,11 @@ public class Inquiry {
   private Format format;
 
   //@Column(name = "label")
-  @Formula("(CASE WHEN label IS NULL THEN '" + TeilerConst.INQUIRY_NULL_LABEL + "' ELSE label END)")
+  @Formula("(CASE WHEN label IS NULL THEN '" + ExporterConst.INQUIRY_NULL_LABEL + "' ELSE label END)")
   private String label;
 
   //@Column(name = "description")
-  @Formula("(CASE WHEN description IS NULL THEN '" + TeilerConst.INQUIRY_NULL_DESCRIPTION
+  @Formula("(CASE WHEN description IS NULL THEN '" + ExporterConst.INQUIRY_NULL_DESCRIPTION
       + "' ELSE description END)")
   private String description;
 

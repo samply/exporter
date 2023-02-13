@@ -1,12 +1,9 @@
 package de.samply.core;
 
 import de.samply.converter.Format;
-import de.samply.teiler.TeilerConst;
 import java.time.LocalDate;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.RequestParam;
 
-public record TeilerParameters(
+public record ExporterParameters(
     Long queryId,
     String query,
     String templateId,

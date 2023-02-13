@@ -1,6 +1,6 @@
 package de.samply.template;
 
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import de.samply.utils.EnvironmentUtils;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -19,18 +19,18 @@ public class TokenReplacer {
       String text) {
     this(environmentUtils, text);
     this.containerToken = containerToken;
-    this.headIndex = text.indexOf(TeilerConst.TOKEN_HEAD + containerToken.name());
-    this.endIndex = headIndex + text.substring(headIndex).indexOf(TeilerConst.TOKEN_END);
+    this.headIndex = text.indexOf(ExporterConst.TOKEN_HEAD + containerToken.name());
+    this.endIndex = headIndex + text.substring(headIndex).indexOf(ExporterConst.TOKEN_END);
   }
 
   public TokenReplacer(EnvironmentUtils environmentUtils, String text) {
     this.text = text;
     this.environmentUtils = environmentUtils;
-    this.headIndex = text.indexOf(TeilerConst.TOKEN_HEAD);
-    this.endIndex = text.indexOf(TeilerConst.TOKEN_END);
-    if (text.contains(TeilerConst.TOKEN_EXTENSION_DELIMITER)) {
-      this.extension = text.substring(text.indexOf(TeilerConst.TOKEN_EXTENSION_DELIMITER) + 1,
-          text.indexOf(TeilerConst.TOKEN_END));
+    this.headIndex = text.indexOf(ExporterConst.TOKEN_HEAD);
+    this.endIndex = text.indexOf(ExporterConst.TOKEN_END);
+    if (text.contains(ExporterConst.TOKEN_EXTENSION_DELIMITER)) {
+      this.extension = text.substring(text.indexOf(ExporterConst.TOKEN_EXTENSION_DELIMITER) + 1,
+          text.indexOf(ExporterConst.TOKEN_END));
     }
   }
 
@@ -49,13 +49,13 @@ public class TokenReplacer {
 
   private String getEnvironmentVariable() {
     String result = environmentUtils.getEnvironmentVariable(
-        text.substring(headIndex + TeilerConst.TOKEN_HEAD.length(), endIndex));
+        text.substring(headIndex + ExporterConst.TOKEN_HEAD.length(), endIndex));
     return (result != null) ? result : "";
   }
 
   private String getTimestamp(String format) {
     if (format == null) {
-      format = TeilerConst.DEFAULT_TIMESTAMP_FORMAT;
+      format = ExporterConst.DEFAULT_TIMESTAMP_FORMAT;
     }
     return new SimpleDateFormat(format).format(Timestamp.from(Instant.now()));
   }

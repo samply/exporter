@@ -1,7 +1,7 @@
 package de.samply.jobs;
 
 import de.samply.clean.FilesCleanerException;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +23,13 @@ public class ScheduledJobs {
     this.cleanWriteFilesJob = cleanWriteFilesJob;
   }
 
-  @Scheduled(cron = TeilerConst.CLEAN_TEMP_FILES_CRON_EXPRESSION_SV)
+  @Scheduled(cron = ExporterConst.CLEAN_TEMP_FILES_CRON_EXPRESSION_SV)
   public void cleanTempFiles() throws FilesCleanerException {
     logger.info("Cleaning temporal files");
     cleanTempFilesJob.clean();
   }
 
-  @Scheduled(cron = TeilerConst.CLEAN_WRITE_FILES_CRON_EXPRESSION_SV)
+  @Scheduled(cron = ExporterConst.CLEAN_WRITE_FILES_CRON_EXPRESSION_SV)
   public void cleanWriteFiles() throws FilesCleanerException {
     logger.info("Cleaning write files");
     cleanWriteFilesJob.clean();

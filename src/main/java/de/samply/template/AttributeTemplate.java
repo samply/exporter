@@ -3,7 +3,7 @@ package de.samply.template;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -126,7 +126,7 @@ public class AttributeTemplate {
 
   public List<String> fetchJoinFhirPaths() {
     return (joinFhirPath == null) ? new ArrayList<>() :
-        Arrays.asList(joinFhirPath.trim().split(TeilerConst.RELATED_FHIR_PATH_DELIMITER));
+        Arrays.asList(joinFhirPath.trim().split(ExporterConst.RELATED_FHIR_PATH_DELIMITER));
   }
 
   @JsonIgnore
@@ -181,11 +181,11 @@ public class AttributeTemplate {
   }
 
   public static boolean isChildFhirPath(String joinFhirPath) {
-    return joinFhirPath.startsWith(TeilerConst.CHILD_FHIR_PATH_HEAD);
+    return joinFhirPath.startsWith(ExporterConst.CHILD_FHIR_PATH_HEAD);
   }
 
   public static String removeChildFhirPathHead(String joinFhirPath) {
-    return (joinFhirPath.startsWith(TeilerConst.CHILD_FHIR_PATH_HEAD)) ? joinFhirPath.substring(1)
+    return (joinFhirPath.startsWith(ExporterConst.CHILD_FHIR_PATH_HEAD)) ? joinFhirPath.substring(1)
         : joinFhirPath;
   }
 
