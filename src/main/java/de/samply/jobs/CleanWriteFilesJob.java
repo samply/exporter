@@ -1,7 +1,7 @@
 package de.samply.jobs;
 
 import de.samply.clean.FilesCleaner;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 public class CleanWriteFilesJob extends FilesCleaner {
 
   public CleanWriteFilesJob(
-      @Value(TeilerConst.WRITE_FILE_DIRECTORY_SV) String filesDirectory,
-      @Value(TeilerConst.WRITE_FILES_LIFETIME_IN_DAYS_SV) Integer filesLifetimeInDays) {
+      @Value(ExporterConst.WRITE_FILE_DIRECTORY_SV) String filesDirectory,
+      @Value(ExporterConst.WRITE_FILES_LIFETIME_IN_DAYS_SV) Integer filesLifetimeInDays) {
     super(filesDirectory, filesLifetimeInDays);
   }
 

@@ -1,6 +1,6 @@
 package de.samply.utils;
 
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,7 +22,7 @@ public class ProjectVersion {
       return getProjectVersion_WithoutManagementException();
     } catch (IOException | XmlPullParserException e) {
       logger.error("Error getting project version", e);
-      return TeilerConst.APP_NAME;
+      return ExporterConst.APP_NAME;
     }
   }
 

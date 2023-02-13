@@ -1,23 +1,23 @@
-package de.samply.teiler;
+package de.samply.exporter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.converter.Format;
-import de.samply.core.TeilerCore;
-import de.samply.core.TeilerCoreException;
-import de.samply.core.TeilerCoreParameters;
-import de.samply.core.TeilerParameters;
-import de.samply.db.crud.TeilerDbService;
+import de.samply.core.ExporterCore;
+import de.samply.core.ExporterCoreException;
+import de.samply.core.ExporterCoreParameters;
+import de.samply.core.ExporterParameters;
+import de.samply.db.crud.ExporterDbService;
 import de.samply.db.model.Inquiry;
 import de.samply.db.model.Query;
 import de.samply.db.model.QueryExecution;
 import de.samply.db.model.QueryExecutionError;
 import de.samply.db.model.QueryExecutionFile;
 import de.samply.db.model.Status;
-import de.samply.teiler.response.entity.CreateQueryResponseEntity;
-import de.samply.teiler.response.entity.RequestResponseEntity;
+import de.samply.exporter.response.entity.CreateQueryResponseEntity;
+import de.samply.exporter.response.entity.RequestResponseEntity;
 import de.samply.utils.ProjectVersion;
 import de.samply.zip.Zipper;
 import de.samply.zip.ZipperException;
@@ -56,37 +56,37 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
 @RestController
-public class TeilerController {
+public class ExporterController {
 
-  private final static Logger logger = LoggerFactory.getLogger(TeilerController.class);
+  private final static Logger logger = LoggerFactory.getLogger(ExporterController.class);
 
   private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
       .registerModule(new JavaTimeModule());
   private final String projectVersion = ProjectVersion.getProjectVersion();
-  private final TeilerCore teilerCore;
-  private TeilerDbService teilerDbService;
+  private final ExporterCore exporterCore;
+  private ExporterDbService exporterDbService;
   private Zipper zipper;
 
-  public TeilerController(@Autowired TeilerCore teilerCore,
-      @Autowired TeilerDbService teilerDbService, @Autowired Zipper zipper) {
-    this.teilerCore = teilerCore;
-    this.teilerDbService = teilerDbService;
+  public ExporterController(@Autowired ExporterCore exporterCore,
+      @Autowired ExporterDbService exporterDbService, @Autowired Zipper zipper) {
+    this.exporterCore = exporterCore;
+    this.exporterDbService = exporterDbService;
     this.zipper = zipper;
   }
 
   @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
-  @GetMapping(value = TeilerConst.INFO)
+  @GetMapping(value = ExporterConst.INFO)
   public ResponseEntity<String> info() {
     return new ResponseEntity<>(projectVersion, HttpStatus.OK);
   }
 
-  @PostMapping(value = TeilerConst.CREATE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> createQuery(@RequestParam(name = TeilerConst.QUERY) String query,
-      @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
-      @RequestParam(name = TeilerConst.QUERY_LABEL) String queryLabel,
-      @RequestParam(name = TeilerConst.QUERY_DESCRIPTION) String queryDescription,
-      @RequestParam(name = TeilerConst.QUERY_CONTACT_ID) String queryContactId,
-      @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
+  @PostMapping(value = ExporterConst.CREATE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> createQuery(@RequestParam(name = ExporterConst.QUERY) String query,
+      @RequestParam(name = ExporterConst.QUERY_FORMAT) Format queryFormat,
+      @RequestParam(name = ExporterConst.QUERY_LABEL) String queryLabel,
+      @RequestParam(name = ExporterConst.QUERY_DESCRIPTION) String queryDescription,
+      @RequestParam(name = ExporterConst.QUERY_CONTACT_ID) String queryContactId,
+      @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
     Query tempQuery = new Query();
     tempQuery.setQuery(query);
     tempQuery.setFormat(queryFormat);
@@ -95,37 +95,37 @@ public class TeilerController {
     tempQuery.setContactId(queryContactId);
     tempQuery.setExpirationDate(queryExpirationDate);
     tempQuery.setCreatedAt(Instant.now());
-    Long queryId = teilerDbService.saveQueryAndGetQueryId(tempQuery);
+    Long queryId = exporterDbService.saveQueryAndGetQueryId(tempQuery);
 
     try {
       return ResponseEntity.ok(createCreateQueryResponseEntity(queryId));
-    } catch (TeilerControllerException e) {
+    } catch (ExporterControllerException e) {
       return createInternalServerError(e);
     }
   }
 
-  private String createCreateQueryResponseEntity(Long queryId) throws TeilerControllerException {
+  private String createCreateQueryResponseEntity(Long queryId) throws ExporterControllerException {
     try {
       return objectMapper.writeValueAsString(new CreateQueryResponseEntity(queryId));
     } catch (JsonProcessingException e) {
-      throw new TeilerControllerException(e);
+      throw new ExporterControllerException(e);
     }
   }
 
-  @GetMapping(value = TeilerConst.QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = ExporterConst.QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> fetchQueries(
-      @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
-      @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize) {
-    return convertToResponseEntity(page, pageSize, teilerDbService::fetchAllQueries,
-        teilerDbService::fetchAllQueries);
+      @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+      @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
+    return convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueries,
+        exporterDbService::fetchAllQueries);
   }
 
-  @GetMapping(value = TeilerConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = ExporterConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> fetchInquiry(
       HttpServletRequest httpServletRequest,
-      @RequestParam(name = TeilerConst.QUERY_ID) Long queryId) {
+      @RequestParam(name = ExporterConst.QUERY_ID) Long queryId) {
     try {
-      Optional<Inquiry> inquiryOptional = teilerDbService.fetchInquiry(queryId);
+      Optional<Inquiry> inquiryOptional = exporterDbService.fetchInquiry(queryId);
       if (inquiryOptional.isPresent()) {
         addExecutionFileUrl(httpServletRequest, inquiryOptional.get());
         return ResponseEntity.ok().body(objectMapper.writeValueAsString(inquiryOptional.get()));
@@ -143,39 +143,39 @@ public class TeilerController {
     }
   }
 
-  @PutMapping(value = TeilerConst.ARCHIVE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = ExporterConst.ARCHIVE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> archiveQuery(
-      @RequestParam(name = TeilerConst.QUERY_ID) Long queryId) {
+      @RequestParam(name = ExporterConst.QUERY_ID) Long queryId) {
     try {
-      teilerDbService.archiveQuery(queryId);
+      exporterDbService.archiveQuery(queryId);
       return ResponseEntity.ok().build();
     } catch (Exception e) {
       return createInternalServerError(e);
     }
   }
 
-  @GetMapping(value = TeilerConst.ACTIVE_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = ExporterConst.ACTIVE_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> fetchActiveInquiries(
-      @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
-      @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize) {
-    return convertToResponseEntity(page, pageSize, teilerDbService::fetchActiveInquiries,
-        teilerDbService::fetchActiveInquiries);
+      @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+      @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
+    return convertToResponseEntity(page, pageSize, exporterDbService::fetchActiveInquiries,
+        exporterDbService::fetchActiveInquiries);
   }
 
-  @GetMapping(value = TeilerConst.ARCHIVED_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = ExporterConst.ARCHIVED_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> fetchArchivedInquiries(
-      @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
-      @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize) {
-    return convertToResponseEntity(page, pageSize, teilerDbService::fetchArchivedInquiries,
-        teilerDbService::fetchArchivedInquiries);
+      @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+      @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
+    return convertToResponseEntity(page, pageSize, exporterDbService::fetchArchivedInquiries,
+        exporterDbService::fetchArchivedInquiries);
   }
 
-  @GetMapping(value = TeilerConst.ERROR_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = ExporterConst.ERROR_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> fetchErrorInquiries(
-      @RequestParam(name = TeilerConst.PAGE, required = false) Integer page,
-      @RequestParam(name = TeilerConst.PAGE_SIZE, required = false) Integer pageSize) {
-    return convertToResponseEntity(page, pageSize, teilerDbService::fetchErrorInquiries,
-        teilerDbService::fetchErrorInquiries);
+      @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+      @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
+    return convertToResponseEntity(page, pageSize, exporterDbService::fetchErrorInquiries,
+        exporterDbService::fetchErrorInquiries);
   }
 
   private ResponseEntity createInternalServerError(Exception e) {
@@ -212,51 +212,51 @@ public class TeilerController {
     }
   }
 
-  @PostMapping(value = TeilerConst.REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = ExporterConst.REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> postRequest(HttpServletRequest httpServletRequest,
-      @RequestParam(name = TeilerConst.QUERY_ID, required = false) Long queryId,
-      @RequestParam(name = TeilerConst.QUERY, required = false) String query,
-      @RequestParam(name = TeilerConst.QUERY_FORMAT, required = false) Format queryFormat,
-      @RequestParam(name = TeilerConst.QUERY_LABEL, required = false) String queryLabel,
-      @RequestParam(name = TeilerConst.QUERY_DESCRIPTION, required = false) String queryDescription,
-      @RequestParam(name = TeilerConst.QUERY_CONTACT_ID, required = false) String queryContactId,
-      @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
-      @RequestParam(name = TeilerConst.OUTPUT_FORMAT) Format outputFormat,
-      @RequestParam(name = TeilerConst.TEMPLATE_ID, required = false) String templateId,
+      @RequestParam(name = ExporterConst.QUERY_ID, required = false) Long queryId,
+      @RequestParam(name = ExporterConst.QUERY, required = false) String query,
+      @RequestParam(name = ExporterConst.QUERY_FORMAT, required = false) Format queryFormat,
+      @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
+      @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
+      @RequestParam(name = ExporterConst.QUERY_CONTACT_ID, required = false) String queryContactId,
+      @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
+      @RequestParam(name = ExporterConst.OUTPUT_FORMAT) Format outputFormat,
+      @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
       @RequestHeader(name = "Content-Type", required = false) String contentType,
       @RequestBody(required = false) String template) {
     if (!outputFormat.isPath()) {
       return ResponseEntity.badRequest().body("Output format is not a file");
     }
-    TeilerCoreParameters teilerCoreParameters = null;
+    ExporterCoreParameters exporterCoreParameters = null;
     try {
-      teilerCoreParameters = teilerCore.extractParameters(
-          new TeilerParameters(queryId, query, templateId, template, contentType, queryFormat,
+      exporterCoreParameters = exporterCore.extractParameters(
+          new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
               queryLabel, queryDescription, queryContactId, queryExpirationDate, outputFormat));
-    } catch (TeilerCoreException e) {
+    } catch (ExporterCoreException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }
-    Long queryExecutionId = teilerDbService.saveQueryExecutionAndGetExecutionId(
-        createQueryExecution(teilerCoreParameters));
-    final TeilerCoreParameters tempTeilerCoreParameters = teilerCoreParameters;
-    new Thread(() -> generateFiles(tempTeilerCoreParameters, queryExecutionId)).start();
+    Long queryExecutionId = exporterDbService.saveQueryExecutionAndGetExecutionId(
+        createQueryExecution(exporterCoreParameters));
+    final ExporterCoreParameters tempExporterCoreParameters = exporterCoreParameters;
+    new Thread(() -> generateFiles(tempExporterCoreParameters, queryExecutionId)).start();
     try {
       return ResponseEntity.ok()
           .body(createRequestResponseEntity(httpServletRequest, queryExecutionId));
-    } catch (TeilerControllerException e) {
+    } catch (ExporterControllerException e) {
       return createInternalServerError(e);
     }
   }
 
-  private void generateFiles(TeilerCoreParameters teilerCoreParameters, Long queryExecutionId) {
+  private void generateFiles(ExporterCoreParameters exporterCoreParameters, Long queryExecutionId) {
     try {
-      teilerCore.retrieveQuery(teilerCoreParameters).subscribe(
-          path -> teilerDbService.saveQueryExecutionFile(
+      exporterCore.retrieveQuery(exporterCoreParameters).subscribe(
+          path -> exporterDbService.saveQueryExecutionFile(
               createQueryExecutionFile(queryExecutionId, ((Path) path).toString())));
-      teilerDbService.setQueryExecutionAsOk(queryExecutionId);
-    } catch (TeilerCoreException e) {
-      teilerDbService.setQueryExecutionAsError(queryExecutionId);
-      teilerDbService.saveQueryExecutionErrorAndGetId(
+      exporterDbService.setQueryExecutionAsOk(queryExecutionId);
+    } catch (ExporterCoreException e) {
+      exporterDbService.setQueryExecutionAsError(queryExecutionId);
+      exporterDbService.saveQueryExecutionErrorAndGetId(
           createQueryExecutionError(e, queryExecutionId));
       logger.error(ExceptionUtils.getStackTrace(e));
     }
@@ -270,28 +270,28 @@ public class TeilerController {
   }
 
   private String createRequestResponseEntity(HttpServletRequest request, Long queryExecutionId)
-      throws TeilerControllerException {
+      throws ExporterControllerException {
     try {
       return objectMapper.writeValueAsString(
           new RequestResponseEntity(fetchResponseUrl(request, queryExecutionId)));
     } catch (JsonProcessingException e) {
-      throw new TeilerControllerException(e);
+      throw new ExporterControllerException(e);
     }
   }
 
   private String fetchResponseUrl(HttpServletRequest httpServletRequest, Long queryExecutionId) {
     return ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
-        .replacePath(TeilerConst.RESPONSE)
-        .queryParam(TeilerConst.QUERY_EXECUTION_ID, queryExecutionId).toUriString();
+        .replacePath(ExporterConst.RESPONSE)
+        .queryParam(ExporterConst.QUERY_EXECUTION_ID, queryExecutionId).toUriString();
   }
 
-  private QueryExecution createQueryExecution(TeilerCoreParameters teilerCoreParameters) {
+  private QueryExecution createQueryExecution(ExporterCoreParameters exporterCoreParameters) {
     QueryExecution queryExecution = new QueryExecution();
-    queryExecution.setQueryId(teilerCoreParameters.query().getId());
+    queryExecution.setQueryId(exporterCoreParameters.query().getId());
     queryExecution.setExecutedAt(Instant.now());
     queryExecution.setStatus(Status.RUNNING);
-    queryExecution.setOutputFormat(teilerCoreParameters.converter().getOutputFormat());
-    queryExecution.setTemplateId(teilerCoreParameters.template().getId());
+    queryExecution.setOutputFormat(exporterCoreParameters.converter().getOutputFormat());
+    queryExecution.setTemplateId(exporterCoreParameters.template().getId());
     return queryExecution;
   }
 
@@ -304,15 +304,15 @@ public class TeilerController {
 
   @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"}, exposedHeaders = {
       "Content-Disposition"})
-  @GetMapping(value = TeilerConst.RESPONSE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+  @GetMapping(value = ExporterConst.RESPONSE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   public ResponseEntity<InputStreamResource> getResponse(
-      @RequestParam(name = TeilerConst.QUERY_EXECUTION_ID) Long queryExecutionId) {
-    Optional<QueryExecution> queryExecution = teilerDbService.fetchQueryExecution(queryExecutionId);
+      @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId) {
+    Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(queryExecutionId);
     if (queryExecution.isPresent()) {
       return switch (queryExecution.get().getStatus()) {
         case RUNNING -> ResponseEntity.accepted().build();
         case ERROR -> {
-          List<QueryExecutionError> queryExecutionErrors = teilerDbService.fetchQueryExecutionErrorByQueryExecutionId(
+          List<QueryExecutionError> queryExecutionErrors = exporterDbService.fetchQueryExecutionErrorByQueryExecutionId(
               queryExecutionId);
           yield (queryExecutionErrors.size() > 0) ? ResponseEntity.internalServerError()
               .body(fetchErrorAsInputStreamResource(queryExecutionErrors.get(0)))
@@ -321,7 +321,7 @@ public class TeilerController {
         case OK -> {
           try {
             yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId);
-          } catch (TeilerControllerException | ZipperException | FileNotFoundException e) {
+          } catch (ExporterControllerException | ZipperException | FileNotFoundException e) {
             yield createInternalServerError(e);
           }
         }
@@ -339,8 +339,8 @@ public class TeilerController {
 
   private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipIfNecessary(
       Long queryExecutionFileId)
-      throws TeilerControllerException, ZipperException, FileNotFoundException {
-    List<QueryExecutionFile> queryExecutionFiles = teilerDbService.fetchQueryExecutionFilesByQueryExecutionId(
+      throws ExporterControllerException, ZipperException, FileNotFoundException {
+    List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
         queryExecutionFileId);
     if (queryExecutionFiles.size() > 0) {
       if (queryExecutionFiles.size() == 1) {
@@ -370,25 +370,25 @@ public class TeilerController {
         .body(inputStreamResource);
   }
 
-  @GetMapping(value = TeilerConst.RETRIEVE_QUERY, produces = MediaType.APPLICATION_NDJSON_VALUE)
+  @GetMapping(value = ExporterConst.RETRIEVE_QUERY, produces = MediaType.APPLICATION_NDJSON_VALUE)
   public ResponseEntity<Flux<Path>> retrieveQuery(
-      @RequestParam(name = TeilerConst.QUERY_ID, required = false) Long queryId,
-      @RequestParam(name = TeilerConst.QUERY, required = false) String query,
-      @RequestParam(name = TeilerConst.QUERY_FORMAT) Format queryFormat,
-      @RequestParam(name = TeilerConst.OUTPUT_FORMAT) Format outputFormat,
-      @RequestParam(name = TeilerConst.QUERY_LABEL, required = false) String queryLabel,
-      @RequestParam(name = TeilerConst.QUERY_DESCRIPTION, required = false) String queryDescription,
-      @RequestParam(name = TeilerConst.QUERY_CONTACT_ID, required = false) String queryContactId,
-      @RequestParam(name = TeilerConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
-      @RequestParam(name = TeilerConst.TEMPLATE_ID, required = false) String templateId,
+      @RequestParam(name = ExporterConst.QUERY_ID, required = false) Long queryId,
+      @RequestParam(name = ExporterConst.QUERY, required = false) String query,
+      @RequestParam(name = ExporterConst.QUERY_FORMAT) Format queryFormat,
+      @RequestParam(name = ExporterConst.OUTPUT_FORMAT) Format outputFormat,
+      @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
+      @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
+      @RequestParam(name = ExporterConst.QUERY_CONTACT_ID, required = false) String queryContactId,
+      @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
+      @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
       @RequestHeader(name = "Content-Type", required = false) String contentType,
       @RequestBody(required = false) String template) {
     try {
-      TeilerCoreParameters teilerCoreParameters = teilerCore.extractParameters(
-          new TeilerParameters(queryId, query, templateId, template, contentType, queryFormat,
+      ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(
+          new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
               queryLabel, queryDescription, queryContactId, queryExpirationDate, outputFormat));
-      return ResponseEntity.ok().body(teilerCore.retrieveQuery(teilerCoreParameters));
-    } catch (TeilerCoreException e) {
+      return ResponseEntity.ok().body(exporterCore.retrieveQuery(exporterCoreParameters));
+    } catch (ExporterCoreException e) {
       return createInternalServerError(e);
     }
   }

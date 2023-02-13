@@ -4,7 +4,7 @@ import de.samply.container.Container;
 import de.samply.container.Containers;
 import de.samply.converter.ConverterImpl;
 import de.samply.converter.Format;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
@@ -35,9 +35,9 @@ public class ContainersToExcelConverter extends ConverterImpl<Containers, Path, 
   private Integer workbookWindow;
 
   public ContainersToExcelConverter(
-      @Value(TeilerConst.EXCEL_WORKBOOK_WINDOW_SV) Integer workbookWindow,
+      @Value(ExporterConst.EXCEL_WORKBOOK_WINDOW_SV) Integer workbookWindow,
       @Autowired ConverterTemplateUtils converterTemplateUtils,
-      @Value(TeilerConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
+      @Value(ExporterConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
     this.workbookWindow = workbookWindow;
     this.writeDirectory = writeDirectory;
     this.converterTemplateUtils = converterTemplateUtils;
@@ -86,7 +86,7 @@ public class ContainersToExcelConverter extends ConverterImpl<Containers, Path, 
     containerTemplate.getAttributeTemplates().forEach(attributeTemplate -> {
       String attributeValue = container.getAttributeValue(attributeTemplate);
       row.createCell(columnIndex.getAndIncrement())
-          .setCellValue((attributeValue != null) ? attributeValue : TeilerConst.EMPTY_EXCEL_CELL);
+          .setCellValue((attributeValue != null) ? attributeValue : ExporterConst.EMPTY_EXCEL_CELL);
     });
   }
 

@@ -78,7 +78,7 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: |
-            samply/teiler
+            samply/exporter
           tags: |
             type=schedule
             type=ref,event=branch
@@ -99,7 +99,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: samply/teiler:sha-${{ github.sha }}
+          image-ref: samply/exporter:sha-${{ github.sha }}
           format: sarif
           output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'

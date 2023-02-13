@@ -9,7 +9,7 @@ import de.samply.converter.selector.LessWeight;
 import de.samply.csv.ContainersToCsvConverter;
 import de.samply.excel.ContainersToExcelConverter;
 import de.samply.fhir.BundleToContainersConverter;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +34,7 @@ public class ConverterManager {
       @Autowired BundleToContainersConverter bundleToContainersConverter,
       @Autowired ContainersToCsvConverter containersToCsvConverter,
       @Autowired ContainersToExcelConverter containersToExcelConverter,
-      @Value(TeilerConst.CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV) String converterXmlApplicationContextPath
+      @Value(ExporterConst.CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV) String converterXmlApplicationContextPath
   ) {
     List<Converter> converters = new ArrayList<>();
     converters.add(bundleToContainersConverter);
