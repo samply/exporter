@@ -1,4 +1,4 @@
-package de.samply.teiler;
+package de.samply.exporter;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 @Disabled
 @SpringBootTest
 @ComponentScan(basePackages = {"de.samply"})
-class TeilerApplicationTests {
+class ExporterApplicationTests {
 
 	@Test
 	void contextLoads() {

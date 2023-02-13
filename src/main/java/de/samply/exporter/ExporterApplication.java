@@ -1,4 +1,4 @@
-package de.samply.teiler;
+package de.samply.exporter;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,10 +12,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EntityScan(basePackages = {"de.samply.db.model"})
 @EnableJpaRepositories("de.samply.db.repository")
 @EnableScheduling
-public class TeilerApplication {
+public class ExporterApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(TeilerApplication.class, args);
+    SpringApplication.run(ExporterApplication.class, args);
   }
 
 }

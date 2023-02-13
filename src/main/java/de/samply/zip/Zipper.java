@@ -1,6 +1,6 @@
 package de.samply.zip;
 
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import de.samply.template.ConverterTemplateUtils;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,8 +26,8 @@ public class Zipper {
 
   public Zipper(
       @Autowired ConverterTemplateUtils converterTemplateUtils,
-      @Value(TeilerConst.ZIP_FILENAME_SV) String defaultZipFilename,
-      @Value(TeilerConst.TEMPORAL_FILE_DIRECTORY_SV) String temporalFileDirectory) {
+      @Value(ExporterConst.ZIP_FILENAME_SV) String defaultZipFilename,
+      @Value(ExporterConst.TEMPORAL_FILE_DIRECTORY_SV) String temporalFileDirectory) {
     this.converterTemplateUtils = converterTemplateUtils;
     this.defaultZipFilename = defaultZipFilename;
     this.temporalFileDirectory = Path.of(temporalFileDirectory);

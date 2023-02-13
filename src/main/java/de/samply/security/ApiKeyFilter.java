@@ -1,6 +1,6 @@
 package de.samply.security;
 
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
@@ -17,7 +17,7 @@ public class ApiKeyFilter extends AbstractPreAuthenticatedProcessingFilter {
    */
   @Override
   protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-    return request.getHeader(TeilerConst.API_KEY_HEADER);
+    return request.getHeader(ExporterConst.API_KEY_HEADER);
   }
 
   /**

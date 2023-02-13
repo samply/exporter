@@ -1,6 +1,6 @@
 package de.samply.security;
 
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,7 +19,7 @@ public class ApiKeyAuthenticationManager implements AuthenticationManager {
    * Security: This class provides API key support to REST for connecting different server
    */
 
-  @Value(TeilerConst.TEILER_API_KEY_SV)
+  @Value(ExporterConst.EXPORTER_API_KEY_SV)
   private String apiKey;
 
   /**

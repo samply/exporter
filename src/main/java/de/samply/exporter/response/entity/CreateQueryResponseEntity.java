@@ -1,4 +1,4 @@
-package de.samply.teiler.response.entity;
+package de.samply.exporter.response.entity;
 
 public record CreateQueryResponseEntity(
     Long queryId

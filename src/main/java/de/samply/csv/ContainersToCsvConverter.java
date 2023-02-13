@@ -4,7 +4,7 @@ import de.samply.container.Container;
 import de.samply.container.Containers;
 import de.samply.converter.ConverterImpl;
 import de.samply.converter.Format;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
@@ -26,7 +26,7 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path, Se
   private String writeDirectory;
 
   public ContainersToCsvConverter(@Autowired ConverterTemplateUtils converterTemplateUtils,
-      @Value(TeilerConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
+      @Value(ExporterConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
     this.writeDirectory = writeDirectory;
     this.converterTemplateUtils = converterTemplateUtils;
   }

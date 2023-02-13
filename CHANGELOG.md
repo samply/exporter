@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Java 19
 - Template in request body
 - Attribute condition fhir path
-- Teiler DB
+- Exporter DB
 - Attribute join fhir path
 - Attribute condition id and value fhir path
 - Excel Format
@@ -63,3 +63,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First anonym: 1
 - Cors config
 - Bugfix: Allow join-fhir-path parent with many children
+- Rename teiler to exporter

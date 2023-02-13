@@ -11,7 +11,7 @@ import de.samply.db.repository.QueryExecutionRepository;
 import de.samply.db.repository.QueryRepository;
 import de.samply.excel.ContainersToExcelConverter;
 import de.samply.fhir.BundleToContainersConverter;
-import de.samply.db.crud.TeilerDbService;
+import de.samply.db.crud.ExporterDbService;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
@@ -22,13 +22,13 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
 @Disabled
-class TeilerCoreTest {
+class ExporterCoreTest {
 
   private final String converterXmlApplicationContextPath = "./converter/converter.xml";
   private final String templateDirectory = "./templates";
   private final String writeDirectory = "./output";
   private final String converterTemplateId = "test-template1";
-  private TeilerCore teilerCore;
+  private ExporterCore exporterCore;
 
   @BeforeEach
   void setUp() {
@@ -50,18 +50,18 @@ class TeilerCoreTest {
     QueryExecutionFileRepository queryExecutionFileRepository = null;
     QueryExecutionErrorRepository queryExecutionErrorRepository = null;
     InquiryRespository inquiryRespository = null;
-    TeilerDbService teilerDbService = new TeilerDbService(queryRepository, queryExecutionRepository,
+    ExporterDbService exporterDbService = new ExporterDbService(queryRepository, queryExecutionRepository,
         queryExecutionFileRepository, queryExecutionErrorRepository, inquiryRespository);
 
-    teilerCore = new TeilerCore(converterManager, converterTemplateManager, teilerDbService);
+    exporterCore = new ExporterCore(converterManager, converterTemplateManager, exporterDbService);
   }
 
   @Test
-  void retrieveByQueryId() throws TeilerCoreException {
-    TeilerParameters teilerParameters = new TeilerParameters(null, "Patient",
+  void retrieveByQueryId() throws ExporterCoreException {
+    ExporterParameters exporterParameters = new ExporterParameters(null, "Patient",
         converterTemplateId, null, null, Format.FHIR_QUERY, null, null, null, null, Format.CSV);
-    TeilerCoreParameters teilerCoreParameters = teilerCore.extractParameters(teilerParameters);
-    Flux<Path> resultFlux = teilerCore.retrieveQuery(teilerCoreParameters);
+    ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(exporterParameters);
+    Flux<Path> resultFlux = exporterCore.retrieveQuery(exporterCoreParameters);
     resultFlux.blockLast();
   }
 

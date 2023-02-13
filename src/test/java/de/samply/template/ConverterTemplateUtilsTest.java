@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.samply.EnvironmentTestUtils;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import de.samply.utils.EnvironmentUtils;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,31 +47,31 @@ class ConverterTemplateUtilsTest {
     assertEquals(example, result);
 
     String part1 = "example-";
-    example = part1 + TeilerConst.TOKEN_HEAD + "TIMESTAMP" + TeilerConst.TOKEN_END;
+    example = part1 + ExporterConst.TOKEN_HEAD + "TIMESTAMP" + ExporterConst.TOKEN_END;
     result = converterTemplateUtils.replaceTokens(example);
     assertTrue(result.contains(part1) && !example.equals(result));
 
     String part2 = ".csv";
-    example = part1 + TeilerConst.TOKEN_HEAD + "TIMESTAMP" + TeilerConst.TOKEN_END + part2;
+    example = part1 + ExporterConst.TOKEN_HEAD + "TIMESTAMP" + ExporterConst.TOKEN_END + part2;
     result = converterTemplateUtils.replaceTokens(example);
     assertTrue(result.contains(part1) && result.contains(part2) && !example.equals(result));
 
     String format = "yyyyMMdd";
-    example = part1 + TeilerConst.TOKEN_HEAD + "TIMESTAMP" + TeilerConst.TOKEN_EXTENSION_DELIMITER
-        + format + TeilerConst.TOKEN_END + part2;
+    example = part1 + ExporterConst.TOKEN_HEAD + "TIMESTAMP" + ExporterConst.TOKEN_EXTENSION_DELIMITER
+        + format + ExporterConst.TOKEN_END + part2;
     result = converterTemplateUtils.replaceTokens(example);
     assertTrue(result.contains(part1) && result.contains(part2) && !example.equals(result)
         && result.length() == (part1 + part2 + format).length());
 
-    example = part1 + TeilerConst.TOKEN_HEAD + property1 + TeilerConst.TOKEN_END + "-"
-        + TeilerConst.TOKEN_HEAD + property2 + TeilerConst.TOKEN_END + part2;
+    example = part1 + ExporterConst.TOKEN_HEAD + property1 + ExporterConst.TOKEN_END + "-"
+        + ExporterConst.TOKEN_HEAD + property2 + ExporterConst.TOKEN_END + part2;
 
     result = converterTemplateUtils.replaceTokens(example);
     assertEquals(part1 + value1 + "-" + value2 + part2, result);
 
     String notDefinedProperty = "NOT_DEFINED";
-    example = part1 + TeilerConst.TOKEN_HEAD + property1 + TeilerConst.TOKEN_END + "-"
-        + TeilerConst.TOKEN_HEAD + notDefinedProperty + TeilerConst.TOKEN_END + part2;
+    example = part1 + ExporterConst.TOKEN_HEAD + property1 + ExporterConst.TOKEN_END + "-"
+        + ExporterConst.TOKEN_HEAD + notDefinedProperty + ExporterConst.TOKEN_END + part2;
 
     result = converterTemplateUtils.replaceTokens(example);
     assertEquals(

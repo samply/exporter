@@ -7,7 +7,7 @@ import ca.uhn.fhir.rest.gclient.IQuery;
 import de.samply.converter.EmptySession;
 import de.samply.converter.Format;
 import de.samply.converter.SourceConverterImpl;
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import de.samply.template.ConverterTemplate;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.r4.model.Bundle;
@@ -59,7 +59,7 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
 
   private String getNextBundleUrl(Bundle bundle) {
     for (BundleLinkComponent link : bundle.getLink()) {
-      if (link.getRelation().equalsIgnoreCase(TeilerConst.FHIR_STORE_NEXT_BUNDLE)) {
+      if (link.getRelation().equalsIgnoreCase(ExporterConst.FHIR_STORE_NEXT_BUNDLE)) {
         return link.getUrl();
       }
     }

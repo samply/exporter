@@ -1,6 +1,6 @@
 package de.samply.template;
 
-import de.samply.teiler.TeilerConst;
+import de.samply.exporter.ExporterConst;
 import de.samply.utils.EnvironmentUtils;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,7 +38,7 @@ public class ConverterTemplateUtils {
   }
 
   public boolean containsVariable(String text) {
-    return text.contains(TeilerConst.TOKEN_HEAD) && text.contains(TeilerConst.TOKEN_END);
+    return text.contains(ExporterConst.TOKEN_HEAD) && text.contains(ExporterConst.TOKEN_END);
   }
 
 }

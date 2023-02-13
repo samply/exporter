@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class TeilerDbService {
+public class ExporterDbService {
 
   private QueryRepository queryRepository;
   private QueryExecutionRepository queryExecutionRepository;
@@ -28,7 +28,7 @@ public class TeilerDbService {
   private QueryExecutionErrorRepository queryExecutionErrorRepository;
   private InquiryRespository inquiryRespository;
 
-  public TeilerDbService(
+  public ExporterDbService(
       @Autowired QueryRepository queryRepository,
       @Autowired QueryExecutionRepository queryExecutionRepository,
       @Autowired QueryExecutionFileRepository queryExecutionFileRepository,
