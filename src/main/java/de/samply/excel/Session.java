@@ -15,6 +15,8 @@ public class Session {
   private Integer workbookWindow;
   private Workbook workbook;
 
+  private boolean isExcelFileAlreadyCreated = false;
+
   public Session(ConverterTemplateUtils converterTemplateUtils, String writeDirectory,
       Integer workbookWindow) {
     this.converterTemplateUtils = converterTemplateUtils;
@@ -32,6 +34,14 @@ public class Session {
   public Path getExcelPath(ConverterTemplate converterTemplate) {
     String filename = converterTemplateUtils.replaceTokens(converterTemplate.getExcelFilename());
     return Paths.get(writeDirectory).resolve(filename);
+  }
+
+  public boolean isExcelFileAlreadyCreated() {
+    return isExcelFileAlreadyCreated;
+  }
+
+  public void setExcelFileAlreadyCreated(boolean excelFileAlreadyCreated) {
+    isExcelFileAlreadyCreated = excelFileAlreadyCreated;
   }
 
 }

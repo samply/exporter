@@ -64,3 +64,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Cors config
 - Bugfix: Allow join-fhir-path parent with many children
 - Rename teiler to exporter
+- Bugfix: Filter paths

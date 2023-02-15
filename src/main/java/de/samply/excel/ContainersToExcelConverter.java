@@ -58,7 +58,10 @@ public class ContainersToExcelConverter extends ConverterImpl<Containers, Path, 
     return Flux.generate(
         sync -> {
           addConvertersToWorkbook(input, template, session);
-          sync.next(session.getExcelPath(template));
+          if (!session.isExcelFileAlreadyCreated()){
+            sync.next(session.getExcelPath(template));
+            session.setExcelFileAlreadyCreated(true);
+          }
           sync.complete();
         }
     );
