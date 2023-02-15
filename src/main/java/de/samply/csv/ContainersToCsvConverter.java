@@ -33,7 +33,8 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path, Se
 
   @Override
   protected Flux<Path> convert(Containers containers, ConverterTemplate template, Session session) {
-    return Flux.fromIterable(writeContainersInCsv(containers, template, session));
+    return Flux.fromIterable(
+        session.getNewPaths(writeContainersInCsv(containers, template, session)));
   }
 
   @Override
