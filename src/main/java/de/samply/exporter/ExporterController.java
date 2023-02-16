@@ -33,6 +33,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -110,6 +111,13 @@ public class ExporterController {
     } catch (JsonProcessingException e) {
       throw new ExporterControllerException(e);
     }
+  }
+
+  @GetMapping(value = ExporterConst.STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> getQueryExecutionStatus(
+      @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId
+  ) {
+    return convertToResponseEntity(queryExecutionId, exporterDbService::getQueryExecutionStatus);
   }
 
   @GetMapping(value = ExporterConst.QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -194,9 +202,15 @@ public class ExporterController {
     }
   }
 
+  private <T,R> ResponseEntity convertToResponseEntity(T input, Function<T,R> function) {
+    return convertToResponseEntity(() -> function.apply(input));
+  }
+
   private <T> ResponseEntity convertToResponseEntity(Supplier<T> supplier) {
     try {
-      return ResponseEntity.ok(objectMapper.writeValueAsString(supplier.get()));
+      T result = supplier.get();
+      return (result != null) ? ResponseEntity.ok(objectMapper.writeValueAsString(result))
+          : ResponseEntity.notFound().build();
     } catch (JsonProcessingException e) {
       return createInternalServerError(e);
     }
@@ -307,7 +321,8 @@ public class ExporterController {
   @GetMapping(value = ExporterConst.RESPONSE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   public ResponseEntity<InputStreamResource> getResponse(
       @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId) {
-    Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(queryExecutionId);
+    Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(
+        queryExecutionId);
     if (queryExecution.isPresent()) {
       return switch (queryExecution.get().getStatus()) {
         case RUNNING -> ResponseEntity.accepted().build();
