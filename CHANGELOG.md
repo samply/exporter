@@ -57,6 +57,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Default value for inquiry label and decription
 - Archive Query
 - Send execution file url in inquiry
+- Get Query Execution Status
 
 ### Changed
 - Rename Conversion Template as Converter Template

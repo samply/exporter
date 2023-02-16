@@ -125,6 +125,12 @@ public class ExporterDbService {
   }
 
   @Transactional
+  public Status getQueryExecutionStatus(Long queryExecutionId){
+    QueryExecution queryExecution = queryExecutionRepository.getById(queryExecutionId);
+    return (queryExecution != null) ? queryExecution.getStatus() : null;
+  }
+
+  @Transactional
   public Optional<QueryExecution> fetchQueryExecution(Long queryExecutionId) {
     return queryExecutionRepository.findById(queryExecutionId);
   }
