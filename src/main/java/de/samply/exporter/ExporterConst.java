@@ -70,6 +70,7 @@ public class ExporterConst {
   public static final String RESPONSE = "/response";
   public static final String RETRIEVE_QUERY = "/retrieve-query";
   public static final String INQUIRY = "/inquiry";
+  public static final String STATUS = "/status";
   public static final String ARCHIVE_QUERY = "/archive-query";
   public static final String ACTIVE_INQUIRIES = "/active-inquiries";
   public static final String ARCHIVED_INQUIRIES = "/archived-inquiries";
@@ -77,7 +78,7 @@ public class ExporterConst {
 
   public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
       QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES, INQUIRY,
-      ARCHIVE_QUERY};
+      ARCHIVE_QUERY, STATUS};
   // TODO: RESPONSE ??? Only with UUID enough?
 
   // REST Parameters
