@@ -12,6 +12,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Flux;
 
 @Disabled
@@ -19,11 +20,13 @@ class ConverterManagerTest {
 
   private final String OUTPUT_DIRECTORY = "./output";
   private final String sourceId = "blaze-store";
+  private String targetId;
   private final String CONVERTER_APPLICATION_CONTEXT_PATH = "./converter/converter.xml";
 
   private BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
   private ContainersToCsvConverter containersToCsvConverter;
   private ContainersToExcelConverter containersToExcelConverter;
+  private ApplicationContext applicationContext;
 
   @BeforeEach
   void setUp() {
@@ -38,10 +41,11 @@ class ConverterManagerTest {
 
   @Test
   void getConverter() {
-    ConverterManager converterManager = new ConverterManager(bundleToContainersConverter,
-        containersToCsvConverter, containersToExcelConverter, CONVERTER_APPLICATION_CONTEXT_PATH);
+    ConverterManager converterManager = new ConverterManager(applicationContext,
+        bundleToContainersConverter, containersToCsvConverter, containersToExcelConverter,
+        CONVERTER_APPLICATION_CONTEXT_PATH);
     Converter converter = converterManager.getBestMatchConverter(Format.FHIR_QUERY, Format.CSV,
-        sourceId);
+        sourceId, targetId);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager("./templates");
 
     Set<String> sourceIds = converterManager.getSourceIds();

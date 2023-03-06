@@ -139,8 +139,7 @@ public class ExporterCore {
     if (query != null && query.getFormat() != null && exporterParameters.outputFormat() != null
         && template != null) {
       converter = converterManager.getBestMatchConverter(query.getFormat(),
-          exporterParameters.outputFormat(),
-          template.getSourceId());
+          exporterParameters.outputFormat(), template.getSourceId(), template.getTargetId());
       if (converter == null) {
         errors.addError(
             "No converter found for query format " + exporterParameters.queryFormat()

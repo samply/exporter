@@ -7,11 +7,20 @@ import java.util.List;
 
 public class ContainerTemplate {
 
-  @JacksonXmlProperty(isAttribute = true, localName = "csv-filename")@JsonProperty("csv-filename")
+  @JacksonXmlProperty(isAttribute = true, localName = "csv-filename")
+  @JsonProperty("csv-filename")
   private String csvFilename;
-  @JacksonXmlProperty(isAttribute = true, localName = "excel-sheet")@JsonProperty("excel-sheet")
+  @JacksonXmlProperty(isAttribute = true, localName = "excel-sheet")
+  @JsonProperty("excel-sheet")
   private String excelSheet;
-  @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("attribute")
+  @JacksonXmlProperty(isAttribute = true, localName = "opal-table")
+  @JsonProperty("opal-table")
+  private String opalTable;
+  @JacksonXmlProperty(isAttribute = true, localName = "opal-entity-type")
+  @JsonProperty("opal-entity-type")
+  private String opalEntityType;
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JsonProperty("attribute")
   private List<AttributeTemplate> attributeTemplates;
 
   public ContainerTemplate() {
@@ -38,6 +47,22 @@ public class ContainerTemplate {
 
   public void setExcelSheet(String excelSheet) {
     this.excelSheet = excelSheet;
+  }
+
+  public String getOpalTable() {
+    return opalTable;
+  }
+
+  public void setOpalTable(String opalTable) {
+    this.opalTable = opalTable;
+  }
+
+  public String getOpalEntityType() {
+    return opalEntityType;
+  }
+
+  public void setOpalEntityType(String opalEntityType) {
+    this.opalEntityType = opalEntityType;
   }
 
   public List<AttributeTemplate> getAttributeTemplates() {

@@ -13,7 +13,8 @@ public enum Format {
   BUNDLE (Bundle.class, false),
   CONTAINERS (Containers.class, false),
   CSV (Path.class, false),
-  EXCEL (Path.class, false);
+  EXCEL (Path.class, false),
+  OPAL (Path.class, false);
 
   private Class zClass;
   private boolean isQuery;

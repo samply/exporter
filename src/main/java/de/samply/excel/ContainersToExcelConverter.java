@@ -115,7 +115,7 @@ public class ContainersToExcelConverter extends ConverterImpl<Containers, Path, 
   }
 
   @Override
-  protected Session initializeSession() {
+  protected Session initializeSession(ConverterTemplate template) {
     return new Session(converterTemplateUtils, writeDirectory, workbookWindow);
   }
 

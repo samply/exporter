@@ -38,7 +38,7 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path, Se
   }
 
   @Override
-  protected Session initializeSession() {
+  protected Session initializeSession(ConverterTemplate template) {
     return new Session(converterTemplateUtils, writeDirectory);
   }
 
@@ -55,14 +55,14 @@ public class ContainersToCsvConverter extends ConverterImpl<Containers, Path, Se
   private Path writeContainersInCsv(List<Container> containers,
       ConverterTemplate converterTemplate, ContainerTemplate containerTemplate, Session session) {
     try {
-      return writeContainersInCsvWithoutExceptionManagement(containers, converterTemplate,
+      return writeContainersInCsvWithoutExceptionHandling(containers, converterTemplate,
           containerTemplate, session);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Path writeContainersInCsvWithoutExceptionManagement(List<Container> containers,
+  private Path writeContainersInCsvWithoutExceptionHandling(List<Container> containers,
       ConverterTemplate converterTemplate, ContainerTemplate containerTemplate, Session session)
       throws IOException {
 
