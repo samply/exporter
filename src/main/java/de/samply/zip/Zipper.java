@@ -41,14 +41,14 @@ public class Zipper {
   public Pair<InputStreamResource, String> zipFiles(Path zipFilePath, List<String> filePaths)
       throws ZipperException {
     try {
-      return Pair.of(zipFilesWithoutExceptionManagement(zipFilePath, filePaths),
+      return Pair.of(zipFilesWithoutExceptionHandling(zipFilePath, filePaths),
           zipFilePath.getFileName().toString());
     } catch (FileNotFoundException e) {
       throw new ZipperException(e);
     }
   }
 
-  private InputStreamResource zipFilesWithoutExceptionManagement(Path zipFilePath,
+  private InputStreamResource zipFilesWithoutExceptionHandling(Path zipFilePath,
       List<String> filePaths) throws FileNotFoundException, ZipperException {
     try (FileOutputStream outputStream = new FileOutputStream(
         zipFilePath.toFile()); ZipOutputStream zipOutputStream = new ZipOutputStream(

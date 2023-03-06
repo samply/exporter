@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Flux;
 
 @Disabled
@@ -40,8 +41,10 @@ class ExporterCoreTest {
     ContainersToExcelConverter containersToExcelConverter = new ContainersToExcelConverter(30000000,
         converterTemplateUtils, writeDirectory);
     BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
-    ConverterManager converterManager = new ConverterManager(bundleToContainersConverter,
-        containersToCsvConverter, containersToExcelConverter, converterXmlApplicationContextPath);
+    ApplicationContext applicationContext = null;
+    ConverterManager converterManager = new ConverterManager(applicationContext,
+        bundleToContainersConverter, containersToCsvConverter, containersToExcelConverter,
+        converterXmlApplicationContextPath);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager(
         templateDirectory);
     //TODO
@@ -50,7 +53,8 @@ class ExporterCoreTest {
     QueryExecutionFileRepository queryExecutionFileRepository = null;
     QueryExecutionErrorRepository queryExecutionErrorRepository = null;
     InquiryRespository inquiryRespository = null;
-    ExporterDbService exporterDbService = new ExporterDbService(queryRepository, queryExecutionRepository,
+    ExporterDbService exporterDbService = new ExporterDbService(queryRepository,
+        queryExecutionRepository,
         queryExecutionFileRepository, queryExecutionErrorRepository, inquiryRespository);
 
     exporterCore = new ExporterCore(converterManager, converterTemplateManager, exporterDbService);
@@ -60,7 +64,8 @@ class ExporterCoreTest {
   void retrieveByQueryId() throws ExporterCoreException {
     ExporterParameters exporterParameters = new ExporterParameters(null, "Patient",
         converterTemplateId, null, null, Format.FHIR_QUERY, null, null, null, null, Format.CSV);
-    ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(exporterParameters);
+    ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(
+        exporterParameters);
     Flux<Path> resultFlux = exporterCore.retrieveQuery(exporterCoreParameters);
     resultFlux.blockLast();
   }

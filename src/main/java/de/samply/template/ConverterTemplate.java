@@ -26,6 +26,14 @@ public class ConverterTemplate {
   @JsonProperty(value = "source-id")
   private String sourceId;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "target-id")
+  @JsonProperty(value = "target-id")
+  private String targetId;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "opal-project")
+  @JsonProperty(value = "opal-project")
+  private String opalProject;
+
   @JacksonXmlElementWrapper(useWrapping = false)
   @JsonProperty("container")
   private List<ContainerTemplate> containerTemplates = new ArrayList<>();
@@ -90,6 +98,22 @@ public class ConverterTemplate {
 
   public void setSourceId(String sourceId) {
     this.sourceId = sourceId;
+  }
+
+  public String getTargetId() {
+    return targetId;
+  }
+
+  public void setTargetId(String targetId) {
+    this.targetId = targetId;
+  }
+
+  public String getOpalProject() {
+    return opalProject;
+  }
+
+  public void setOpalProject(String opalProject) {
+    this.opalProject = opalProject;
   }
 
 }

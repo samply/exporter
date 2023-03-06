@@ -5,6 +5,7 @@ import com.google.common.collect.Table;
 import de.samply.converter.selector.ConverterSelector;
 import de.samply.converter.selector.ConverterSelectorCriteria;
 import de.samply.converter.selector.ExistentSource;
+import de.samply.converter.selector.ExistentTarget;
 import de.samply.converter.selector.LessWeight;
 import de.samply.csv.ContainersToCsvConverter;
 import de.samply.excel.ContainersToExcelConverter;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +33,7 @@ public class ConverterManager {
       Arrays.asList(new LessWeight()));
 
   public ConverterManager(
+      @Autowired ApplicationContext applicationContext,
       @Autowired BundleToContainersConverter bundleToContainersConverter,
       @Autowired ContainersToCsvConverter containersToCsvConverter,
       @Autowired ContainersToExcelConverter containersToExcelConverter,
@@ -40,20 +43,28 @@ public class ConverterManager {
     converters.add(bundleToContainersConverter);
     converters.add(containersToCsvConverter);
     converters.add(containersToExcelConverter);
-    converters.addAll(fetchConvertersFromApplicationContext(converterXmlApplicationContextPath));
+    converters.addAll(fetchConvertersFromApplicationContext(converterXmlApplicationContextPath,
+        applicationContext));
 
     loadAllConverterCombinations(converters);
     sourceIds = fetchSourceIds();
   }
 
   private List<Converter> fetchConvertersFromApplicationContext(
-      String converterXmlApplicationContextPath) {
+      String converterXmlApplicationContextPath, ApplicationContext applicationContext) {
     List<Converter> converters = new ArrayList<>();
     ApplicationContext context = new FileSystemXmlApplicationContext(
         converterXmlApplicationContextPath);
     Arrays.stream(context.getBeanDefinitionNames())
-        .forEach(beanName -> converters.add((Converter) context.getBean(beanName)));
-
+        .forEach(beanName -> {
+          if (context.getBean(beanName) instanceof Converter) {
+            Converter converter = (Converter) context.getBean(beanName);
+            converters.add(converter);
+            if (converter instanceof ApplicationContextAware) {
+              ((ApplicationContextAware) converter).setApplicationContext(applicationContext);
+            }
+          }
+        });
     return converters;
   }
 
@@ -115,9 +126,16 @@ public class ConverterManager {
         convertToGroups(getConverters(inputFormat, outputFormat)));
   }
 
-  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat, String sourceId) {
-    return getBestMatchConverter(inputFormat, outputFormat,
-        Arrays.asList(new ExistentSource(sourceId)));
+  public Converter getBestMatchConverter(Format inputFormat, Format outputFormat, String sourceId,
+      String targetId) {
+    List<ConverterSelectorCriteria> criteria = new ArrayList<>();
+    if (sourceId != null) {
+      criteria.add(new ExistentSource(sourceId));
+    }
+    if (targetId != null) {
+      criteria.add(new ExistentTarget(targetId));
+    }
+    return getBestMatchConverter(inputFormat, outputFormat, criteria);
   }
 
   List<ConverterGroup> convertToGroups(List<Converter> converters) {
