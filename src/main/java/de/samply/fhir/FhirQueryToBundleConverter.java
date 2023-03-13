@@ -43,7 +43,7 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
   }
 
   @Override
-  protected EmptySession initializeSession() {
+  protected EmptySession initializeSession(ConverterTemplate template) {
     return EmptySession.instance();
   }
 

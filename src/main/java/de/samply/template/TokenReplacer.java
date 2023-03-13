@@ -60,5 +60,41 @@ public class TokenReplacer {
     return new SimpleDateFormat(format).format(Timestamp.from(Instant.now()));
   }
 
+  public static String removeTokens(String csvFilename) {
+    boolean hasVariable = true;
+    while (hasVariable) {
+      int index = csvFilename.indexOf(ExporterConst.TOKEN_HEAD);
+      if (index == -1) {
+        hasVariable = false;
+      } else {
+        int index2 = csvFilename.substring(index + ExporterConst.TOKEN_HEAD.length())
+            .indexOf(ExporterConst.TOKEN_END);
+        if (index2 == -1) {
+          hasVariable = false;
+        } else {
+          csvFilename = csvFilename.substring(0, index) + csvFilename.substring(
+              index + ExporterConst.TOKEN_HEAD.length() + index2 + 1);
+        }
+      }
+    }
+    return csvFilename;
+  }
+
+  public static boolean isSameElement(String elementWithReplacedTokens,
+      String elementWithoutTokens) {
+    for (int i = 0, j = 0;
+        i < elementWithoutTokens.length() && j < elementWithReplacedTokens.length(); i++, j++) {
+      while (elementWithoutTokens.charAt(i) != elementWithReplacedTokens.charAt(j)) {
+        j++;
+        if (j == elementWithReplacedTokens.length()) {
+          return false;
+        }
+      }
+      if (i + 1 == elementWithoutTokens.length()) {
+        return true;
+      }
+    }
+    return false;
+  }
 
 }

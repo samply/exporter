@@ -42,7 +42,7 @@ public class BundleToContainersConverter extends
   }
 
   @Override
-  protected BundleToContainersConverterSession initializeSession() {
+  protected BundleToContainersConverterSession initializeSession(ConverterTemplate template) {
     return new BundleToContainersConverterSession();
   }
 
@@ -76,7 +76,7 @@ public class BundleToContainersConverter extends
         (attributeTemplate.getJoinFhirPath() != null && attributeTemplate.isDirectJoinFhirPath() &&
             isSameResourceType(resource,
                 AttributeTemplate.removeChildFhirPathHead(attributeTemplate.getJoinFhirPath()))) ||
-            isSameResourceType(resource, attributeTemplate.getFhirPath());
+            isSameResourceType(resource, attributeTemplate.getValFhirPath());
   }
 
   private boolean isSameResourceType(Resource resource, String fhirPath) {
@@ -95,7 +95,7 @@ public class BundleToContainersConverter extends
       BundleContext context) {
     List<ResourceAttribute> resourceAttributes = new ArrayList<>();
     context.fetchRelatedResources(resource, attributeTemplate).forEach(relatedResource -> {
-      ExpressionNode expressionNode = fhirPathEngine.parse(attributeTemplate.getFhirPath());
+      ExpressionNode expressionNode = fhirPathEngine.parse(attributeTemplate.getValFhirPath());
       Resource evalResource =
           (attributeTemplate.isDirectChildFhirPath()) ? resource : relatedResource;
       Resource idResource =

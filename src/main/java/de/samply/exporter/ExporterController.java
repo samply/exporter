@@ -239,9 +239,10 @@ public class ExporterController {
       @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
       @RequestHeader(name = "Content-Type", required = false) String contentType,
       @RequestBody(required = false) String template) {
+    /*
     if (!outputFormat.isPath()) {
       return ResponseEntity.badRequest().body("Output format is not a file");
-    }
+    }*/
     ExporterCoreParameters exporterCoreParameters = null;
     try {
       exporterCoreParameters = exporterCore.extractParameters(

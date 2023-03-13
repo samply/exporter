@@ -13,12 +13,26 @@ public class AttributeTemplate {
   @JacksonXmlProperty(isAttribute = true, localName = "csv-column")
   @JsonProperty("csv-column")
   private String csvColumnName;
+
   @JacksonXmlProperty(isAttribute = true, localName = "excel-column")
   @JsonProperty("excel-column")
   private String excelColumnName;
-  @JacksonXmlProperty(isAttribute = true, localName = "fhir-path")
-  @JsonProperty("fhir-path")
-  private String fhirPath;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "opal-value-type")
+  @JsonProperty("opal-value-type")
+  private String opalValueType;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "opal-script")
+  @JsonProperty("opal-script")
+  private String opalScript;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "primary-key")
+  @JsonProperty("primary-key")
+  private boolean primaryKey = false;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "val-fhir-path")
+  @JsonProperty("val-fhir-path")
+  private String valFhirPath;
 
   @JacksonXmlProperty(isAttribute = true, localName = "join-fhir-path")
   @JsonProperty("join-fhir-path")
@@ -48,10 +62,10 @@ public class AttributeTemplate {
   }
 
   public AttributeTemplate(String csvColumnName, String excelColumnName,
-      String fhirPath) {
+      String valFhirPath) {
     this.csvColumnName = csvColumnName;
     this.excelColumnName = excelColumnName;
-    this.fhirPath = fhirPath;
+    this.valFhirPath = valFhirPath;
   }
 
   public String getCsvColumnName() {
@@ -70,12 +84,20 @@ public class AttributeTemplate {
     this.excelColumnName = excelColumnName;
   }
 
-  public String getFhirPath() {
-    return fhirPath;
+  public String getOpalValueType() {
+    return opalValueType;
   }
 
-  public void setFhirPath(String fhirPath) {
-    this.fhirPath = fhirPath;
+  public void setOpalValueType(String opalValueType) {
+    this.opalValueType = opalValueType;
+  }
+
+  public String getValFhirPath() {
+    return valFhirPath;
+  }
+
+  public void setValFhirPath(String valFhirPath) {
+    this.valFhirPath = valFhirPath;
   }
 
   public String getMdr() {
@@ -195,6 +217,22 @@ public class AttributeTemplate {
 
   public void setConditionIdFhirPath(String conditionIdFhirPath) {
     this.conditionIdFhirPath = conditionIdFhirPath;
+  }
+
+  public String getOpalScript() {
+    return opalScript;
+  }
+
+  public void setOpalScript(String opalScript) {
+    this.opalScript = opalScript;
+  }
+
+  public boolean isPrimaryKey() {
+    return primaryKey;
+  }
+
+  public void setPrimaryKey(boolean primaryKey) {
+    this.primaryKey = primaryKey;
   }
 
 }

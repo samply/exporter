@@ -26,13 +26,13 @@ public class ConverterTemplateManager {
 
   private void loadTemplates(Path templateDirectory) {
     try {
-      loadTemplatesWithoutExceptionmanagement(templateDirectory);
+      loadTemplatesWithoutExceptionHandling(templateDirectory);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void loadTemplatesWithoutExceptionmanagement(Path templateDirectory)
+  private void loadTemplatesWithoutExceptionHandling(Path templateDirectory)
       throws IOException {
     if (Files.exists(templateDirectory)) {
       Files.list(templateDirectory).filter(path -> !Files.isDirectory(path))
@@ -42,13 +42,13 @@ public class ConverterTemplateManager {
 
   private void loadTemplate(Path templatePath) {
     try {
-      loadTemplateWithoutExceptionManagement(templatePath);
+      loadTemplateWithoutExceptionHandling(templatePath);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void loadTemplateWithoutExceptionManagement(Path templatePath) throws IOException {
+  private void loadTemplateWithoutExceptionHandling(Path templatePath) throws IOException {
     ConverterTemplate converterTemplate = fetchConverterTemplate(templatePath);
     idConverterTemplateMap.put(converterTemplate.getId(), converterTemplate);
   }

@@ -22,13 +22,13 @@ public class FilesCleaner {
 
   public void clean() throws FilesCleanerException {
     try {
-      cleanWithoutExceptionManagement();
+      cleanWithoutExceptionHandling();
     } catch (IOException | RuntimeException e) {
       throw new FilesCleanerException(e);
     }
   }
 
-  private void cleanWithoutExceptionManagement() throws IOException {
+  private void cleanWithoutExceptionHandling() throws IOException {
     Files.list(filesDirectory).filter(path -> !Files.isDirectory(path))
         .forEach(path -> {
           try {
