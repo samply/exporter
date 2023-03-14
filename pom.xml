@@ -98,6 +98,11 @@
       <artifactId>ucum</artifactId>
       <version>${ucum.version}</version>
     </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-caching-caffeine</artifactId>
+      <version>${hapi.version}</version>
+    </dependency>
 
     <!-- Apache POI dependencies -->
     <dependency>
@@ -133,11 +138,6 @@
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
       <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-      <version>${caffeine.version}</version>
     </dependency>
     <dependency>
       <groupId>io.projectreactor</groupId>
