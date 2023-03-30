@@ -2,6 +2,7 @@ package de.samply.exporter;
 
 import java.util.Arrays;
 import java.util.List;
+import org.apache.http.protocol.HTTP;
 
 public class ExporterConst {
 
@@ -80,6 +81,7 @@ public class ExporterConst {
   public final static String CROSS_ORIGINS = "CROSS_ORIGINS";
   public final static String TIMEOUT_IN_SECONDS = "TIMEOUT";
   public final static String MAX_NUMBER_OF_RETRIES = "MAX_NUMBER_OF_RETRIES";
+  public final static String HTTP_RELATIVE_PATH = "HTTP_RELATIVE_PATH";
 
   // Spring Values (SV)
   public final static String HEAD_SV = "${";
@@ -109,7 +111,8 @@ public class ExporterConst {
       HEAD_SV + WRITE_FILES_LIFETIME_IN_DAYS + ":#{30}" + BOTTOM_SV;
   public final static String CROSS_ORIGINS_SV =
       "#{'" + HEAD_SV + CROSS_ORIGINS + ":#{null}" + BOTTOM_SV + "'.split(',')}";
-
+  public final static String HTTP_RELATIVE_PATH_SV =
+      HEAD_SV + HTTP_RELATIVE_PATH + ":" + BOTTOM_SV;
 
   // REST Paths
   public static final String INFO = "/info";
