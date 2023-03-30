@@ -59,6 +59,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send execution file url in inquiry
 - Get Query Execution Status
 - Opal Importer
+- Http relative path
 
 ### Changed
 - Rename Conversion Template as Converter Template

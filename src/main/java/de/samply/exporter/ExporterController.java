@@ -39,6 +39,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.util.Pair;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -65,11 +66,16 @@ public class ExporterController {
       .registerModule(new JavaTimeModule());
   private final String projectVersion = ProjectVersion.getProjectVersion();
   private final ExporterCore exporterCore;
+  private final String httpRelativePath;
   private ExporterDbService exporterDbService;
   private Zipper zipper;
 
-  public ExporterController(@Autowired ExporterCore exporterCore,
-      @Autowired ExporterDbService exporterDbService, @Autowired Zipper zipper) {
+  public ExporterController(
+      @Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
+      @Autowired ExporterCore exporterCore,
+      @Autowired ExporterDbService exporterDbService,
+      @Autowired Zipper zipper) {
+    this.httpRelativePath = httpRelativePath;
     this.exporterCore = exporterCore;
     this.exporterDbService = exporterDbService;
     this.zipper = zipper;
@@ -202,7 +208,7 @@ public class ExporterController {
     }
   }
 
-  private <T,R> ResponseEntity convertToResponseEntity(T input, Function<T,R> function) {
+  private <T, R> ResponseEntity convertToResponseEntity(T input, Function<T, R> function) {
     return convertToResponseEntity(() -> function.apply(input));
   }
 
@@ -296,8 +302,13 @@ public class ExporterController {
 
   private String fetchResponseUrl(HttpServletRequest httpServletRequest, Long queryExecutionId) {
     return ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
-        .replacePath(ExporterConst.RESPONSE)
+        .replacePath(createHttpPath(ExporterConst.RESPONSE))
         .queryParam(ExporterConst.QUERY_EXECUTION_ID, queryExecutionId).toUriString();
+  }
+
+  private String createHttpPath(String httpPath) {
+    return (httpRelativePath != null && httpRelativePath.length() > 0) ? httpRelativePath + '/'
+        + httpPath : httpPath;
   }
 
   private QueryExecution createQueryExecution(ExporterCoreParameters exporterCoreParameters) {
