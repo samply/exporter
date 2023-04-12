@@ -67,15 +67,18 @@ public class ExporterController {
   private final String projectVersion = ProjectVersion.getProjectVersion();
   private final ExporterCore exporterCore;
   private final String httpRelativePath;
+  private final String httpServletRequestScheme;
   private ExporterDbService exporterDbService;
   private Zipper zipper;
 
   public ExporterController(
       @Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
+      @Value(ExporterConst.HTTP_SERVLET_REQUEST_SCHEME_SV) String httpServletRequestScheme,
       @Autowired ExporterCore exporterCore,
       @Autowired ExporterDbService exporterDbService,
       @Autowired Zipper zipper) {
     this.httpRelativePath = httpRelativePath;
+    this.httpServletRequestScheme = httpServletRequestScheme;
     this.exporterCore = exporterCore;
     this.exporterDbService = exporterDbService;
     this.zipper = zipper;
@@ -302,6 +305,7 @@ public class ExporterController {
 
   private String fetchResponseUrl(HttpServletRequest httpServletRequest, Long queryExecutionId) {
     return ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
+        .scheme(httpServletRequestScheme)
         .replacePath(createHttpPath(ExporterConst.RESPONSE))
         .queryParam(ExporterConst.QUERY_EXECUTION_ID, queryExecutionId).toUriString();
   }
