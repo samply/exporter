@@ -6,7 +6,7 @@
     http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <bean id="blazeStoreFhirQueryToBundleConverter" class="de.samply.fhir.FhirQueryToBundleConverter">
-    <constructor-arg name="fhirStoreUrl" value="http://blaze:8080/fhir" />
+    <constructor-arg name="fhirStoreUrl" value="http://localhost:8091/fhir" />
     <constructor-arg name="sourceId" value="blaze-store" />
   </bean>
 

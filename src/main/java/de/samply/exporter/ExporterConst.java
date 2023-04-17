@@ -83,6 +83,7 @@ public class ExporterConst {
   public final static String MAX_NUMBER_OF_RETRIES = "MAX_NUMBER_OF_RETRIES";
   public final static String HTTP_RELATIVE_PATH = "HTTP_RELATIVE_PATH";
   public final static String HTTP_SERVLET_REQUEST_SCHEME = "HTTP_SERVLET_REQUEST_SCHEME";
+  public final static String TIMESTAMP_FORMAT = "TIMESTAMP_FORMAT";
 
   // Spring Values (SV)
   public final static String HEAD_SV = "${";
@@ -116,6 +117,9 @@ public class ExporterConst {
       HEAD_SV + HTTP_RELATIVE_PATH + ":" + BOTTOM_SV;
   public final static String HTTP_SERVLET_REQUEST_SCHEME_SV =
       HEAD_SV + HTTP_SERVLET_REQUEST_SCHEME + ":http" + BOTTOM_SV;
+  public final static String TIMESTAMP_FORMAT_SV =
+      HEAD_SV + TIMESTAMP_FORMAT + ":" + DEFAULT_TIMESTAMP_FORMAT + BOTTOM_SV;
+
 
   // REST Paths
   public static final String INFO = "/info";
