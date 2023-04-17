@@ -70,3 +70,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename teiler to exporter
 - Bugfix: Filter paths
 - Bugfix: Change default template
+- Bugfix: Generate filenames only once in session for csv and excel
