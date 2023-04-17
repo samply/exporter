@@ -5,14 +5,19 @@ import de.samply.utils.EnvironmentUtils;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ConverterTemplateUtils {
 
   private EnvironmentUtils environmentUtils;
+  private String timestampFormat;
 
-  public ConverterTemplateUtils(@Autowired EnvironmentUtils environmentUtils) {
+  public ConverterTemplateUtils(
+      @Value(ExporterConst.TIMESTAMP_FORMAT_SV) String timestampFormat,
+      @Autowired EnvironmentUtils environmentUtils) {
+    this.timestampFormat = timestampFormat;
     this.environmentUtils = environmentUtils;
   }
 
@@ -23,7 +28,7 @@ public class ConverterTemplateUtils {
       // Replace predefined tokens
       Arrays.stream(ContainerToken.values()).forEach(containerToken -> {
         if (textReference.get().contains(containerToken.name())) {
-          textReference.set(new TokenReplacer(containerToken, environmentUtils,
+          textReference.set(new TokenReplacer(containerToken, environmentUtils, timestampFormat,
               textReference.get()).getTokenReplacer());
         }
       });

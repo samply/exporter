@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2023-04-12]
+## [1.0.0 - 2023-04-17]
 ### Added
 - Search Controller
 - Blaze Store Client
@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - GET active, error and archived inquiries
 - Format inquiry timestamp
 - Allow Cors
-- Default value for inquiry label and decription
+- Default value for inquiry label and description
 - Archive Query
 - Send execution file url in inquiry
 - Get Query Execution Status
@@ -69,3 +69,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Bugfix: Allow join-fhir-path parent with many children
 - Rename teiler to exporter
 - Bugfix: Filter paths
+- Bugfix: Change default template

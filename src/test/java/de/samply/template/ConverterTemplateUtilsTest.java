@@ -29,7 +29,8 @@ class ConverterTemplateUtilsTest {
     Map<String, Object> properties = generateProperties();
     ConfigurableEnvironment environment = EnvironmentTestUtils.getMockEnvironment(properties);
     EnvironmentUtils environmentUtils = new EnvironmentUtils(environment);
-    this.converterTemplateUtils = new ConverterTemplateUtils(environmentUtils);
+    this.converterTemplateUtils = new ConverterTemplateUtils(ExporterConst.DEFAULT_TIMESTAMP_FORMAT,
+        environmentUtils);
   }
 
   private Map<String, Object> generateProperties() {
@@ -57,8 +58,9 @@ class ConverterTemplateUtilsTest {
     assertTrue(result.contains(part1) && result.contains(part2) && !example.equals(result));
 
     String format = "yyyyMMdd";
-    example = part1 + ExporterConst.TOKEN_HEAD + "TIMESTAMP" + ExporterConst.TOKEN_EXTENSION_DELIMITER
-        + format + ExporterConst.TOKEN_END + part2;
+    example =
+        part1 + ExporterConst.TOKEN_HEAD + "TIMESTAMP" + ExporterConst.TOKEN_EXTENSION_DELIMITER
+            + format + ExporterConst.TOKEN_END + part2;
     result = converterTemplateUtils.replaceTokens(example);
     assertTrue(result.contains(part1) && result.contains(part2) && !example.equals(result)
         && result.length() == (part1 + part2 + format).length());
