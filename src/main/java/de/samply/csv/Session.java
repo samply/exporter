@@ -15,6 +15,7 @@ public class Session {
   private String writeDirectory;
 
   private List<Path> pathList = new ArrayList<>();
+  private Map<ContainerTemplate, Path> containerTemplatePathMap = new HashMap<>();
 
   public Session(ConverterTemplateUtils converterTemplateUtils,
       String writeDirectory) {
@@ -25,12 +26,17 @@ public class Session {
   private Map<String, String> filenameMap = new HashMap<>();
 
   public Path getFilePath(ContainerTemplate containerTemplate) {
-    String filename = filenameMap.get(containerTemplate.getCsvFilename());
-    if (filename == null) {
-      filename = converterTemplateUtils.replaceTokens(containerTemplate.getCsvFilename());
-      filenameMap.put(containerTemplate.getCsvFilename(), filename);
+    Path path = containerTemplatePathMap.get(containerTemplate);
+    if (path == null){
+      String filename = filenameMap.get(containerTemplate.getCsvFilename());
+      if (filename == null) {
+        filename = converterTemplateUtils.replaceTokens(containerTemplate.getCsvFilename());
+        filenameMap.put(containerTemplate.getCsvFilename(), filename);
+      }
+      path = Paths.get(writeDirectory).resolve(filename);
+      containerTemplatePathMap.put(containerTemplate, path);
     }
-    return Paths.get(writeDirectory).resolve(filename);
+    return path;
   }
 
   public List<Path> getNewPaths(List<Path> pathList) {
