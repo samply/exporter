@@ -3,6 +3,7 @@ package de.samply.converter;
 import de.samply.EnvironmentTestUtils;
 import de.samply.csv.ContainersToCsvConverter;
 import de.samply.excel.ContainersToExcelConverter;
+import de.samply.exporter.ExporterConst;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
@@ -32,7 +33,8 @@ class ConverterManagerTest {
   void setUp() {
     EnvironmentUtils environmentUtils = new EnvironmentUtils(
         EnvironmentTestUtils.getEmptyMockEnvironment());
-    ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(environmentUtils);
+    ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(
+        ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
     this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
         OUTPUT_DIRECTORY);
     this.containersToExcelConverter = new ContainersToExcelConverter(30000000,

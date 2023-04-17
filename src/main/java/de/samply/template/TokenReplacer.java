@@ -10,15 +10,17 @@ public class TokenReplacer {
 
   private EnvironmentUtils environmentUtils;
   private ContainerToken containerToken;
+  private String timestampFormat;
   private String text;
   private String extension;
   private int headIndex;
   private int endIndex;
 
   public TokenReplacer(ContainerToken containerToken, EnvironmentUtils environmentUtils,
-      String text) {
+      String timestampFormat, String text) {
     this(environmentUtils, text);
     this.containerToken = containerToken;
+    this.timestampFormat = timestampFormat;
     this.headIndex = text.indexOf(ExporterConst.TOKEN_HEAD + containerToken.name());
     this.endIndex = headIndex + text.substring(headIndex).indexOf(ExporterConst.TOKEN_END);
   }
@@ -55,7 +57,7 @@ public class TokenReplacer {
 
   private String getTimestamp(String format) {
     if (format == null) {
-      format = ExporterConst.DEFAULT_TIMESTAMP_FORMAT;
+      format = timestampFormat;
     }
     return new SimpleDateFormat(format).format(Timestamp.from(Instant.now()));
   }

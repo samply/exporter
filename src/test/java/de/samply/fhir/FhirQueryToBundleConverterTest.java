@@ -4,6 +4,7 @@ import de.samply.EnvironmentTestUtils;
 import de.samply.container.Containers;
 import de.samply.csv.ContainersToCsvConverter;
 import de.samply.csv.Session;
+import de.samply.exporter.ExporterConst;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
@@ -37,7 +38,8 @@ class FhirQueryToBundleConverterTest {
     this.fhirQueryToBundleConverter = new FhirQueryToBundleConverter(blazeStoreUrl, sourceId);
     EnvironmentUtils environmentUtils = new EnvironmentUtils(
         EnvironmentTestUtils.getEmptyMockEnvironment());
-    ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(environmentUtils);
+    ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(
+        ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
     this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
         outputDirectory);
     this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory);
