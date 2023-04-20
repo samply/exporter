@@ -70,7 +70,7 @@ public abstract class ContainersToFilesConverter<S extends Session> extends
     boolean isFileAlreadyInitialized = isFileAlreadyInitialized(filePath);
     Files.write(filePath,
         createContainerFileWriterIterable(containers, converterTemplate, containerTemplate,
-            session),
+            session).setIfIsFirstLine(!isFileAlreadyInitialized),
         (isFileAlreadyInitialized) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
     return filePath;
   }

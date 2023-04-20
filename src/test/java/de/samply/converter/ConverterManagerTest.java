@@ -10,6 +10,7 @@ import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
+import de.samply.xml.ContainersToXmlConverter;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -29,6 +30,7 @@ class ConverterManagerTest {
   private ContainersToCsvConverter containersToCsvConverter;
   private ContainersToExcelConverter containersToExcelConverter;
   private ContainersToJsonConverter containersToJsonConverter;
+  private ContainersToXmlConverter containersToXmlConverter;
   private ApplicationContext applicationContext;
 
   @BeforeEach
@@ -43,13 +45,15 @@ class ConverterManagerTest {
         converterTemplateUtils, OUTPUT_DIRECTORY);
     this.containersToJsonConverter = new ContainersToJsonConverter(converterTemplateUtils,
         OUTPUT_DIRECTORY);
+    this.containersToXmlConverter = new ContainersToXmlConverter(converterTemplateUtils,
+        OUTPUT_DIRECTORY);
   }
 
   @Test
   void getConverter() {
     ConverterManager converterManager = new ConverterManager(applicationContext,
         bundleToContainersConverter, containersToCsvConverter, containersToExcelConverter,
-        containersToJsonConverter, CONVERTER_APPLICATION_CONTEXT_PATH);
+        containersToJsonConverter, containersToXmlConverter, CONVERTER_APPLICATION_CONTEXT_PATH);
     Converter converter = converterManager.getBestMatchConverter(Format.FHIR_QUERY, Format.CSV,
         sourceId, targetId);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager("./templates");

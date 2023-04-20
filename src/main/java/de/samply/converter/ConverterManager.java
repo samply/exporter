@@ -12,6 +12,7 @@ import de.samply.excel.ContainersToExcelConverter;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.exporter.ExporterConst;
 import de.samply.json.ContainersToJsonConverter;
+import de.samply.xml.ContainersToXmlConverter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,6 +41,7 @@ public class ConverterManager {
       @Autowired ContainersToCsvConverter containersToCsvConverter,
       @Autowired ContainersToExcelConverter containersToExcelConverter,
       @Autowired ContainersToJsonConverter containersToJsonConverter,
+      @Autowired ContainersToXmlConverter containersToXmlConverter,
       @Value(ExporterConst.CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV) String converterXmlApplicationContextPath
   ) {
     List<Converter> converters = new ArrayList<>();
@@ -47,6 +49,7 @@ public class ConverterManager {
     converters.add(containersToCsvConverter);
     converters.add(containersToExcelConverter);
     converters.add(containersToJsonConverter);
+    converters.add(containersToXmlConverter);
     converters.addAll(fetchConvertersFromApplicationContext(converterXmlApplicationContextPath,
         applicationContext));
 

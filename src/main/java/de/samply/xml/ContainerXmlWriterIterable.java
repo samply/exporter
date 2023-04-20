@@ -1,4 +1,4 @@
-package de.samply.json;
+package de.samply.xml;
 
 import de.samply.container.Container;
 import de.samply.files.ContainerFileWriterIterable;
@@ -7,11 +7,9 @@ import de.samply.template.ConverterTemplate;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ContainerJsonWriterIterable extends ContainerFileWriterIterable {
+public class ContainerXmlWriterIterable extends ContainerFileWriterIterable {
 
-  private boolean isFirstElement = true;
-
-  public ContainerJsonWriterIterable(List<Container> containers,
+  public ContainerXmlWriterIterable(List<Container> containers,
       ConverterTemplate converterTemplate,
       ContainerTemplate containerTemplate) {
     super(containers, converterTemplate, containerTemplate);
@@ -19,40 +17,25 @@ public class ContainerJsonWriterIterable extends ContainerFileWriterIterable {
 
   @Override
   protected String fetchFirstLine() {
-    return "{ \"" + containerTemplate.getJsonKey() + "\" : [";
+    return "<" + containerTemplate.getXmlRootElement() + ">";
   }
 
   @Override
   protected String fetchContainerLine(Container container) {
     StringBuilder stringBuilder = new StringBuilder();
-    if (isFirstElement) {
-      isFirstElement = false;
-    } else {
-      stringBuilder.append(",");
-    }
-    stringBuilder.append("\t { ");
+    stringBuilder.append("\t<" + containerTemplate.getXmlElement() + ">");
     AtomicBoolean hasElements = new AtomicBoolean(false);
     containerTemplate.getAttributeTemplates().forEach(attributeTemplate -> {
       String attributeValue = container.getAttributeValue(attributeTemplate);
       if (attributeValue != null) {
         hasElements.set(true);
-        stringBuilder.append(" \"" + attributeTemplate.getJsonKey() + "\" : ");
-        stringBuilder.append("\"" + attributeValue + "\",");
+        stringBuilder.append("\n\t\t<" + attributeTemplate.getXmlElement() + ">");
+        stringBuilder.append(attributeValue);
+        stringBuilder.append("</" + attributeTemplate.getXmlElement() + ">");
       }
     });
-    if (hasElements.get()) {
-      stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-    }
-    stringBuilder.append(" }");
-
+    stringBuilder.append("\n\t</" + containerTemplate.getXmlElement() + ">");
     return stringBuilder.toString();
-
-  }
-
-  @Override
-  public ContainerFileWriterIterable setIfIsFirstLine(boolean isFirstLine) {
-    this.isFirstElement = isFirstLine;
-    return super.setIfIsFirstLine(isFirstLine);
   }
 
 }

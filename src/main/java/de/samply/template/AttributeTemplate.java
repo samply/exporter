@@ -22,6 +22,10 @@ public class AttributeTemplate {
   @JsonProperty("json-key")
   private String jsonKey;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "xml-element")
+  @JsonProperty("xml-element")
+  private String xmlElement;
+
   @JacksonXmlProperty(isAttribute = true, localName = "opal-value-type")
   @JsonProperty("opal-value-type")
   private String opalValueType;
@@ -245,6 +249,14 @@ public class AttributeTemplate {
 
   public void setJsonKey(String jsonKey) {
     this.jsonKey = jsonKey;
+  }
+
+  public String getXmlElement() {
+    return xmlElement;
+  }
+
+  public void setXmlElement(String xmlElement) {
+    this.xmlElement = xmlElement;
   }
 
 }

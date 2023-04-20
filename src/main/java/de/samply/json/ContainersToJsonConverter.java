@@ -40,23 +40,15 @@ public class ContainersToJsonConverter extends ContainersToFilesConverter<Sessio
   protected ContainerFileWriterIterable createContainerFileWriterIterable(
       List<Container> containers, ConverterTemplate converterTemplate,
       ContainerTemplate containerTemplate, Session session) {
-    Path filePath = session.getFilePath(containerTemplate);
-    boolean isFirstLine = !isFileAlreadyInitialized(filePath);
-    return new ContainerJsonWriterIterable(containers, converterTemplate,
-        containerTemplate).setIfIsFirstLine(isFirstLine);
+    return new ContainerJsonWriterIterable(containers, converterTemplate, containerTemplate);
   }
 
   @Override
   protected void completeFile(ContainerTemplate containerTemplate, Path filePath)
       throws IOException {
-    if (isFileAlreadyInitialized(filePath)){
-      removeLastComma(filePath);
+    if (isFileAlreadyInitialized(filePath)) {
       Files.write(filePath, "]}".getBytes(), StandardOpenOption.APPEND);
     }
-  }
-
-  private void removeLastComma(Path filePath){
-
   }
 
 }
