@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -336,7 +337,8 @@ public class ExporterController {
       "Content-Disposition"})
   @GetMapping(value = ExporterConst.RESPONSE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   public ResponseEntity<InputStreamResource> getResponse(
-      @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId) {
+      @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId,
+      @RequestParam(name = ExporterConst.FILE_FILTER, required = false) String fileFilter) {
     Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(
         queryExecutionId);
     if (queryExecution.isPresent()) {
@@ -351,7 +353,7 @@ public class ExporterController {
         }
         case OK -> {
           try {
-            yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId);
+            yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId, fileFilter);
           } catch (ExporterControllerException | ZipperException | FileNotFoundException e) {
             yield createInternalServerError(e);
           }
@@ -369,10 +371,11 @@ public class ExporterController {
   }
 
   private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipIfNecessary(
-      Long queryExecutionFileId)
+      Long queryExecutionFileId, String fileFilter)
       throws ExporterControllerException, ZipperException, FileNotFoundException {
     List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
         queryExecutionFileId);
+    queryExecutionFiles = filterFiles(queryExecutionFiles, fileFilter);
     if (queryExecutionFiles.size() > 0) {
       if (queryExecutionFiles.size() == 1) {
         return createResponseEntity(
@@ -388,6 +391,25 @@ public class ExporterController {
     } else {
       return ResponseEntity.notFound().build();
     }
+  }
+
+  private List<QueryExecutionFile> filterFiles(List<QueryExecutionFile> files, String fileFilter) {
+    List<QueryExecutionFile> result;
+    if (fileFilter != null) {
+      result = new ArrayList<>();
+      String[] filters = fileFilter.trim().split(ExporterConst.FILE_FILTER_SEPARATOR);
+      files.forEach(queryExecutionFile -> {
+        for (String filter : filters) {
+          if (queryExecutionFile.getFilePath().contains(filter)) {
+            result.add(queryExecutionFile);
+            break;
+          }
+        }
+      });
+    } else {
+      result = files;
+    }
+    return result;
   }
 
   private String fetchFilename(String filePath) {
