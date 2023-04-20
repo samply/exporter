@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Http relative path
 - Http servlet request scheme
 - Export in JSON format
+- Export in XML format
 
 ### Changed
 - Rename Conversion Template as Converter Template
