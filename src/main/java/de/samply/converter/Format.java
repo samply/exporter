@@ -8,13 +8,15 @@ import org.hl7.fhir.r4.model.Bundle;
 
 public enum Format {
 
-  FHIR_QUERY (String.class, true),
-  CQL_QUERY (String.class, true),
-  BUNDLE (Bundle.class, false),
-  CONTAINERS (Containers.class, false),
-  CSV (Path.class, false),
-  EXCEL (Path.class, false),
-  OPAL (Path.class, false);
+  FHIR_QUERY(String.class, true),
+  CQL_QUERY(String.class, true),
+  BUNDLE(Bundle.class, false),
+  CONTAINERS(Containers.class, false),
+  CSV(Path.class, false),
+  EXCEL(Path.class, false),
+  OPAL(Path.class, false),
+  JSON(Path.class, false),
+  XML(Path.class, false);
 
   private Class zClass;
   private boolean isQuery;
@@ -24,14 +26,14 @@ public enum Format {
     this.isQuery = isQuery;
   }
 
-  public boolean isInstance(Object object){
+  public boolean isInstance(Object object) {
     return zClass.isInstance(object);
   }
 
-  public static boolean isExistentQueryFormat(String queryFormat){
+  public static boolean isExistentQueryFormat(String queryFormat) {
     AtomicBoolean result = new AtomicBoolean(false);
     Arrays.stream(values()).forEach(format -> {
-      if ( format.isQuery && format.toString().equals(queryFormat)){
+      if (format.isQuery && format.toString().equals(queryFormat)) {
         result.set(true);
       }
     });
@@ -42,7 +44,7 @@ public enum Format {
     return isQuery;
   }
 
-  public boolean isPath(){
+  public boolean isPath() {
     return zClass == Path.class;
   }
 

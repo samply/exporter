@@ -18,6 +18,10 @@ public class AttributeTemplate {
   @JsonProperty("excel-column")
   private String excelColumnName;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "json-key")
+  @JsonProperty("json-key")
+  private String jsonKey;
+
   @JacksonXmlProperty(isAttribute = true, localName = "opal-value-type")
   @JsonProperty("opal-value-type")
   private String opalValueType;
@@ -233,6 +237,14 @@ public class AttributeTemplate {
 
   public void setPrimaryKey(boolean primaryKey) {
     this.primaryKey = primaryKey;
+  }
+
+  public String getJsonKey() {
+    return jsonKey;
+  }
+
+  public void setJsonKey(String jsonKey) {
+    this.jsonKey = jsonKey;
   }
 
 }
