@@ -154,6 +154,7 @@ public class ExporterConst {
   public static final String QUERY_FORMAT = "query-format";
   public static final String OUTPUT_FORMAT = "output-format";
   public static final String QUERY_EXECUTION_ID = "query-execution-id";
+  public static final String FILE_FILTER = "file-filter";
 
   /*
   public static final List<String> CROSS_PARAMETERS = Arrays.asList(PAGE, PAGE_SIZE, STATS,
@@ -162,6 +163,7 @@ public class ExporterConst {
 */
   // Other constants
   public static final String DEFAULT_CSV_SEPARATOR = "\t";
+  public static final String FILE_FILTER_SEPARATOR = ",";
   public static final String APP_NAME = "Exporter";
   public static final String EMPTY_EXCEL_CELL = "";
 

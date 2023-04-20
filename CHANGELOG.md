@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Http servlet request scheme
 - Export in JSON format
 - Export in XML format
+- File Filter in Response
 
 ### Changed
 - Rename Conversion Template as Converter Template
