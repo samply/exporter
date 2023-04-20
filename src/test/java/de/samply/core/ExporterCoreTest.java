@@ -13,6 +13,7 @@ import de.samply.excel.ContainersToExcelConverter;
 import de.samply.exporter.ExporterConst;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.db.crud.ExporterDbService;
+import de.samply.json.ContainersToJsonConverter;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
@@ -42,11 +43,13 @@ class ExporterCoreTest {
         converterTemplateUtils, writeDirectory);
     ContainersToExcelConverter containersToExcelConverter = new ContainersToExcelConverter(30000000,
         converterTemplateUtils, writeDirectory);
+    ContainersToJsonConverter containersToJsonConverter = new ContainersToJsonConverter(
+        converterTemplateUtils, writeDirectory);
     BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
     ApplicationContext applicationContext = null;
     ConverterManager converterManager = new ConverterManager(applicationContext,
         bundleToContainersConverter, containersToCsvConverter, containersToExcelConverter,
-        converterXmlApplicationContextPath);
+        containersToJsonConverter, converterXmlApplicationContextPath);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager(
         templateDirectory);
     //TODO

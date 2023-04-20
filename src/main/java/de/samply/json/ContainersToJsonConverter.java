@@ -1,7 +1,6 @@
-package de.samply.csv;
+package de.samply.json;
 
 import de.samply.container.Container;
-import de.samply.container.Containers;
 import de.samply.converter.Format;
 import de.samply.exporter.ExporterConst;
 import de.samply.files.ContainerFileWriterIterable;
@@ -9,25 +8,31 @@ import de.samply.files.ContainersToFilesConverter;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 
 @Component
-public class ContainersToCsvConverter extends ContainersToFilesConverter<Session> {
+public class ContainersToJsonConverter extends ContainersToFilesConverter<Session> {
 
-
-  public ContainersToCsvConverter(
+  public ContainersToJsonConverter(
       @Autowired ConverterTemplateUtils converterTemplateUtils,
       @Value(ExporterConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
     super(converterTemplateUtils, writeDirectory);
   }
 
   @Override
-  protected Session initializeSession(ConverterTemplate template) {
+  public Format getOutputFormat() {
+    return Format.JSON;
+  }
+
+  @Override
+  protected Session initializeSession(ConverterTemplate converterTemplate) {
     return new Session(converterTemplateUtils, writeDirectory);
   }
 
@@ -36,14 +41,22 @@ public class ContainersToCsvConverter extends ContainersToFilesConverter<Session
       List<Container> containers, ConverterTemplate converterTemplate,
       ContainerTemplate containerTemplate, Session session) {
     Path filePath = session.getFilePath(containerTemplate);
-    boolean headersExists = isFileAlreadyInitialized(filePath);
-    return new ContainerCsvWriterIterable(containers, converterTemplate,
-        containerTemplate).headerExists(headersExists);
+    boolean isFirstLine = !isFileAlreadyInitialized(filePath);
+    return new ContainerJsonWriterIterable(containers, converterTemplate,
+        containerTemplate).setIfIsFirstLine(isFirstLine);
   }
 
   @Override
-  public Format getOutputFormat() {
-    return Format.CSV;
+  protected void completeFile(ContainerTemplate containerTemplate, Path filePath)
+      throws IOException {
+    if (isFileAlreadyInitialized(filePath)){
+      removeLastComma(filePath);
+      Files.write(filePath, "]}".getBytes(), StandardOpenOption.APPEND);
+    }
+  }
+
+  private void removeLastComma(Path filePath){
+
   }
 
 }

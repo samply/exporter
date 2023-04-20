@@ -5,6 +5,7 @@ import de.samply.csv.ContainersToCsvConverter;
 import de.samply.excel.ContainersToExcelConverter;
 import de.samply.exporter.ExporterConst;
 import de.samply.fhir.BundleToContainersConverter;
+import de.samply.json.ContainersToJsonConverter;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
@@ -27,6 +28,7 @@ class ConverterManagerTest {
   private BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
   private ContainersToCsvConverter containersToCsvConverter;
   private ContainersToExcelConverter containersToExcelConverter;
+  private ContainersToJsonConverter containersToJsonConverter;
   private ApplicationContext applicationContext;
 
   @BeforeEach
@@ -39,13 +41,15 @@ class ConverterManagerTest {
         OUTPUT_DIRECTORY);
     this.containersToExcelConverter = new ContainersToExcelConverter(30000000,
         converterTemplateUtils, OUTPUT_DIRECTORY);
+    this.containersToJsonConverter = new ContainersToJsonConverter(converterTemplateUtils,
+        OUTPUT_DIRECTORY);
   }
 
   @Test
   void getConverter() {
     ConverterManager converterManager = new ConverterManager(applicationContext,
         bundleToContainersConverter, containersToCsvConverter, containersToExcelConverter,
-        CONVERTER_APPLICATION_CONTEXT_PATH);
+        containersToJsonConverter, CONVERTER_APPLICATION_CONTEXT_PATH);
     Converter converter = converterManager.getBestMatchConverter(Format.FHIR_QUERY, Format.CSV,
         sourceId, targetId);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager("./templates");

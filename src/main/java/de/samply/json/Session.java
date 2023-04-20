@@ -1,4 +1,4 @@
-package de.samply.csv;
+package de.samply.json;
 
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplateUtils;
@@ -12,7 +12,7 @@ public class Session extends de.samply.files.Session {
 
   @Override
   protected String getFilename(ContainerTemplate containerTemplate) {
-    return containerTemplate.getCsvFilename();
+    return containerTemplate.getJsonFilename();
   }
 
 }

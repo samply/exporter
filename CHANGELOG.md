@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Opal Importer
 - Http relative path
 - Http servlet request scheme
+- Export in JSON format
 
 ### Changed
 - Rename Conversion Template as Converter Template

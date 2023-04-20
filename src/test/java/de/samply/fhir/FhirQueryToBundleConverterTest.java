@@ -10,7 +10,6 @@ import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
 import java.nio.file.Path;
-import java.util.HashMap;
 import org.hl7.fhir.r4.model.Bundle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -55,7 +54,7 @@ class FhirQueryToBundleConverterTest {
         .subscribe(bundle -> {
           Containers containers = bundleToContainersConverter.convertToContainers(bundle,
               converterTemplate, bundleToContainersConverterSession);
-          containersToCsvConverter.writeContainersInCsv(containers, converterTemplate,
+          containersToCsvConverter.writeContainersInFile(containers, converterTemplate,
               containersToCsvConverterSession);
         });
     //TODO
