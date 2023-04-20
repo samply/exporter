@@ -400,7 +400,7 @@ public class ExporterController {
       String[] filters = fileFilter.trim().split(ExporterConst.FILE_FILTER_SEPARATOR);
       files.forEach(queryExecutionFile -> {
         for (String filter : filters) {
-          if (queryExecutionFile.getFilePath().contains(filter)) {
+          if (queryExecutionFile.getFilePath().toLowerCase().contains(filter.toLowerCase())) {
             result.add(queryExecutionFile);
             break;
           }
