@@ -11,12 +11,15 @@ import de.samply.csv.ContainersToCsvConverter;
 import de.samply.excel.ContainersToExcelConverter;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.exporter.ExporterConst;
+import de.samply.json.ContainersToJsonConverter;
+import de.samply.xml.ContainersToXmlConverter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -37,12 +40,16 @@ public class ConverterManager {
       @Autowired BundleToContainersConverter bundleToContainersConverter,
       @Autowired ContainersToCsvConverter containersToCsvConverter,
       @Autowired ContainersToExcelConverter containersToExcelConverter,
+      @Autowired ContainersToJsonConverter containersToJsonConverter,
+      @Autowired ContainersToXmlConverter containersToXmlConverter,
       @Value(ExporterConst.CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV) String converterXmlApplicationContextPath
   ) {
     List<Converter> converters = new ArrayList<>();
     converters.add(bundleToContainersConverter);
     converters.add(containersToCsvConverter);
     converters.add(containersToExcelConverter);
+    converters.add(containersToJsonConverter);
+    converters.add(containersToXmlConverter);
     converters.addAll(fetchConvertersFromApplicationContext(converterXmlApplicationContextPath,
         applicationContext));
 

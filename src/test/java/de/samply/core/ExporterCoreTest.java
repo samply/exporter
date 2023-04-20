@@ -13,9 +13,11 @@ import de.samply.excel.ContainersToExcelConverter;
 import de.samply.exporter.ExporterConst;
 import de.samply.fhir.BundleToContainersConverter;
 import de.samply.db.crud.ExporterDbService;
+import de.samply.json.ContainersToJsonConverter;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
+import de.samply.xml.ContainersToXmlConverter;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -42,11 +44,15 @@ class ExporterCoreTest {
         converterTemplateUtils, writeDirectory);
     ContainersToExcelConverter containersToExcelConverter = new ContainersToExcelConverter(30000000,
         converterTemplateUtils, writeDirectory);
+    ContainersToJsonConverter containersToJsonConverter = new ContainersToJsonConverter(
+        converterTemplateUtils, writeDirectory);
+    ContainersToXmlConverter containersToXmlConverter = new ContainersToXmlConverter(
+        converterTemplateUtils, writeDirectory);
     BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
     ApplicationContext applicationContext = null;
     ConverterManager converterManager = new ConverterManager(applicationContext,
         bundleToContainersConverter, containersToCsvConverter, containersToExcelConverter,
-        converterXmlApplicationContextPath);
+        containersToJsonConverter, containersToXmlConverter, converterXmlApplicationContextPath);
     ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager(
         templateDirectory);
     //TODO

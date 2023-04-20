@@ -10,6 +10,21 @@ public class ContainerTemplate {
   @JacksonXmlProperty(isAttribute = true, localName = "csv-filename")
   @JsonProperty("csv-filename")
   private String csvFilename;
+  @JacksonXmlProperty(isAttribute = true, localName = "json-filename")
+  @JsonProperty("json-filename")
+  private String jsonFilename;
+  @JacksonXmlProperty(isAttribute = true, localName = "json-key")
+  @JsonProperty("json-key")
+  private String jsonKey;
+  @JacksonXmlProperty(isAttribute = true, localName = "xml-filename")
+  @JsonProperty("xml-filename")
+  private String xmlFilename;
+  @JacksonXmlProperty(isAttribute = true, localName = "xml-root-element")
+  @JsonProperty("xml-root-element")
+  private String xmlRootElement;
+  @JacksonXmlProperty(isAttribute = true, localName = "xml-element")
+  @JsonProperty("xml-element")
+  private String xmlElement;
   @JacksonXmlProperty(isAttribute = true, localName = "excel-sheet")
   @JsonProperty("excel-sheet")
   private String excelSheet;
@@ -72,6 +87,46 @@ public class ContainerTemplate {
   public void setAttributeTemplates(
       List<AttributeTemplate> attributeTemplates) {
     this.attributeTemplates = attributeTemplates;
+  }
+
+  public String getJsonFilename() {
+    return jsonFilename;
+  }
+
+  public void setJsonFilename(String jsonFilename) {
+    this.jsonFilename = jsonFilename;
+  }
+
+  public String getJsonKey() {
+    return jsonKey;
+  }
+
+  public void setJsonKey(String jsonKey) {
+    this.jsonKey = jsonKey;
+  }
+
+  public String getXmlFilename() {
+    return xmlFilename;
+  }
+
+  public void setXmlFilename(String xmlFilename) {
+    this.xmlFilename = xmlFilename;
+  }
+
+  public String getXmlElement() {
+    return xmlElement;
+  }
+
+  public void setXmlElement(String xmlElement) {
+    this.xmlElement = xmlElement;
+  }
+
+  public String getXmlRootElement() {
+    return xmlRootElement;
+  }
+
+  public void setXmlRootElement(String xmlRootElement) {
+    this.xmlRootElement = xmlRootElement;
   }
 
 }
