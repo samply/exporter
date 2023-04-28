@@ -25,10 +25,12 @@ import reactor.core.publisher.Flux;
 public class BundleToContainersConverter extends
     ConverterImpl<Bundle, Containers, BundleToContainersConverterSession> {
 
+  private final FhirContext fhirContext;
   private final FHIRPathEngine fhirPathEngine;
 
   public BundleToContainersConverter() {
-    this.fhirPathEngine = createFhirPathEngine();
+    this.fhirContext = FhirContext.forR4();
+    this.fhirPathEngine = createFhirPathEngine(fhirContext);
   }
 
   @Override
@@ -49,7 +51,7 @@ public class BundleToContainersConverter extends
   public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate,
       BundleToContainersConverterSession session) {
     Containers containers = new Containers();
-    BundleContext context = new BundleContext(bundle, session, fhirPathEngine);
+    BundleContext context = new BundleContext(bundle, session, fhirPathEngine, fhirContext);
     if (converterTemplate != null) {
       converterTemplate.getContainerTemplates()
           .forEach(containerTemplate -> addContainers(bundle, containers, containerTemplate,
@@ -103,11 +105,18 @@ public class BundleToContainersConverter extends
       if (isToBeEvaluated(evalResource, idResource, attributeTemplate)) {
         fhirPathEngine.evaluate(evalResource, expressionNode)
             .forEach(base -> resourceAttributes.add(
-                new ResourceAttribute(idResource, base.toString(), containerTemplate,
-                    attributeTemplate)));
+                new ResourceAttribute(idResource,
+                    fetchAttributeValue(evalResource, attributeTemplate, base, context),
+                    containerTemplate, attributeTemplate)));
       }
     });
     return resourceAttributes;
+  }
+
+  private String fetchAttributeValue(Resource evalResource, AttributeTemplate attributeTemplate,
+      Base base, BundleContext bundleContext) {
+    return (attributeTemplate.isValidation()) ?
+        String.valueOf(bundleContext.validate(evalResource, attributeTemplate)) : base.toString();
   }
 
   private boolean isToBeEvaluated(Resource evalResource, Resource idResource,
@@ -154,8 +163,7 @@ public class BundleToContainersConverter extends
     return result;
   }
 
-  private FHIRPathEngine createFhirPathEngine() {
-    FhirContext fhirContext = FhirContext.forR4();
+  private FHIRPathEngine createFhirPathEngine(FhirContext fhirContext) {
     return new FHIRPathEngine(
         new HapiWorkerContext(fhirContext, fhirContext.getValidationSupport()));
   }

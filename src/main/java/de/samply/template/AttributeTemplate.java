@@ -38,6 +38,10 @@ public class AttributeTemplate {
   @JsonProperty("primary-key")
   private boolean primaryKey = false;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "validation")
+  @JsonProperty("validation")
+  private boolean validation = false;
+
   @JacksonXmlProperty(isAttribute = true, localName = "val-fhir-path")
   @JsonProperty("val-fhir-path")
   private String valFhirPath;
@@ -241,6 +245,14 @@ public class AttributeTemplate {
 
   public void setPrimaryKey(boolean primaryKey) {
     this.primaryKey = primaryKey;
+  }
+
+  public boolean isValidation() {
+    return validation;
+  }
+
+  public void setValidation(boolean validation) {
+    this.validation = validation;
   }
 
   public String getJsonKey() {
