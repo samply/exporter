@@ -53,6 +53,7 @@ public class OpalEngine {
   public void createProjectIfNotExists(Session session) throws OpalEngineException {
     if (!existsProject(session)) {
       createProject(session);
+      createProjectPermissions(session);
     }
   }
 
@@ -73,6 +74,27 @@ public class OpalEngine {
     String[] arguments = {ExporterConst.OPAL_PROJECT_ADD, ExporterConst.OPAL_PROJECT_NAME,
         session.fetchProject(), ExporterConst.OPAL_PROJECT_DATABASE, opalServer.getDatabase()};
     return executeOpalCommands(ExporterConst.OPAL_PROJECT_OP, arguments);
+  }
+
+  private List<ProcessInfo> createProjectPermissions(Session session) throws OpalEngineException {
+    List<ProcessInfo> results = new ArrayList<>();
+    String subjects = session.getConverterTemplate().getOpalPermissionSubjects();
+    if (subjects != null && subjects.length() > 0) {
+      for (String subject : subjects.trim()
+          .split(ExporterConst.OPAL_PERMISSION_SUBJECT_SEPARATOR)) {
+        String[] arguments = {
+            ExporterConst.OPAL_PERMISSION_USER_TYPE,
+            session.getConverterTemplate().getOpalPermissionType().toString(),
+            ExporterConst.OPAL_PERMISSION_SUBJECT, subject,
+            ExporterConst.OPAL_PERMISSION,
+            session.getConverterTemplate().getOpalPermission().toString(),
+            ExporterConst.OPAL_PERMISSION_PROJECT, session.fetchProject(),
+            ExporterConst.OPAL_PERMISSION_ADD
+        };
+        results.add(executeOpalCommands(ExporterConst.OPAL_PERMISSION_OP, arguments));
+      }
+    }
+    return results;
   }
 
   private ProcessInfo uploadPath(Path path, Session session) throws OpalEngineException {
@@ -101,21 +123,22 @@ public class OpalEngine {
     return executeOpalCommands(ExporterConst.OPAL_IMPORT_CSV_OP, arguments);
   }
 
-  private String[] addIdentifiersToArguments (String[] arguments, ContainerTemplate containerTemplate){
+  private String[] addIdentifiersToArguments(String[] arguments,
+      ContainerTemplate containerTemplate) {
     List<String> result = new ArrayList<>();
     result.addAll(Arrays.asList(arguments));
     result.addAll(fetchIdentifiers(containerTemplate));
     return result.toArray(result.toArray(new String[0]));
   }
 
-  private List<String> fetchIdentifiers (ContainerTemplate containerTemplate){
+  private List<String> fetchIdentifiers(ContainerTemplate containerTemplate) {
     List<String> identifiers = new ArrayList<>();
     containerTemplate.getAttributeTemplates().forEach(attributeTemplate -> {
-      if (attributeTemplate.isPrimaryKey()){
+      if (attributeTemplate.isPrimaryKey()) {
         identifiers.add(attributeTemplate.getCsvColumnName());
       }
     });
-    if (identifiers.size() > 0){
+    if (identifiers.size() > 0) {
       identifiers.add(0, ExporterConst.OPAL_IMPORT_CSV_IDENTIFIERS);
     }
     return identifiers;

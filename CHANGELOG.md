@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Export in JSON format
 - Export in XML format
 - File Filter in Response
+- Opal permission
 
 ### Changed
 - Rename Conversion Template as Converter Template

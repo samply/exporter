@@ -64,6 +64,13 @@ public class ExporterConst {
   public final static String OPAL_TASK_OP = "task";
   public final static String OPAL_TASK_OP_ID = "--id";
   public final static String OPAL_TASK_OP_WAIT = "--wait";
+  public final static String OPAL_PERMISSION_OP = "perm-project";
+  public final static String OPAL_PERMISSION_USER_TYPE = "--type";
+  public final static String OPAL_PERMISSION = "--permission";
+  public final static String OPAL_PERMISSION_PROJECT = "--project";
+  public final static String OPAL_PERMISSION_SUBJECT = "--subject";
+  public final static String OPAL_PERMISSION_SUBJECT_SEPARATOR = ",";
+  public final static String OPAL_PERMISSION_ADD = "--add";
 
 
   // Environment Variables
