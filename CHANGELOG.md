@@ -64,7 +64,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Export in JSON format
 - Export in XML format
 - File Filter in Response
-- Add validation to bundles
+- Validation to bundles
+- FHIR Profile URL
 - Opal permission
 
 ### Changed
