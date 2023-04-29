@@ -5,6 +5,8 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import de.samply.exporter.ExporterConst;
+import de.samply.opal.model.Permission;
+import de.samply.opal.model.PermissionType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +35,19 @@ public class ConverterTemplate {
   @JacksonXmlProperty(isAttribute = true, localName = "opal-project")
   @JsonProperty(value = "opal-project")
   private String opalProject;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "opal-permission-type")
+  @JsonProperty(value = "opal-permission-type")
+  private PermissionType opalPermissionType;
+
+  // Comma Separated if more than one
+  @JacksonXmlProperty(isAttribute = true, localName = "opal-permission-subjects")
+  @JsonProperty(value = "opal-permission-subjects")
+  private String opalPermissionSubjects;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "opal-permission")
+  @JsonProperty(value = "opal-permission")
+  private Permission opalPermission;
 
   @JacksonXmlElementWrapper(useWrapping = false)
   @JsonProperty("container")
@@ -114,6 +129,30 @@ public class ConverterTemplate {
 
   public void setOpalProject(String opalProject) {
     this.opalProject = opalProject;
+  }
+
+  public PermissionType getOpalPermissionType() {
+    return opalPermissionType;
+  }
+
+  public void setOpalPermissionType(PermissionType opalPermissionType) {
+    this.opalPermissionType = opalPermissionType;
+  }
+
+  public String getOpalPermissionSubjects() {
+    return opalPermissionSubjects;
+  }
+
+  public void setOpalPermissionSubjects(String opalPermissionSubjects) {
+    this.opalPermissionSubjects = opalPermissionSubjects;
+  }
+
+  public Permission getOpalPermission() {
+    return opalPermission;
+  }
+
+  public void setOpalPermission(Permission opalPermission) {
+    this.opalPermission = opalPermission;
   }
 
 }
