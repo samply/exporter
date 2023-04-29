@@ -19,11 +19,13 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
 
   private final IGenericClient client;
   private final String sourceId;
+  private final String fhirProfilUrl;
 
 
-  public FhirQueryToBundleConverter(String fhirStoreUrl, String sourceId) {
+  public FhirQueryToBundleConverter(String fhirStoreUrl, String sourceId, String fhirProfilUrl) {
     this.client = createFhirClient(fhirStoreUrl);
     this.sourceId = sourceId;
+    this.fhirProfilUrl = fhirProfilUrl;
   }
 
   @Override
