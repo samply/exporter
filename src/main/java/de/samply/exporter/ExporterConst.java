@@ -1,9 +1,5 @@
 package de.samply.exporter;
 
-import java.util.Arrays;
-import java.util.List;
-import org.apache.http.protocol.HTTP;
-
 public class ExporterConst {
 
   // HTTP Headers
@@ -185,6 +181,7 @@ public class ExporterConst {
   public static final int DEFAULT_MAX_NUMBER_OF_RETRIES = 10;
   public static final String[] PASSWORD_BLACKLIST = {"password", "secret", "apikey"};
   public static final String PASSWORD_REPLACEMENT = "XXXXX";
+  public static final String VALIDATION_MESSAGE_SEPARATOR = " | ";
 
 
 }

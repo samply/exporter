@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import de.samply.template.AttributeTemplate;
+import de.samply.template.ConverterTemplate;
 import java.util.List;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Resource;
@@ -19,10 +20,20 @@ public class BundleContext {
 
 
   public BundleContext(Bundle bundle, BundleToContainersConverterSession session,
-      FHIRPathEngine fhirPathEngine, FhirContext fhirContext) {
+      FHIRPathEngine fhirPathEngine, FhirContext fhirContext, ConverterTemplate converterTemplate)
+      throws BundleContextException {
     this.resourceFinder = new ResourceFinder(bundle, fhirPathEngine);
     this.session = session;
-    this.bundleValidator = new BundleValidator(fhirContext);
+    this.bundleValidator = createBundleValidator(fhirContext, converterTemplate);
+  }
+
+  private BundleValidator createBundleValidator(FhirContext fhirContext, ConverterTemplate converterTemplate)
+      throws BundleContextException {
+    try {
+      return new BundleValidator(fhirContext, converterTemplate);
+    } catch (BundleValidatorException e) {
+      throw new BundleContextException(e);
+    }
   }
 
   public String fetchAnonym(AttributeTemplate attributeTemplate, String value) {
@@ -34,11 +45,12 @@ public class BundleContext {
     return anonym;
   }
 
-  public List<Resource> fetchRelatedResources(Resource currentResource, AttributeTemplate attributeTemplate){
+  public List<Resource> fetchRelatedResources(Resource currentResource,
+      AttributeTemplate attributeTemplate) {
     return resourceFinder.fetchRelatedResources(currentResource, attributeTemplate);
   }
 
-  public boolean validate(Resource resource, AttributeTemplate attributeTemplate) {
+  public String validate(Resource resource, AttributeTemplate attributeTemplate) {
     return bundleValidator.validate(resource, attributeTemplate);
   }
 
