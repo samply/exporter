@@ -51,13 +51,22 @@ public class BundleToContainersConverter extends
   public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate,
       BundleToContainersConverterSession session) {
     Containers containers = new Containers();
-    BundleContext context = new BundleContext(bundle, session, fhirPathEngine, fhirContext);
+    BundleContext context = createBundleContext(bundle, converterTemplate, session);
     if (converterTemplate != null) {
       converterTemplate.getContainerTemplates()
           .forEach(containerTemplate -> addContainers(bundle, containers, containerTemplate,
               context));
     }
     return containers;
+  }
+
+  private BundleContext createBundleContext(Bundle bundle, ConverterTemplate converterTemplate,
+      BundleToContainersConverterSession session) {
+    try {
+      return new BundleContext(bundle, session, fhirPathEngine, fhirContext, converterTemplate);
+    } catch (BundleContextException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 
@@ -116,7 +125,7 @@ public class BundleToContainersConverter extends
   private String fetchAttributeValue(Resource evalResource, AttributeTemplate attributeTemplate,
       Base base, BundleContext bundleContext) {
     return (attributeTemplate.isValidation()) ?
-        String.valueOf(bundleContext.validate(evalResource, attributeTemplate)) : base.toString();
+        bundleContext.validate(evalResource, attributeTemplate) : base.toString();
   }
 
   private boolean isToBeEvaluated(Resource evalResource, Resource idResource,

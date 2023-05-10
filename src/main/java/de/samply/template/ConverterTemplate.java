@@ -36,6 +36,10 @@ public class ConverterTemplate {
   @JsonProperty(value = "opal-project")
   private String opalProject;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "fhir-profile-url")
+  @JsonProperty(value = "fhir-profile-url")
+  private String fhirProfileUrl;
+
   @JacksonXmlProperty(isAttribute = true, localName = "opal-permission-type")
   @JsonProperty(value = "opal-permission-type")
   private PermissionType opalPermissionType;
@@ -153,6 +157,14 @@ public class ConverterTemplate {
 
   public void setOpalPermission(Permission opalPermission) {
     this.opalPermission = opalPermission;
+  }
+
+  public String getFhirProfileUrl() {
+    return fhirProfileUrl;
+  }
+
+  public void setFhirProfileUrl(String fhirProfileUrl) {
+    this.fhirProfileUrl = fhirProfileUrl;
   }
 
 }
