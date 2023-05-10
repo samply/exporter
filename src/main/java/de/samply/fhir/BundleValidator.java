@@ -69,11 +69,10 @@ public class BundleValidator {
   private IValidatorModule fetchIValidatorModuleFromPackage(
       FhirContext fhirContext, String remoteTerminologyServiceUrl) throws IOException {
     NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(fhirContext);
-    npmPackageSupport.loadPackageFromClasspath(createFhirPackagePath("hl7.fhir.core-4.0.1.tgz"));
-    npmPackageSupport.loadPackageFromClasspath(createFhirPackagePath("hl7.fhir.r4.core-4.0.1.tgz"));
-    npmPackageSupport.loadPackageFromClasspath(
-        createFhirPackagePath("de.basisprofil.r4-1.4.0.tgz"));
-    npmPackageSupport.loadPackageFromClasspath(createFhirPackagePath(remoteTerminologyServiceUrl));
+    FhirPackageLoader.loadPackage(npmPackageSupport, "hl7.fhir.core-4.0.1.tgz");
+    FhirPackageLoader.loadPackage(npmPackageSupport,"hl7.fhir.r4.core-4.0.1.tgz");
+    FhirPackageLoader.loadPackage(npmPackageSupport,"de.basisprofil.r4-1.4.0.tgz");
+    FhirPackageLoader.loadPackage(npmPackageSupport,remoteTerminologyServiceUrl);
     ValidationSupportChain validationSupportChain = new ValidationSupportChain(
         npmPackageSupport,
         new DefaultProfileValidationSupport(fhirContext),
@@ -84,10 +83,6 @@ public class BundleValidator {
     CachingValidationSupport validationSupport = new CachingValidationSupport(
         validationSupportChain);
     return new FhirInstanceValidator(validationSupport);
-  }
-
-  private String createFhirPackagePath(String fhirPackage) {
-    return "fhir-packages/" + fhirPackage;
   }
 
   public String validate(Resource resource, AttributeTemplate attributeTemplate) {
