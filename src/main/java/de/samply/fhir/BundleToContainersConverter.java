@@ -6,6 +6,7 @@ import de.samply.container.Attribute;
 import de.samply.container.Containers;
 import de.samply.converter.ConverterImpl;
 import de.samply.converter.Format;
+import de.samply.exporter.ExporterConst;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
@@ -18,6 +19,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.ExpressionNode;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -27,10 +29,13 @@ public class BundleToContainersConverter extends
 
   private final FhirContext fhirContext;
   private final FHIRPathEngine fhirPathEngine;
+  private final String fhirPackagesDirectory;
 
-  public BundleToContainersConverter() {
+  public BundleToContainersConverter(
+      @Value(ExporterConst.FHIR_PACKAGES_DIRECTORY_SV) String fhirPackagesDirectory) {
     this.fhirContext = FhirContext.forR4();
     this.fhirPathEngine = createFhirPathEngine(fhirContext);
+    this.fhirPackagesDirectory = fhirPackagesDirectory;
   }
 
   @Override
@@ -63,7 +68,8 @@ public class BundleToContainersConverter extends
   private BundleContext createBundleContext(Bundle bundle, ConverterTemplate converterTemplate,
       BundleToContainersConverterSession session) {
     try {
-      return new BundleContext(bundle, session, fhirPathEngine, fhirContext, converterTemplate);
+      return new BundleContext(bundle, session, fhirPathEngine, fhirContext, converterTemplate,
+          fhirPackagesDirectory);
     } catch (BundleContextException e) {
       throw new RuntimeException(e);
     }

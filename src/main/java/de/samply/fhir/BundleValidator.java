@@ -27,16 +27,20 @@ public class BundleValidator {
 
   private final static Logger logger = LoggerFactory.getLogger(BundleValidator.class);
   private FhirValidator fhirValidator;
+  private FhirPackageLoader fhirPackageLoader;
   private ConverterTemplate converterTemplate;
   private Map<String, ValidationResult> resourceValidationResultMap = new HashMap<>();
 
-  public BundleValidator(FhirContext fhirContext, ConverterTemplate converterTemplate)
+  public BundleValidator(FhirContext fhirContext, ConverterTemplate converterTemplate,
+      String fhirPackageDirectory)
       throws BundleValidatorException {
     this.fhirValidator = fhirContext.newValidator();
+    this.fhirPackageLoader = new FhirPackageLoader(fhirPackageDirectory);
     this.converterTemplate = converterTemplate;
-    IValidatorModule validatorModule = (converterTemplate.getFhirProfileUrl() != null) ?
-        fetchIValidatorModuleFromPackageWithoutExceptionHandling(fhirContext,
-            converterTemplate.getFhirProfileUrl()) : fetchIValidatorModule(fhirContext);
+    IValidatorModule validatorModule =
+        (converterTemplate.getFhirPackages() != null && !converterTemplate.getFhirPackages()
+            .isEmpty()) ? fetchIValidatorModuleFromPackage(fhirContext, converterTemplate)
+            : fetchIValidatorModule(fhirContext);
     fhirValidator.registerValidatorModule(validatorModule);
   }
 
@@ -45,7 +49,7 @@ public class BundleValidator {
   }
 
   private IValidatorModule fetchIValidatorModuleWithRemoteTerminologyService(
-      FhirContext fhirContext, String remoteTerminologyServiceUrl) {
+      FhirContext fhirContext, String remoteTerminologyServiceUrl, String fhirPackagesDirectory) {
     ValidationSupportChain validationSupportChain = new ValidationSupportChain();
     validationSupportChain.addValidationSupport(new DefaultProfileValidationSupport(fhirContext));
     RemoteTerminologyServiceValidationSupport remote = new RemoteTerminologyServiceValidationSupport(
@@ -56,25 +60,11 @@ public class BundleValidator {
     return new FhirInstanceValidator(cache);
   }
 
-
-  private IValidatorModule fetchIValidatorModuleFromPackageWithoutExceptionHandling(
-      FhirContext fhirContext, String remoteTerminologyServiceUrl) throws BundleValidatorException {
-    try {
-      return fetchIValidatorModuleFromPackage(fhirContext, remoteTerminologyServiceUrl);
-    } catch (IOException e) {
-      throw new BundleValidatorException(e);
-    }
-  }
-
-  private IValidatorModule fetchIValidatorModuleFromPackage(
-      FhirContext fhirContext, String remoteTerminologyServiceUrl) throws IOException {
-    NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(fhirContext);
-    FhirPackageLoader.loadPackage(npmPackageSupport, "hl7.fhir.core-4.0.1.tgz");
-    FhirPackageLoader.loadPackage(npmPackageSupport,"hl7.fhir.r4.core-4.0.1.tgz");
-    FhirPackageLoader.loadPackage(npmPackageSupport,"de.basisprofil.r4-1.4.0.tgz");
-    FhirPackageLoader.loadPackage(npmPackageSupport,remoteTerminologyServiceUrl);
+  private IValidatorModule fetchIValidatorModuleFromPackage(FhirContext fhirContext,
+      ConverterTemplate converterTemplate)
+      throws BundleValidatorException {
     ValidationSupportChain validationSupportChain = new ValidationSupportChain(
-        npmPackageSupport,
+        fetchNpmPackageValidationSupport(fhirContext, converterTemplate),
         new DefaultProfileValidationSupport(fhirContext),
         new CommonCodeSystemsTerminologyService(fhirContext),
         new InMemoryTerminologyServerValidationSupport(fhirContext),
@@ -83,6 +73,29 @@ public class BundleValidator {
     CachingValidationSupport validationSupport = new CachingValidationSupport(
         validationSupportChain);
     return new FhirInstanceValidator(validationSupport);
+  }
+
+  private NpmPackageValidationSupport fetchNpmPackageValidationSupport(FhirContext fhirContext,
+      ConverterTemplate converterTemplate) throws BundleValidatorException {
+    try {
+      return fetchNpmPackageValidationSupportWithoutExceptionHandling(fhirContext,
+          converterTemplate);
+    } catch (RuntimeException e) {
+      throw new BundleValidatorException(e);
+    }
+  }
+
+  private NpmPackageValidationSupport fetchNpmPackageValidationSupportWithoutExceptionHandling(
+      FhirContext fhirContext, ConverterTemplate converterTemplate) {
+    NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(fhirContext);
+    converterTemplate.getFhirPackages().forEach(fhirPackage -> {
+      try {
+        fhirPackageLoader.loadPackage(npmPackageSupport, fhirPackage);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+    return npmPackageSupport;
   }
 
   public String validate(Resource resource, AttributeTemplate attributeTemplate) {

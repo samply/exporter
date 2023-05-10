@@ -31,6 +31,7 @@ class ExporterCoreTest {
   private final String converterXmlApplicationContextPath = "./converter/converter.xml";
   private final String templateDirectory = "./templates";
   private final String writeDirectory = "./output";
+  private String fhirPackagesDirectory = "./fhir-packages";
   private final String converterTemplateId = "test-template1";
   private ExporterCore exporterCore;
 
@@ -48,7 +49,8 @@ class ExporterCoreTest {
         converterTemplateUtils, writeDirectory);
     ContainersToXmlConverter containersToXmlConverter = new ContainersToXmlConverter(
         converterTemplateUtils, writeDirectory);
-    BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
+    BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter(
+        fhirPackagesDirectory);
     ApplicationContext applicationContext = null;
     ConverterManager converterManager = new ConverterManager(applicationContext,
         bundleToContainersConverter, containersToCsvConverter, containersToExcelConverter,

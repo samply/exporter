@@ -20,17 +20,19 @@ public class BundleContext {
 
 
   public BundleContext(Bundle bundle, BundleToContainersConverterSession session,
-      FHIRPathEngine fhirPathEngine, FhirContext fhirContext, ConverterTemplate converterTemplate)
+      FHIRPathEngine fhirPathEngine, FhirContext fhirContext, ConverterTemplate converterTemplate,
+      String fhirPackagesDirectory)
       throws BundleContextException {
     this.resourceFinder = new ResourceFinder(bundle, fhirPathEngine);
     this.session = session;
-    this.bundleValidator = createBundleValidator(fhirContext, converterTemplate);
+    this.bundleValidator = createBundleValidator(fhirContext, converterTemplate, fhirPackagesDirectory);
   }
 
-  private BundleValidator createBundleValidator(FhirContext fhirContext, ConverterTemplate converterTemplate)
+  private BundleValidator createBundleValidator(FhirContext fhirContext,
+      ConverterTemplate converterTemplate, String fhirPackageDirectory)
       throws BundleContextException {
     try {
-      return new BundleValidator(fhirContext, converterTemplate);
+      return new BundleValidator(fhirContext, converterTemplate, fhirPackageDirectory);
     } catch (BundleValidatorException e) {
       throw new BundleContextException(e);
     }

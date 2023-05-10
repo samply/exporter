@@ -30,6 +30,7 @@ class FhirQueryToBundleConverterTest {
   private String sourceId = "blazeStore";
   private String templateDirectory = "./templates";
   private String outputDirectory = "./output";
+  private String fhirPackagesDirectory = "./fhir-packages";
   private String templateId = "test-template1";
 
   @BeforeEach
@@ -43,7 +44,7 @@ class FhirQueryToBundleConverterTest {
         outputDirectory);
     this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory);
     this.converterTemplateManager = new ConverterTemplateManager(templateDirectory);
-    this.bundleToContainersConverter = new BundleToContainersConverter();
+    this.bundleToContainersConverter = new BundleToContainersConverter(fhirPackagesDirectory);
     this.bundleToContainersConverterSession = new BundleToContainersConverterSession();
   }
 

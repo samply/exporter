@@ -36,10 +36,6 @@ public class ConverterTemplate {
   @JsonProperty(value = "opal-project")
   private String opalProject;
 
-  @JacksonXmlProperty(isAttribute = true, localName = "fhir-profile-url")
-  @JsonProperty(value = "fhir-profile-url")
-  private String fhirProfileUrl;
-
   @JacksonXmlProperty(isAttribute = true, localName = "opal-permission-type")
   @JsonProperty(value = "opal-permission-type")
   private PermissionType opalPermissionType;
@@ -59,6 +55,9 @@ public class ConverterTemplate {
 
   @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-rev-include")
   private List<String> fhirRevIncludes = new ArrayList<>();
+
+  @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-package")
+  private List<String> fhirPackages = new ArrayList<>();
 
   public ConverterTemplate() {
   }
@@ -111,6 +110,14 @@ public class ConverterTemplate {
     this.fhirRevIncludes = fhirRevIncludes;
   }
 
+  public List<String> getFhirPackages() {
+    return fhirPackages;
+  }
+
+  public void setFhirPackages(List<String> fhirPackages) {
+    this.fhirPackages = fhirPackages;
+  }
+
   public String getSourceId() {
     return sourceId;
   }
@@ -157,14 +164,6 @@ public class ConverterTemplate {
 
   public void setOpalPermission(Permission opalPermission) {
     this.opalPermission = opalPermission;
-  }
-
-  public String getFhirProfileUrl() {
-    return fhirProfileUrl;
-  }
-
-  public void setFhirProfileUrl(String fhirProfileUrl) {
-    this.fhirProfileUrl = fhirProfileUrl;
   }
 
 }

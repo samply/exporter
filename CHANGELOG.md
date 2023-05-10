@@ -69,6 +69,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Opal permission
 - Validation Utils
 - FHIR Package Loader
+- Converter Template attribute: FHIR Package
 
 ### Changed
 - Rename Conversion Template as Converter Template
