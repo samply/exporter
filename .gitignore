@@ -9,6 +9,7 @@ output
 converter
 test-converters
 temp-files
+fhir-packages
 
 ### STS ###
 .apt_generated
