@@ -1,9 +1,5 @@
 package de.samply.exporter;
 
-import java.util.Arrays;
-import java.util.List;
-import org.apache.http.protocol.HTTP;
-
 public class ExporterConst {
 
   // HTTP Headers
@@ -91,6 +87,7 @@ public class ExporterConst {
   public final static String HTTP_RELATIVE_PATH = "HTTP_RELATIVE_PATH";
   public final static String HTTP_SERVLET_REQUEST_SCHEME = "HTTP_SERVLET_REQUEST_SCHEME";
   public final static String TIMESTAMP_FORMAT = "TIMESTAMP_FORMAT";
+  public final static String FHIR_PACKAGES_DIRECTORY = "FHIR_PACKAGES_DIRECTORY";
 
   // Spring Values (SV)
   public final static String HEAD_SV = "${";
@@ -126,6 +123,8 @@ public class ExporterConst {
       HEAD_SV + HTTP_SERVLET_REQUEST_SCHEME + ":http" + BOTTOM_SV;
   public final static String TIMESTAMP_FORMAT_SV =
       HEAD_SV + TIMESTAMP_FORMAT + ":" + DEFAULT_TIMESTAMP_FORMAT + BOTTOM_SV;
+  public final static String FHIR_PACKAGES_DIRECTORY_SV =
+      HEAD_SV + FHIR_PACKAGES_DIRECTORY + ":#{'./fhir-packages'}" + BOTTOM_SV;
 
 
   // REST Paths
@@ -185,6 +184,11 @@ public class ExporterConst {
   public static final int DEFAULT_MAX_NUMBER_OF_RETRIES = 10;
   public static final String[] PASSWORD_BLACKLIST = {"password", "secret", "apikey"};
   public static final String PASSWORD_REPLACEMENT = "XXXXX";
+  public static final String VALIDATION_MESSAGE_SEPARATOR = " | ";
+  public static final String FHIR_PACKAGE_ROOT_CLASSPATH = "fhir-packages";
+  public static final String HTTP_HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+  public static final String HTTP_HEADER_CONTENT_DISPOSITION_FILENAME = "filename=\"";
+  public static final int RANDOM_FILENAME_SIZE = 10;
 
 
 }

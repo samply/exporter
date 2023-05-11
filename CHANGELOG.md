@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2023-04-17]
+## [1.0.0 - 2023-05-10]
 ### Added
 - Search Controller
 - Blaze Store Client
@@ -64,7 +64,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Export in JSON format
 - Export in XML format
 - File Filter in Response
+- Validation to bundles
+- FHIR Profile URL
 - Opal permission
+- Validation Utils
+- FHIR Package Loader
+- Converter Template attribute: FHIR Package
 
 ### Changed
 - Rename Conversion Template as Converter Template

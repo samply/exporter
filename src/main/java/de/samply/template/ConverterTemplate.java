@@ -56,6 +56,9 @@ public class ConverterTemplate {
   @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-rev-include")
   private List<String> fhirRevIncludes = new ArrayList<>();
 
+  @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-package")
+  private List<String> fhirPackages = new ArrayList<>();
+
   public ConverterTemplate() {
   }
 
@@ -105,6 +108,14 @@ public class ConverterTemplate {
 
   public void setFhirRevIncludes(List<String> fhirRevIncludes) {
     this.fhirRevIncludes = fhirRevIncludes;
+  }
+
+  public List<String> getFhirPackages() {
+    return fhirPackages;
+  }
+
+  public void setFhirPackages(List<String> fhirPackages) {
+    this.fhirPackages = fhirPackages;
   }
 
   public String getSourceId() {

@@ -22,11 +22,13 @@ import reactor.core.publisher.Flux;
 class ConverterManagerTest {
 
   private final String OUTPUT_DIRECTORY = "./output";
+  private String fhirPackagesDirectory = "./fhir-packages";
   private final String sourceId = "blaze-store";
   private String targetId;
   private final String CONVERTER_APPLICATION_CONTEXT_PATH = "./converter/converter.xml";
 
-  private BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter();
+  private BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter(
+      fhirPackagesDirectory);
   private ContainersToCsvConverter containersToCsvConverter;
   private ContainersToExcelConverter containersToExcelConverter;
   private ContainersToJsonConverter containersToJsonConverter;
