@@ -186,6 +186,9 @@ public class ExporterConst {
   public static final String PASSWORD_REPLACEMENT = "XXXXX";
   public static final String VALIDATION_MESSAGE_SEPARATOR = " | ";
   public static final String FHIR_PACKAGE_ROOT_CLASSPATH = "fhir-packages";
+  public static final String HTTP_HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+  public static final String HTTP_HEADER_CONTENT_DISPOSITION_FILENAME = "filename=\"";
+  public static final int RANDOM_FILENAME_SIZE = 10;
 
 
 }
