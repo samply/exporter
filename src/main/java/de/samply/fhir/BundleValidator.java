@@ -8,6 +8,7 @@ import ca.uhn.fhir.validation.ValidationResult;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ConverterTemplate;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -30,6 +31,7 @@ public class BundleValidator {
   private FhirPackageLoader fhirPackageLoader;
   private ConverterTemplate converterTemplate;
   private Map<String, ValidationResult> resourceValidationResultMap = new HashMap<>();
+  private ValidationResult emptyValidationResult = new ValidationResult(null, new ArrayList<>());
 
   public BundleValidator(FhirContext fhirContext, ConverterTemplate converterTemplate,
       String fhirPackageDirectory)
@@ -121,9 +123,12 @@ public class BundleValidator {
         validationResult.getMessages()
             .forEach(singleValidationMessage -> logger.error(singleValidationMessage.toString()));
       }
+      if (validationResult == null){
+        validationResult = emptyValidationResult;
+      }
       resourceValidationResultMap.put(getResourceId(resource), validationResult);
     }
-    return validationResult;
+    return (validationResult != emptyValidationResult) ? validationResult : null;
   }
 
   private String getResourceId(Resource resource) {
