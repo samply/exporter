@@ -338,7 +338,9 @@ public class ExporterController {
   @GetMapping(value = ExporterConst.RESPONSE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   public ResponseEntity<InputStreamResource> getResponse(
       @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId,
-      @RequestParam(name = ExporterConst.FILE_FILTER, required = false) String fileFilter) {
+      @RequestParam(name = ExporterConst.FILE_FILTER, required = false) String fileFilter,
+      @RequestParam(name = ExporterConst.FILE_COLUMN_PIVOT, required = false) String fileColumnPivot,
+      @RequestParam(name = ExporterConst.ELEMENT_COUNTER, required = false) String elementCounter) {
     Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(
         queryExecutionId);
     if (queryExecution.isPresent()) {

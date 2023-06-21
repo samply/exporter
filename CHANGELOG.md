@@ -70,6 +70,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Validation Utils
 - FHIR Package Loader
 - Converter Template attribute: FHIR Package
+- Explorer, CSV Explorer
 
 ### Changed
 - Rename Conversion Template as Converter Template

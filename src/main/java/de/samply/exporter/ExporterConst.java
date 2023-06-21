@@ -161,6 +161,9 @@ public class ExporterConst {
   public static final String OUTPUT_FORMAT = "output-format";
   public static final String QUERY_EXECUTION_ID = "query-execution-id";
   public static final String FILE_FILTER = "file-filter";
+  public static final String FILE_COLUMN_PIVOT = "pivot";
+  public static final String ELEMENT_COUNTER = "counter";
+
 
   /*
   public static final List<String> CROSS_PARAMETERS = Arrays.asList(PAGE, PAGE_SIZE, STATS,
