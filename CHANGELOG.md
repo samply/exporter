@@ -72,6 +72,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Converter Template attribute: FHIR Package
 - Explorer, CSV Explorer
 - Deactivate hapi fhir client and hibernate logs (configurable)
+- FHIR Terminology Server
 
 ### Changed
 - Rename Conversion Template as Converter Template
