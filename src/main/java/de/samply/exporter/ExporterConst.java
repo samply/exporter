@@ -192,7 +192,6 @@ public class ExporterConst {
   public static final String HTTP_HEADER_CONTENT_DISPOSITION = "Content-Disposition";
   public static final String HTTP_HEADER_CONTENT_DISPOSITION_FILENAME = "filename=\"";
   public static final int RANDOM_FILENAME_SIZE = 10;
-  public static final String BLAZE_URL_QUERY_PARAMETER_TOTAL_OF_PAGES = "__t=";
-
+  public static final String BLAZE_URL_QUERY_PARAMETER_PAGE_SIZE = "_count";
 
 }

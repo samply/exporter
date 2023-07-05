@@ -104,7 +104,6 @@ public class BundleValidator {
     try {
       return validate(fetchValidationResult(resource), attributeTemplate);
     } catch (Exception e) {
-      logger.error(ExceptionUtils.getStackTrace(e));
       return e.getMessage();
     }
   }
@@ -119,10 +118,6 @@ public class BundleValidator {
     ValidationResult validationResult = resourceValidationResultMap.get(getResourceId(resource));
     if (validationResult == null) {
       validationResult = validateResource(resource);
-      if (validationResult != null && !validationResult.isSuccessful()) {
-        validationResult.getMessages()
-            .forEach(singleValidationMessage -> logger.error(singleValidationMessage.toString()));
-      }
       if (validationResult == null) {
         validationResult = emptyValidationResult;
       }
