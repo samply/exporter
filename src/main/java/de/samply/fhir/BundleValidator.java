@@ -41,7 +41,8 @@ public class BundleValidator {
     this.converterTemplate = converterTemplate;
     IValidatorModule validatorModule =
         (converterTemplate.getFhirPackages() != null && !converterTemplate.getFhirPackages()
-            .isEmpty()) ? fetchIValidatorModuleFromPackage(fhirContext, converterTemplate)
+            .isEmpty()) ? fetchIValidatorModuleFromPackageAndRemoteTerminologyServers(fhirContext,
+            converterTemplate)
             : fetchIValidatorModule(fhirContext);
     fhirValidator.registerValidatorModule(validatorModule);
   }
@@ -50,20 +51,8 @@ public class BundleValidator {
     return new FhirInstanceValidator(fhirContext);
   }
 
-  private IValidatorModule fetchIValidatorModuleWithRemoteTerminologyService(
-      FhirContext fhirContext, String remoteTerminologyServiceUrl, String fhirPackagesDirectory) {
-    ValidationSupportChain validationSupportChain = new ValidationSupportChain();
-    validationSupportChain.addValidationSupport(new DefaultProfileValidationSupport(fhirContext));
-    RemoteTerminologyServiceValidationSupport remote = new RemoteTerminologyServiceValidationSupport(
-        fhirContext);
-    remote.setBaseUrl(remoteTerminologyServiceUrl);
-    validationSupportChain.addValidationSupport(remote);
-    CachingValidationSupport cache = new CachingValidationSupport(validationSupportChain);
-    return new FhirInstanceValidator(cache);
-  }
-
-  private IValidatorModule fetchIValidatorModuleFromPackage(FhirContext fhirContext,
-      ConverterTemplate converterTemplate)
+  private IValidatorModule fetchIValidatorModuleFromPackageAndRemoteTerminologyServers(
+      FhirContext fhirContext, ConverterTemplate converterTemplate)
       throws BundleValidatorException {
     ValidationSupportChain validationSupportChain = new ValidationSupportChain(
         fetchNpmPackageValidationSupport(fhirContext, converterTemplate),
@@ -72,6 +61,7 @@ public class BundleValidator {
         new InMemoryTerminologyServerValidationSupport(fhirContext),
         new SnapshotGeneratingValidationSupport(fhirContext)
     );
+    addRemoteTerminologyServers(validationSupportChain, fhirContext, converterTemplate);
     CachingValidationSupport validationSupport = new CachingValidationSupport(
         validationSupportChain);
     return new FhirInstanceValidator(validationSupport);
@@ -100,6 +90,16 @@ public class BundleValidator {
     return npmPackageSupport;
   }
 
+  private void addRemoteTerminologyServers(ValidationSupportChain validationSupportChain,
+      FhirContext fhirContext, ConverterTemplate template) {
+    template.getFhirTerminologyServers().forEach(fhirTerminologyServer -> {
+      RemoteTerminologyServiceValidationSupport remote = new RemoteTerminologyServiceValidationSupport(
+          fhirContext);
+      remote.setBaseUrl(fhirTerminologyServer);
+      validationSupportChain.addValidationSupport(remote);
+    });
+  }
+
   public String validate(Resource resource, AttributeTemplate attributeTemplate) {
     try {
       return validate(fetchValidationResult(resource), attributeTemplate);
@@ -123,7 +123,7 @@ public class BundleValidator {
         validationResult.getMessages()
             .forEach(singleValidationMessage -> logger.error(singleValidationMessage.toString()));
       }
-      if (validationResult == null){
+      if (validationResult == null) {
         validationResult = emptyValidationResult;
       }
       resourceValidationResultMap.put(getResourceId(resource), validationResult);
