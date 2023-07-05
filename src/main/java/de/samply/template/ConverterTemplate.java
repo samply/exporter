@@ -59,6 +59,10 @@ public class ConverterTemplate {
   @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-package")
   private List<String> fhirPackages = new ArrayList<>();
 
+  @JacksonXmlElementWrapper(useWrapping = false) @JsonProperty("fhir-terminology-server")
+  private List<String> fhirTerminologyServers = new ArrayList<>();
+
+
   public ConverterTemplate() {
   }
 
@@ -164,6 +168,14 @@ public class ConverterTemplate {
 
   public void setOpalPermission(Permission opalPermission) {
     this.opalPermission = opalPermission;
+  }
+
+  public List<String> getFhirTerminologyServers() {
+    return fhirTerminologyServers;
+  }
+
+  public void setFhirTerminologyServers(List<String> fhirTerminologyServers) {
+    this.fhirTerminologyServers = fhirTerminologyServers;
   }
 
 }

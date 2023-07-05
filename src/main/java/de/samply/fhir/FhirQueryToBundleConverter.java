@@ -9,14 +9,20 @@ import de.samply.converter.Format;
 import de.samply.converter.SourceConverterImpl;
 import de.samply.exporter.ExporterConst;
 import de.samply.template.ConverterTemplate;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 
 public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bundle, EmptySession> {
 
+  private final static Logger logger = LoggerFactory.getLogger(FhirQueryToBundleConverter.class);
   private final IGenericClient client;
   private final String sourceId;
 
@@ -29,17 +35,83 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
   @Override
   public Flux<Bundle> convert(String fhirQuery, ConverterTemplate template, EmptySession session) {
     return Flux.generate(
-        () -> "",
-        (nextUrl, sync) -> {
+        () -> new BundleContext(1, ""),
+        (bundleContext, sync) -> {
+          String nextUrl = bundleContext.nextUrl();
           Bundle bundle = (nextUrl.isEmpty()) ? fetchFirstBundle(fhirQuery, template)
               : fetchNextBundle(nextUrl);
           sync.next(bundle);
           nextUrl = getNextBundleUrl(bundle);
           if (nextUrl == null) {
+            logger.info("Last bundle fetched");
             sync.complete();
+          } else {
+            Optional<Integer> total = getTotal(nextUrl);
+            logger.info(
+                "Fetching bundle " + bundleContext.page() + " of " + total.get() +
+                    getPercentage(bundleContext.page(), total.get()) +
+                    calculateRemainingTime(bundleContext.page(), total.get(),
+                        bundleContext.instant()));
           }
-          return nextUrl;
+          return new BundleContext(bundleContext.page() + 1, nextUrl);
         });
+  }
+
+  private record BundleContext(Integer page, String nextUrl, Instant instant) {
+
+    public BundleContext(Integer page, String nextUrl) {
+      this(page, nextUrl, Instant.now());
+    }
+  }
+
+  private String getPercentage(Integer page, Integer total) {
+    String result = "";
+    if (page != null && total != null) {
+      Double percentage = 100.0 * page / total;
+      result = " (" + percentage.intValue() + "%)";
+    }
+    return result;
+  }
+
+  private String calculateRemainingTime(Integer page, Integer total, Instant previousInstant) {
+    String result = "";
+    if (page != null && total != null && previousInstant != null && page < total) {
+      long pageDurationInSeconds = Duration.between(previousInstant, Instant.now()).toSeconds();
+      long remainingTimeInSeconds = pageDurationInSeconds * (total - page + 1);
+      result = " [remaining time: ";
+      if (remainingTimeInSeconds < 1) {
+        result = "1 min";
+      }
+      if (remainingTimeInSeconds < 60) {
+        result += remainingTimeInSeconds + " sec";
+      } else if (remainingTimeInSeconds < 60 * 60) {
+        result += remainingTimeInSeconds / 60 + " min";
+      } else {
+        result += remainingTimeInSeconds / (60 * 60) + " hours";
+      }
+      result += "]";
+    }
+    return result;
+  }
+
+  private Optional<Integer> getTotal(String nextUrl) {
+    try {
+      Integer result = null;
+      if (nextUrl != null) {
+        int index = nextUrl.indexOf(ExporterConst.BLAZE_URL_QUERY_PARAMETER_TOTAL_OF_PAGES);
+        if (index > 0) {
+          int index2 = nextUrl.substring(index).indexOf("&");
+          String total =
+              (index2 > 0) ? nextUrl.substring(
+                  index + ExporterConst.BLAZE_URL_QUERY_PARAMETER_TOTAL_OF_PAGES.length(),
+                  index + index2) : nextUrl.substring(index);
+          result = Integer.valueOf(total);
+        }
+      }
+      return Optional.ofNullable(result);
+    } catch (Exception e) {
+      return Optional.empty();
+    }
   }
 
   @Override

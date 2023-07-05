@@ -50,6 +50,7 @@
     <poi.version>5.2.3</poi.version>
     <flyway-core.version>9.15.2</flyway-core.version>
     <postgresql.version>42.5.4</postgresql.version>
+    <commons-csv.version>1.10.0</commons-csv.version>
   </properties>
 
   <dependencies>
@@ -169,6 +170,11 @@
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${commons-csv.version}</version>
     </dependency>
 
   </dependencies>
