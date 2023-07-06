@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Explorer, CSV Explorer
 - Deactivate hapi fhir client and hibernate logs (configurable)
 - FHIR Terminology Server
+- Location String and Message for validation
 
 ### Changed
 - Rename Conversion Template as Converter Template
