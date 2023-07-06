@@ -82,6 +82,7 @@ public class BundleToContainersConverter extends
 
   private void addContainers(Bundle bundle, Containers containers,
       ContainerTemplate containerTemplate, BundleContext context) {
+    logger.info("Adding container " + fetchContainerName(containerTemplate) + "...");
     containerTemplate.getAttributeTemplates().forEach(attributeTemplate ->
         bundle.getEntry().forEach(bundleEntryComponent -> {
           if (isSameResourceType(bundleEntryComponent.getResource(), attributeTemplate)) {
@@ -90,6 +91,19 @@ public class BundleToContainersConverter extends
                 addResourceAttributeToContainers(containers, resourceAttribute, context));
           }
         }));
+  }
+
+  private String fetchContainerName(ContainerTemplate containerTemplate) {
+    if (containerTemplate.getCsvFilename() != null) {
+      return containerTemplate.getCsvFilename();
+    }
+    if (containerTemplate.getExcelSheet() != null) {
+      return containerTemplate.getExcelSheet();
+    }
+    if (containerTemplate.getJsonFilename() != null) {
+      return containerTemplate.getJsonFilename();
+    }
+    return "";
   }
 
   private boolean isSameResourceType(Resource resource, AttributeTemplate attributeTemplate) {
