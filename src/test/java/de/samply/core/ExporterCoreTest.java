@@ -50,7 +50,7 @@ class ExporterCoreTest {
     ContainersToXmlConverter containersToXmlConverter = new ContainersToXmlConverter(
         converterTemplateUtils, writeDirectory);
     BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter(
-        fhirPackagesDirectory);
+        fhirPackagesDirectory, false);
     ApplicationContext applicationContext = null;
     ConverterManager converterManager = new ConverterManager(applicationContext,
         bundleToContainersConverter, containersToCsvConverter, containersToExcelConverter,
