@@ -2,6 +2,8 @@ package de.samply.exporter;
 
 public class ExporterConst {
 
+  public final static boolean LOG_FHIR_VALIDATION_DEFAULT = false;
+
   // HTTP Headers
   public final static String API_KEY_HEADER = "x-api-key";
 
@@ -88,6 +90,7 @@ public class ExporterConst {
   public final static String HTTP_SERVLET_REQUEST_SCHEME = "HTTP_SERVLET_REQUEST_SCHEME";
   public final static String TIMESTAMP_FORMAT = "TIMESTAMP_FORMAT";
   public final static String FHIR_PACKAGES_DIRECTORY = "FHIR_PACKAGES_DIRECTORY";
+  public final static String LOG_FHIR_VALIDATION = "LOG_FHIR_VALIDATION";
 
   // Spring Values (SV)
   public final static String HEAD_SV = "${";
@@ -125,6 +128,8 @@ public class ExporterConst {
       HEAD_SV + TIMESTAMP_FORMAT + ":" + DEFAULT_TIMESTAMP_FORMAT + BOTTOM_SV;
   public final static String FHIR_PACKAGES_DIRECTORY_SV =
       HEAD_SV + FHIR_PACKAGES_DIRECTORY + ":#{'./fhir-packages'}" + BOTTOM_SV;
+  public final static String LOG_FHIR_VALIDATION_SV =
+      HEAD_SV + LOG_FHIR_VALIDATION + ":" + LOG_FHIR_VALIDATION_DEFAULT + BOTTOM_SV;
 
 
   // REST Paths
@@ -192,6 +197,7 @@ public class ExporterConst {
   public static final String HTTP_HEADER_CONTENT_DISPOSITION = "Content-Disposition";
   public static final String HTTP_HEADER_CONTENT_DISPOSITION_FILENAME = "filename=\"";
   public static final int RANDOM_FILENAME_SIZE = 10;
-  public static final String BLAZE_URL_QUERY_PARAMETER_PAGE_SIZE = "_count";
+  public static final String BLAZE_URL_QUERY_PARAMETER_PAGE_SIZE = "_count=";
+  public static final int DEFAULT_FHIR_PAGE_SIZE = 50;
 
 }

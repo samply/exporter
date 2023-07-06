@@ -33,12 +33,15 @@ public class BundleToContainersConverter extends
   private final FhirContext fhirContext;
   private final FHIRPathEngine fhirPathEngine;
   private final String fhirPackagesDirectory;
+  private final Boolean logFhirValidation;
 
   public BundleToContainersConverter(
-      @Value(ExporterConst.FHIR_PACKAGES_DIRECTORY_SV) String fhirPackagesDirectory) {
+      @Value(ExporterConst.FHIR_PACKAGES_DIRECTORY_SV) String fhirPackagesDirectory,
+      @Value(ExporterConst.LOG_FHIR_VALIDATION_SV) Boolean logFhirValidation) {
     this.fhirContext = FhirContext.forR4();
     this.fhirPathEngine = createFhirPathEngine(fhirContext);
     this.fhirPackagesDirectory = fhirPackagesDirectory;
+    this.logFhirValidation = logFhirValidation;
   }
 
   @Override
@@ -73,7 +76,7 @@ public class BundleToContainersConverter extends
       BundleToContainersConverterSession session) {
     try {
       return new BundleContext(bundle, session, fhirPathEngine, fhirContext, converterTemplate,
-          fhirPackagesDirectory);
+          fhirPackagesDirectory, logFhirValidation);
     } catch (BundleContextException e) {
       throw new RuntimeException(e);
     }

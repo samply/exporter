@@ -21,18 +21,18 @@ public class BundleContext {
 
   public BundleContext(Bundle bundle, BundleToContainersConverterSession session,
       FHIRPathEngine fhirPathEngine, FhirContext fhirContext, ConverterTemplate converterTemplate,
-      String fhirPackagesDirectory)
+      String fhirPackagesDirectory, boolean logFhirValidation)
       throws BundleContextException {
     this.resourceFinder = new ResourceFinder(bundle, fhirPathEngine);
     this.session = session;
-    this.bundleValidator = createBundleValidator(fhirContext, converterTemplate, fhirPackagesDirectory);
+    this.bundleValidator = createBundleValidator(fhirContext, converterTemplate, fhirPackagesDirectory, logFhirValidation);
   }
 
   private BundleValidator createBundleValidator(FhirContext fhirContext,
-      ConverterTemplate converterTemplate, String fhirPackageDirectory)
+      ConverterTemplate converterTemplate, String fhirPackageDirectory, boolean logFhirValidation)
       throws BundleContextException {
     try {
-      return new BundleValidator(fhirContext, converterTemplate, fhirPackageDirectory);
+      return new BundleValidator(fhirContext, converterTemplate, fhirPackageDirectory, logFhirValidation);
     } catch (BundleValidatorException e) {
       throw new BundleContextException(e);
     }
@@ -55,6 +55,5 @@ public class BundleContext {
   public String validate(Resource resource, AttributeTemplate attributeTemplate) {
     return bundleValidator.validate(resource, attributeTemplate);
   }
-
 
 }

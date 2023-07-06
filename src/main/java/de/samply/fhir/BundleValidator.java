@@ -6,6 +6,7 @@ import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.IValidatorModule;
 import ca.uhn.fhir.validation.SingleValidationMessage;
 import ca.uhn.fhir.validation.ValidationResult;
+import de.samply.exporter.ExporterConst;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ConverterTemplate;
 import java.io.IOException;
@@ -32,9 +33,10 @@ public class BundleValidator {
   private ConverterTemplate converterTemplate;
   private Map<String, ValidationResult> resourceValidationResultMap = new HashMap<>();
   private ValidationResult emptyValidationResult = new ValidationResult(null, new ArrayList<>());
+  private final boolean logFhirValidation;
 
   public BundleValidator(FhirContext fhirContext, ConverterTemplate converterTemplate,
-      String fhirPackageDirectory)
+      String fhirPackageDirectory, boolean logFhirValidation)
       throws BundleValidatorException {
     this.fhirValidator = fhirContext.newValidator();
     this.fhirPackageLoader = new FhirPackageLoader(fhirPackageDirectory);
@@ -45,6 +47,7 @@ public class BundleValidator {
             converterTemplate)
             : fetchIValidatorModule(fhirContext);
     fhirValidator.registerValidatorModule(validatorModule);
+    this.logFhirValidation = logFhirValidation;
   }
 
   private IValidatorModule fetchIValidatorModule(FhirContext fhirContext) {
@@ -118,7 +121,7 @@ public class BundleValidator {
     ValidationResult validationResult = resourceValidationResultMap.get(getResourceId(resource));
     if (validationResult == null) {
       validationResult = validateResource(resource);
-      if (validationResult != null && !validationResult.isSuccessful()) {
+      if (logFhirValidation && validationResult != null && !validationResult.isSuccessful()) {
         validationResult.getMessages()
             .forEach(
                 singleValidationMessage ->
