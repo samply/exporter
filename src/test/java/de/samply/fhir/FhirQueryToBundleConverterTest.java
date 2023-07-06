@@ -44,7 +44,7 @@ class FhirQueryToBundleConverterTest {
         outputDirectory);
     this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory);
     this.converterTemplateManager = new ConverterTemplateManager(templateDirectory);
-    this.bundleToContainersConverter = new BundleToContainersConverter(fhirPackagesDirectory);
+    this.bundleToContainersConverter = new BundleToContainersConverter(fhirPackagesDirectory, false);
     this.bundleToContainersConverterSession = new BundleToContainersConverterSession();
   }
 

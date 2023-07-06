@@ -25,6 +25,7 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
   private final static Logger logger = LoggerFactory.getLogger(FhirQueryToBundleConverter.class);
   private final IGenericClient client;
   private final String sourceId;
+  private int pageSize = ExporterConst.DEFAULT_FHIR_PAGE_SIZE;
 
 
   public FhirQueryToBundleConverter(String fhirStoreUrl, String sourceId) {
@@ -36,8 +37,8 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
   public Flux<Bundle> convert(String fhirQuery, ConverterTemplate template, EmptySession session) {
     return Flux.generate(
         () -> {
-          logger.info("Fetching  bundles...");
-          return new BundleContext(1, "");
+          logger.info("Fetching first bundle...");
+          return new BundleContext(2, "");
         },
         (bundleContext, sync) -> {
           String nextUrl = bundleContext.nextUrl();
@@ -50,13 +51,14 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
             sync.complete();
           } else {
             Optional<Integer> numberOfPages = getNumberOfPages(bundle, nextUrl);
-            String part2 = (!numberOfPages.isEmpty()) ? " of " + numberOfPages.get() +
+            String part2 = (numberOfPages.isPresent()) ? " of " + numberOfPages.get() +
                 getPercentage(bundleContext.page(), numberOfPages.get()) +
-                calculateRemainingTime(bundleContext.page(), numberOfPages.get(), bundleContext.instant())
+                calculateRemainingTime(bundleContext.page(), numberOfPages.get(),
+                    bundleContext.instant())
                 : "";
-            logger.info("Fetching bundle " + bundleContext.page() + part2);
+            logger.info("Fetching bundle " + (bundleContext.page()) + part2);
           }
-          return new BundleContext(bundleContext.page() + 1, nextUrl);
+          return new BundleContext(bundleContext.page(), nextUrl);
         });
   }
 
@@ -100,7 +102,7 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
   private Optional<Integer> getNumberOfPages(Bundle bundle, String nextUrl) {
     if (bundle != null && nextUrl != null && bundle.getTotal() > 0) {
       Optional<Integer> pageSize = getPageSize(nextUrl);
-      if (!pageSize.isEmpty()) {
+      if (pageSize.isPresent()) {
         return Optional.of(
             Double.valueOf(Math.ceil(1.0 * bundle.getTotal() / pageSize.get())).intValue());
       }
@@ -137,6 +139,7 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
   private Bundle fetchFirstBundle(String fhirQuery, ConverterTemplate template) {
     IQuery<IBaseBundle> iQuery = client.search().byUrl(fhirQuery);
     addRevIncludes(iQuery, template);
+    iQuery.count(pageSize);
     return iQuery.returnBundle(Bundle.class).execute();
   }
 
@@ -175,6 +178,10 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
   @Override
   public String getSourceId() {
     return this.sourceId;
+  }
+
+  public void setPageSize(int pageSize) {
+    this.pageSize = pageSize;
   }
 
 }

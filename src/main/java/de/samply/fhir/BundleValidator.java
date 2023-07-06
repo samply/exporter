@@ -4,14 +4,15 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.IValidatorModule;
+import ca.uhn.fhir.validation.SingleValidationMessage;
 import ca.uhn.fhir.validation.ValidationResult;
+import de.samply.exporter.ExporterConst;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ConverterTemplate;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hl7.fhir.common.hapi.validation.support.CachingValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.CommonCodeSystemsTerminologyService;
 import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerValidationSupport;
@@ -32,9 +33,10 @@ public class BundleValidator {
   private ConverterTemplate converterTemplate;
   private Map<String, ValidationResult> resourceValidationResultMap = new HashMap<>();
   private ValidationResult emptyValidationResult = new ValidationResult(null, new ArrayList<>());
+  private final boolean logFhirValidation;
 
   public BundleValidator(FhirContext fhirContext, ConverterTemplate converterTemplate,
-      String fhirPackageDirectory)
+      String fhirPackageDirectory, boolean logFhirValidation)
       throws BundleValidatorException {
     this.fhirValidator = fhirContext.newValidator();
     this.fhirPackageLoader = new FhirPackageLoader(fhirPackageDirectory);
@@ -45,6 +47,7 @@ public class BundleValidator {
             converterTemplate)
             : fetchIValidatorModule(fhirContext);
     fhirValidator.registerValidatorModule(validatorModule);
+    this.logFhirValidation = logFhirValidation;
   }
 
   private IValidatorModule fetchIValidatorModule(FhirContext fhirContext) {
@@ -102,7 +105,7 @@ public class BundleValidator {
 
   public String validate(Resource resource, AttributeTemplate attributeTemplate) {
     try {
-      return validate(fetchValidationResult(resource), attributeTemplate);
+      return validate(fetchValidationResult(resource, attributeTemplate), attributeTemplate);
     } catch (Exception e) {
       return e.getMessage();
     }
@@ -114,16 +117,29 @@ public class BundleValidator {
         : "";
   }
 
-  private ValidationResult fetchValidationResult(Resource resource) {
+  private ValidationResult fetchValidationResult(Resource resource, AttributeTemplate template) {
     ValidationResult validationResult = resourceValidationResultMap.get(getResourceId(resource));
     if (validationResult == null) {
       validationResult = validateResource(resource);
+      if (logFhirValidation && validationResult != null && !validationResult.isSuccessful()) {
+        validationResult.getMessages()
+            .forEach(
+                singleValidationMessage ->
+                    logValidationMessage(singleValidationMessage, template, resource));
+      }
       if (validationResult == null) {
         validationResult = emptyValidationResult;
       }
       resourceValidationResultMap.put(getResourceId(resource), validationResult);
     }
     return (validationResult != emptyValidationResult) ? validationResult : null;
+  }
+
+  private void logValidationMessage(SingleValidationMessage message, AttributeTemplate template,
+      Resource resource) {
+    String attribute =
+        (template.getCsvColumnName() != null) ? template.getCsvColumnName() + ": " : "";
+    logger.info(attribute + resource.getId() + ": " + message.toString());
   }
 
   private String getResourceId(Resource resource) {

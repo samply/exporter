@@ -45,6 +45,7 @@ public abstract class ContainersToFilesConverter<S extends Session> extends
 
   public List<Path> writeContainersInFile(Containers containers, ConverterTemplate template,
       S session) {
+    logger.info("Writing containers in file...");
     List<Path> pathList = new ArrayList<>();
     template.getContainerTemplates().forEach(containerTemplate ->
         pathList.add(writeContainersInFile(containers.getContainers(containerTemplate), template,

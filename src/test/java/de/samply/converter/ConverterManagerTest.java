@@ -28,7 +28,7 @@ class ConverterManagerTest {
   private final String CONVERTER_APPLICATION_CONTEXT_PATH = "./converter/converter.xml";
 
   private BundleToContainersConverter bundleToContainersConverter = new BundleToContainersConverter(
-      fhirPackagesDirectory);
+      fhirPackagesDirectory, false);
   private ContainersToCsvConverter containersToCsvConverter;
   private ContainersToExcelConverter containersToExcelConverter;
   private ContainersToJsonConverter containersToJsonConverter;

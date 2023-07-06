@@ -19,6 +19,8 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.ExpressionNode;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -27,15 +29,19 @@ import reactor.core.publisher.Flux;
 public class BundleToContainersConverter extends
     ConverterImpl<Bundle, Containers, BundleToContainersConverterSession> {
 
+  private final static Logger logger = LoggerFactory.getLogger(BundleToContainersConverter.class);
   private final FhirContext fhirContext;
   private final FHIRPathEngine fhirPathEngine;
   private final String fhirPackagesDirectory;
+  private final Boolean logFhirValidation;
 
   public BundleToContainersConverter(
-      @Value(ExporterConst.FHIR_PACKAGES_DIRECTORY_SV) String fhirPackagesDirectory) {
+      @Value(ExporterConst.FHIR_PACKAGES_DIRECTORY_SV) String fhirPackagesDirectory,
+      @Value(ExporterConst.LOG_FHIR_VALIDATION_SV) Boolean logFhirValidation) {
     this.fhirContext = FhirContext.forR4();
     this.fhirPathEngine = createFhirPathEngine(fhirContext);
     this.fhirPackagesDirectory = fhirPackagesDirectory;
+    this.logFhirValidation = logFhirValidation;
   }
 
   @Override
@@ -43,6 +49,7 @@ public class BundleToContainersConverter extends
       BundleToContainersConverterSession session) {
     return Flux.generate(
         sync -> {
+          logger.info("Converting bundle to containers...");
           sync.next(convertToContainers(bundle, converterTemplate, session));
           sync.complete();
         });
@@ -69,7 +76,7 @@ public class BundleToContainersConverter extends
       BundleToContainersConverterSession session) {
     try {
       return new BundleContext(bundle, session, fhirPathEngine, fhirContext, converterTemplate,
-          fhirPackagesDirectory);
+          fhirPackagesDirectory, logFhirValidation);
     } catch (BundleContextException e) {
       throw new RuntimeException(e);
     }
@@ -78,6 +85,7 @@ public class BundleToContainersConverter extends
 
   private void addContainers(Bundle bundle, Containers containers,
       ContainerTemplate containerTemplate, BundleContext context) {
+    logger.info("Adding container " + fetchContainerName(containerTemplate) + "...");
     containerTemplate.getAttributeTemplates().forEach(attributeTemplate ->
         bundle.getEntry().forEach(bundleEntryComponent -> {
           if (isSameResourceType(bundleEntryComponent.getResource(), attributeTemplate)) {
@@ -86,6 +94,19 @@ public class BundleToContainersConverter extends
                 addResourceAttributeToContainers(containers, resourceAttribute, context));
           }
         }));
+  }
+
+  private String fetchContainerName(ContainerTemplate containerTemplate) {
+    if (containerTemplate.getCsvFilename() != null) {
+      return containerTemplate.getCsvFilename();
+    }
+    if (containerTemplate.getExcelSheet() != null) {
+      return containerTemplate.getExcelSheet();
+    }
+    if (containerTemplate.getJsonFilename() != null) {
+      return containerTemplate.getJsonFilename();
+    }
+    return "";
   }
 
   private boolean isSameResourceType(Resource resource, AttributeTemplate attributeTemplate) {
