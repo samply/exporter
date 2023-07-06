@@ -19,6 +19,8 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.ExpressionNode;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -27,6 +29,7 @@ import reactor.core.publisher.Flux;
 public class BundleToContainersConverter extends
     ConverterImpl<Bundle, Containers, BundleToContainersConverterSession> {
 
+  private final static Logger logger = LoggerFactory.getLogger(BundleToContainersConverter.class);
   private final FhirContext fhirContext;
   private final FHIRPathEngine fhirPathEngine;
   private final String fhirPackagesDirectory;
@@ -43,6 +46,7 @@ public class BundleToContainersConverter extends
       BundleToContainersConverterSession session) {
     return Flux.generate(
         sync -> {
+          logger.info("Converting bundle to containers...");
           sync.next(convertToContainers(bundle, converterTemplate, session));
           sync.complete();
         });

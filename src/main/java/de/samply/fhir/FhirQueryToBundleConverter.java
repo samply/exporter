@@ -36,7 +36,7 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
   public Flux<Bundle> convert(String fhirQuery, ConverterTemplate template, EmptySession session) {
     return Flux.generate(
         () -> {
-          logger.info("Fetching  bundles...");
+          logger.info("Fetching first bundle...");
           return new BundleContext(1, "");
         },
         (bundleContext, sync) -> {
@@ -52,9 +52,10 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
             Optional<Integer> numberOfPages = getNumberOfPages(bundle, nextUrl);
             String part2 = (!numberOfPages.isEmpty()) ? " of " + numberOfPages.get() +
                 getPercentage(bundleContext.page(), numberOfPages.get()) +
-                calculateRemainingTime(bundleContext.page(), numberOfPages.get(), bundleContext.instant())
+                calculateRemainingTime(bundleContext.page(), numberOfPages.get(),
+                    bundleContext.instant())
                 : "";
-            logger.info("Fetching bundle " + bundleContext.page() + part2);
+            logger.info("Fetching bundle " + (bundleContext.page() + 1) + part2);
           }
           return new BundleContext(bundleContext.page() + 1, nextUrl);
         });
