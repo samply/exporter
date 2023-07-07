@@ -303,10 +303,21 @@ public class ExporterController {
   }
 
   private String fetchResponseUrl(HttpServletRequest httpServletRequest, Long queryExecutionId) {
-    return ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
-        .scheme(fetchHttpScheme(httpServletRequest))
-        .replacePath(createHttpPath(ExporterConst.RESPONSE))
+    ServletUriComponentsBuilder servletUriComponentsBuilder = ServletUriComponentsBuilder.fromRequestUri(
+        httpServletRequest);
+    if (isInternalRequest(httpServletRequest)) {
+      servletUriComponentsBuilder
+          .scheme("http")
+          .replacePath(ExporterConst.RESPONSE);
+    } else {
+      servletUriComponentsBuilder
+          .scheme(httpServletRequestScheme)
+          .replacePath(createHttpPath(ExporterConst.RESPONSE));
+    }
+    String result = servletUriComponentsBuilder
         .queryParam(ExporterConst.QUERY_EXECUTION_ID, queryExecutionId).toUriString();
+    logger.info("Response URL: " + result);
+    return result;
   }
 
   private String fetchHttpScheme(HttpServletRequest httpServletRequest) {
