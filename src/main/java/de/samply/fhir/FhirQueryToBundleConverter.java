@@ -58,7 +58,7 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
                 : "";
             logger.info("Fetching bundle " + (bundleContext.page()) + part2);
           }
-          return new BundleContext(bundleContext.page(), nextUrl);
+          return new BundleContext(bundleContext.page() + 1, nextUrl);
         });
   }
 
