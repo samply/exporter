@@ -75,6 +75,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - FHIR Terminology Server
 - Location String and Message for validation
 - Parameter LOG_FHIR_VALIDATION
+- Java 20
 
 ### Changed
 - Rename Conversion Template as Converter Template
