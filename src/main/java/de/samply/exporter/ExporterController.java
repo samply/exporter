@@ -26,6 +26,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -72,11 +74,9 @@ public class ExporterController {
   private ExporterDbService exporterDbService;
   private Zipper zipper;
 
-  public ExporterController(
-      @Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
+  public ExporterController(@Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
       @Value(ExporterConst.HTTP_SERVLET_REQUEST_SCHEME_SV) String httpServletRequestScheme,
-      @Autowired ExporterCore exporterCore,
-      @Autowired ExporterDbService exporterDbService,
+      @Autowired ExporterCore exporterCore, @Autowired ExporterDbService exporterDbService,
       @Autowired Zipper zipper) {
     this.httpRelativePath = httpRelativePath;
     this.httpServletRequestScheme = httpServletRequestScheme;
@@ -125,8 +125,7 @@ public class ExporterController {
 
   @GetMapping(value = ExporterConst.STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getQueryExecutionStatus(
-      @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId
-  ) {
+      @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId) {
     return convertToResponseEntity(queryExecutionId, exporterDbService::getQueryExecutionStatus);
   }
 
@@ -139,8 +138,7 @@ public class ExporterController {
   }
 
   @GetMapping(value = ExporterConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> fetchInquiry(
-      HttpServletRequest httpServletRequest,
+  public ResponseEntity<String> fetchInquiry(HttpServletRequest httpServletRequest,
       @RequestParam(name = ExporterConst.QUERY_ID) Long queryId) {
     try {
       Optional<Inquiry> inquiryOptional = exporterDbService.fetchInquiry(queryId);
@@ -305,10 +303,42 @@ public class ExporterController {
   }
 
   private String fetchResponseUrl(HttpServletRequest httpServletRequest, Long queryExecutionId) {
-    return ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
-        .scheme(httpServletRequestScheme)
-        .replacePath(createHttpPath(ExporterConst.RESPONSE))
+    ServletUriComponentsBuilder servletUriComponentsBuilder = ServletUriComponentsBuilder.fromRequestUri(
+        httpServletRequest);
+    if (isInternalRequest(httpServletRequest)) {
+      servletUriComponentsBuilder
+          .scheme("http")
+          .replacePath(ExporterConst.RESPONSE);
+    } else {
+      servletUriComponentsBuilder
+          .scheme(httpServletRequestScheme)
+          .replacePath(createHttpPath(ExporterConst.RESPONSE));
+    }
+    String result = servletUriComponentsBuilder
         .queryParam(ExporterConst.QUERY_EXECUTION_ID, queryExecutionId).toUriString();
+    logger.info("Response URL: " + result);
+    return result;
+  }
+
+  private String fetchHttpScheme(HttpServletRequest httpServletRequest) {
+    return (isInternalRequest(httpServletRequest)) ? "http" : httpServletRequestScheme;
+  }
+
+  private boolean isInternalRequest(HttpServletRequest httpServletRequest) {
+    try {
+      return isInternalRequestWithoutExceptionHandling(httpServletRequest);
+    } catch (UnknownHostException e) {
+      logger.error(ExceptionUtils.getStackTrace(e));
+      return false;
+    }
+  }
+
+  private boolean isInternalRequestWithoutExceptionHandling(HttpServletRequest httpServletRequest)
+      throws UnknownHostException {
+    String remoteAddr = httpServletRequest.getRemoteAddr();
+    String hostAddress = InetAddress.getLocalHost().getHostAddress();
+    return remoteAddr.equals("127.0.0.1") || remoteAddr.substring(0, remoteAddr.lastIndexOf("."))
+        .equals(hostAddress.substring(0, hostAddress.lastIndexOf(".")));
   }
 
   private String createHttpPath(String httpPath) {
