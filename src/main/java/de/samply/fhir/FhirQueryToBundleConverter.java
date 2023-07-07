@@ -92,7 +92,8 @@ public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bund
       } else if (remainingTimeInSeconds < 60 * 60) {
         result += remainingTimeInSeconds / 60 + " min";
       } else {
-        result += remainingTimeInSeconds / (60 * 60) + " hours";
+        long remainingTimeInHours = remainingTimeInSeconds / (60 * 60);
+        result += remainingTimeInHours + " hour" + ((remainingTimeInHours != 1) ? "s" : "");
       }
       result += "]";
     }
