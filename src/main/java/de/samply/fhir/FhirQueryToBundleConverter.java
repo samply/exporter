@@ -8,6 +8,8 @@ import de.samply.converter.EmptySession;
 import de.samply.converter.Format;
 import de.samply.converter.SourceConverterImpl;
 import de.samply.exporter.ExporterConst;
+import de.samply.logger.BufferedLoggerFactory;
+import de.samply.logger.Logger;
 import de.samply.template.ConverterTemplate;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,14 +17,12 @@ import java.util.Optional;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 
 public class FhirQueryToBundleConverter extends SourceConverterImpl<String, Bundle, EmptySession> {
 
-  private final static Logger logger = LoggerFactory.getLogger(FhirQueryToBundleConverter.class);
+  private final static Logger logger = BufferedLoggerFactory.getLogger(FhirQueryToBundleConverter.class);
   private final IGenericClient client;
   private final String sourceId;
   private int pageSize = ExporterConst.DEFAULT_FHIR_PAGE_SIZE;
