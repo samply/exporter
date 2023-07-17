@@ -326,8 +326,8 @@ public class ExporterController {
             throws UnknownHostException {
         String remoteAddr = httpServletRequest.getRemoteAddr();
         String hostAddress = InetAddress.getLocalHost().getHostAddress();
-        return remoteAddr.equals("127.0.0.1") || remoteAddr.substring(0, remoteAddr.lastIndexOf("."))
-                .equals(hostAddress.substring(0, hostAddress.lastIndexOf(".")));
+        return remoteAddr.equals("localhost") || remoteAddr.equals("127.0.0.1") || remoteAddr.equals("0:0:0:0:0:0:0:1")
+                || remoteAddr.substring(0, remoteAddr.lastIndexOf(".")).equals(hostAddress.substring(0, hostAddress.lastIndexOf(".")));
     }
 
     private String createHttpPath(String httpPath) {
@@ -465,6 +465,13 @@ public class ExporterController {
         } catch (ExporterCoreException e) {
             return createInternalServerError(e);
         }
+    }
+
+    @GetMapping(value = ExporterConst.LOGS)
+    public ResponseEntity<String[]> fetchLogs(
+            @RequestParam(name = ExporterConst.LOGS_SIZE) int logsSize,
+            @RequestParam(name = ExporterConst.LOGS_LAST_LINE, required = false) String logsLastLine) {
+        return ResponseEntity.ok().body(BufferedLoggerFactory.getLastLoggerLines(logsSize, logsLastLine));
     }
 
 

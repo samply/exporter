@@ -145,10 +145,11 @@ public class ExporterConst {
   public static final String ACTIVE_INQUIRIES = "/active-inquiries";
   public static final String ARCHIVED_INQUIRIES = "/archived-inquiries";
   public static final String ERROR_INQUIRIES = "/error-inquiries";
+  public static final String LOGS = "/logs";
 
   public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
       QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES, INQUIRY,
-      ARCHIVE_QUERY, STATUS};
+      ARCHIVE_QUERY, STATUS, LOGS};
   // TODO: RESPONSE ??? Only with UUID enough?
 
   // REST Parameters
@@ -168,6 +169,9 @@ public class ExporterConst {
   public static final String FILE_FILTER = "file-filter";
   public static final String FILE_COLUMN_PIVOT = "pivot";
   public static final String ELEMENT_COUNTER = "counter";
+  public static final String LOGS_SIZE = "logs-size";
+  public static final String LOGS_LAST_LINE = "logs-last-line";
+
 
 
   /*
