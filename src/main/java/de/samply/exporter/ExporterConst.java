@@ -199,5 +199,6 @@ public class ExporterConst {
   public static final int RANDOM_FILENAME_SIZE = 10;
   public static final String BLAZE_URL_QUERY_PARAMETER_PAGE_SIZE = "_count=";
   public static final int DEFAULT_FHIR_PAGE_SIZE = 50;
+  public final static int BUFFERED_LOGGER_SIZE = 1000;
 
 }

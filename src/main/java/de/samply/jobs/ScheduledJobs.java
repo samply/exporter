@@ -2,8 +2,8 @@ package de.samply.jobs;
 
 import de.samply.clean.FilesCleanerException;
 import de.samply.exporter.ExporterConst;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.samply.logger.BufferedLoggerFactory;
+import de.samply.logger.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScheduledJobs {
 
-  private final static Logger logger = LoggerFactory.getLogger(ScheduledJobs.class);
+  private final static Logger logger = BufferedLoggerFactory.getLogger(ScheduledJobs.class);
   private CleanTempFilesJob cleanTempFilesJob;
   private CleanWriteFilesJob cleanWriteFilesJob;
 
