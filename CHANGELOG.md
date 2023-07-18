@@ -76,6 +76,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Location String and Message for validation
 - Parameter LOG_FHIR_VALIDATION
 - Java 20
+- Buffered Logger
+- Request Logs
 
 ### Changed
 - Rename Conversion Template as Converter Template
