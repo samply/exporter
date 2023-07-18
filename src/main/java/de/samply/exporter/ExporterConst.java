@@ -171,6 +171,7 @@ public class ExporterConst {
   public static final String ELEMENT_COUNTER = "counter";
   public static final String LOGS_SIZE = "logs-size";
   public static final String LOGS_LAST_LINE = "logs-last-line";
+  public final static String IS_INTERNAL_REQUEST = "internal-request";
 
 
 

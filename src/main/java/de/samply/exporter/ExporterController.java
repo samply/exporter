@@ -36,8 +36,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -128,11 +126,12 @@ public class ExporterController {
 
     @GetMapping(value = ExporterConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchInquiry(HttpServletRequest httpServletRequest,
+                                               @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
                                                @RequestParam(name = ExporterConst.QUERY_ID) Long queryId) {
         try {
             Optional<Inquiry> inquiryOptional = exporterDbService.fetchInquiry(queryId);
             if (inquiryOptional.isPresent()) {
-                addExecutionFileUrl(httpServletRequest, inquiryOptional.get());
+                addExecutionFileUrl(httpServletRequest, inquiryOptional.get(), isInternalRequest);
                 return ResponseEntity.ok().body(objectMapper.writeValueAsString(inquiryOptional.get()));
             } else {
                 return ResponseEntity.notFound().build();
@@ -142,9 +141,9 @@ public class ExporterController {
         }
     }
 
-    private void addExecutionFileUrl(HttpServletRequest request, Inquiry inquiry) {
+    private void addExecutionFileUrl(HttpServletRequest request, Inquiry inquiry, Boolean isInternalRequest) {
         if (inquiry.getQueryExecutionId() != null) {
-            inquiry.setExecutionFileUrl(fetchResponseUrl(request, inquiry.getQueryExecutionId()));
+            inquiry.setExecutionFileUrl(fetchResponseUrl(request, inquiry.getQueryExecutionId(), isInternalRequest));
         }
     }
 
@@ -235,6 +234,7 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.OUTPUT_FORMAT) Format outputFormat,
                                               @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
                                               @RequestHeader(name = "Content-Type", required = false) String contentType,
+                                              @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
                                               @RequestBody(required = false) String template) {
     /*
     if (!outputFormat.isPath()) {
@@ -254,7 +254,7 @@ public class ExporterController {
         new Thread(() -> generateFiles(tempExporterCoreParameters, queryExecutionId)).start();
         try {
             return ResponseEntity.ok()
-                    .body(createRequestResponseEntity(httpServletRequest, queryExecutionId));
+                    .body(createRequestResponseEntity(httpServletRequest, queryExecutionId, isInternalRequest));
         } catch (ExporterControllerException e) {
             return createInternalServerError(e);
         }
@@ -281,20 +281,20 @@ public class ExporterController {
         return queryExecutionError;
     }
 
-    private String createRequestResponseEntity(HttpServletRequest request, Long queryExecutionId)
+    private String createRequestResponseEntity(HttpServletRequest request, Long queryExecutionId, Boolean isInternalRequest)
             throws ExporterControllerException {
         try {
             return objectMapper.writeValueAsString(
-                    new RequestResponseEntity(fetchResponseUrl(request, queryExecutionId)));
+                    new RequestResponseEntity(fetchResponseUrl(request, queryExecutionId, isInternalRequest)));
         } catch (JsonProcessingException e) {
             throw new ExporterControllerException(e);
         }
     }
 
-    private String fetchResponseUrl(HttpServletRequest httpServletRequest, Long queryExecutionId) {
+    private String fetchResponseUrl(HttpServletRequest httpServletRequest, Long queryExecutionId, Boolean isInternalRequest) {
         ServletUriComponentsBuilder servletUriComponentsBuilder = ServletUriComponentsBuilder.fromRequestUri(
                 httpServletRequest);
-        if (isInternalRequest(httpServletRequest)) {
+        if (isInternalRequest != null && isInternalRequest) {
             servletUriComponentsBuilder
                     .scheme("http")
                     .replacePath(ExporterConst.RESPONSE);
@@ -307,27 +307,6 @@ public class ExporterController {
                 .queryParam(ExporterConst.QUERY_EXECUTION_ID, queryExecutionId).toUriString();
         logger.info("Response URL: " + result);
         return result;
-    }
-
-    private String fetchHttpScheme(HttpServletRequest httpServletRequest) {
-        return (isInternalRequest(httpServletRequest)) ? "http" : httpServletRequestScheme;
-    }
-
-    private boolean isInternalRequest(HttpServletRequest httpServletRequest) {
-        try {
-            return isInternalRequestWithoutExceptionHandling(httpServletRequest);
-        } catch (UnknownHostException e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
-            return false;
-        }
-    }
-
-    private boolean isInternalRequestWithoutExceptionHandling(HttpServletRequest httpServletRequest)
-            throws UnknownHostException {
-        String remoteAddr = httpServletRequest.getRemoteAddr();
-        String hostAddress = InetAddress.getLocalHost().getHostAddress();
-        return remoteAddr.equals("localhost") || remoteAddr.equals("127.0.0.1") || remoteAddr.equals("0:0:0:0:0:0:0:1")
-                || remoteAddr.substring(0, remoteAddr.lastIndexOf(".")).equals(hostAddress.substring(0, hostAddress.lastIndexOf(".")));
     }
 
     private String createHttpPath(String httpPath) {
