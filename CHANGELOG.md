@@ -78,6 +78,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Java 20
 - Buffered Logger
 - Request Logs
+- Csv Explorer
 
 ### Changed
 - Rename Conversion Template as Converter Template
