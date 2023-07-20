@@ -80,6 +80,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Request Logs
 - Csv Explorer
 - Json Explorer
+- XML Exporter
 
 ### Changed
 - Rename Conversion Template as Converter Template
