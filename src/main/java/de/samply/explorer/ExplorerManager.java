@@ -2,6 +2,7 @@ package de.samply.explorer;
 
 import de.samply.csv.CsvExplorer;
 import de.samply.json.JsonExplorer;
+import de.samply.xml.XmlExplorer;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
@@ -15,9 +16,10 @@ public class ExplorerManager {
 
     public ExplorerManager(
             CsvExplorer csvExplorer,
-            JsonExplorer jsonExplorer
+            JsonExplorer jsonExplorer,
+            XmlExplorer xmlExplorer
     ) {
-        explorers = List.of(csvExplorer, jsonExplorer);
+        explorers = List.of(csvExplorer, jsonExplorer, xmlExplorer);
     }
 
     public Optional<Explorer> getExplorer(Path file) {

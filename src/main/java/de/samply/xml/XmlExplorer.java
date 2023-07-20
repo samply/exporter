@@ -1,4 +1,4 @@
-package de.samply.json;
+package de.samply.xml;
 
 import de.samply.explorer.TaggedLinesExplorer;
 import de.samply.exporter.ExporterConst;
@@ -9,45 +9,40 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.Set;
 
-
 @Component
-public class JsonExplorer extends TaggedLinesExplorer {
+public class XmlExplorer extends TaggedLinesExplorer {
 
-    private final Set<String> compatibleFileExtensions = Set.of("json");
+    private final Set<String> compatibleFileExtensions = Set.of("xml");
 
-    public JsonExplorer(
+    public XmlExplorer(
             @Value(ExporterConst.TEMPORAL_FILE_DIRECTORY_SV) String directory,
             ConverterTemplateUtils converterTemplateUtils) {
         super(directory, converterTemplateUtils);
     }
 
     @Override
-    protected String editLine(String line, int lineNumber, boolean isFirstElement) {
-        return (lineNumber > 2 && isFirstElement) ? line.substring(1) : line; // remove initial comma
+    public Set<String> getCompatibleFileExtensions() {
+        return compatibleFileExtensions;
     }
 
     @Override
     protected boolean isLastLine(String line) {
-        return line.equals("]}");
+        return line.startsWith("</");
     }
 
     @Override
     protected Optional<String> fetchPivotValueFromLine(String pivotAttribute, String line) {
-        String token = pivotAttribute + "\" : \"";
+        String token = pivotAttribute + ">";
         int index = line.indexOf(token);
         if (index > 0) {
             index += token.length();
-            int index2 = line.substring(index).indexOf("\"");
+            int index2 = line.substring(index).indexOf("</");
             if (index2 > 0) {
                 return Optional.of(line.substring(index, index + index2));
             }
         }
         return Optional.empty();
-    }
 
-    @Override
-    public Set<String> getCompatibleFileExtensions() {
-        return compatibleFileExtensions;
     }
 
 }
