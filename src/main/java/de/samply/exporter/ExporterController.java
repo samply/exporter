@@ -381,11 +381,11 @@ public class ExporterController {
             throws ExporterControllerException, ZipperException, FileNotFoundException, ExplorerException, PivotIdentifierException {
         List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
                 queryExecutionFileId);
-        queryExecutionFiles = filterFiles(queryExecutionFiles, fileFilter);
         List<Path> files = convertToPath(queryExecutionFiles);
         if (fileColumnPivot != null && (pivotCounter != null || pivotValue != null)) {
             files = filterFiles(files, fileColumnPivot, pivotCounter, pivotValue);
         }
+        files = filterFiles(files, fileFilter);
         if (files.size() > 0) {
             if (files.size() == 1) {
                 return createResponseEntity(
@@ -446,15 +446,15 @@ public class ExporterController {
         return result;
     }
 
-    private List<QueryExecutionFile> filterFiles(List<QueryExecutionFile> files, String fileFilter) {
-        List<QueryExecutionFile> result;
+    private List<Path> filterFiles(List<Path> files, String fileFilter) {
+        List<Path> result;
         if (fileFilter != null) {
             result = new ArrayList<>();
             String[] filters = fileFilter.trim().split(ExporterConst.FILE_FILTER_SEPARATOR);
-            files.forEach(queryExecutionFile -> {
+            files.forEach(file -> {
                 for (String filter : filters) {
-                    if (queryExecutionFile.getFilePath().toLowerCase().contains(filter.toLowerCase())) {
-                        result.add(queryExecutionFile);
+                    if (file.toAbsolutePath().toString().toLowerCase().contains(filter.toLowerCase())) {
+                        result.add(file);
                         break;
                     }
                 }
