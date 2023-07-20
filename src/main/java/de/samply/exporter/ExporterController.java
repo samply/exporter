@@ -11,6 +11,7 @@ import de.samply.core.ExporterCoreParameters;
 import de.samply.core.ExporterParameters;
 import de.samply.db.crud.ExporterDbService;
 import de.samply.db.model.*;
+import de.samply.explorer.*;
 import de.samply.exporter.response.entity.CreateQueryResponseEntity;
 import de.samply.exporter.response.entity.RequestResponseEntity;
 import de.samply.logger.BufferedLoggerFactory;
@@ -20,7 +21,6 @@ import de.samply.zip.Zipper;
 import de.samply.zip.ZipperException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.util.Pair;
@@ -56,6 +56,7 @@ public class ExporterController {
             .registerModule(new JavaTimeModule());
     private final String projectVersion = ProjectVersion.getProjectVersion();
     private final ExporterCore exporterCore;
+    private final ExplorerManager explorerManager;
     private final String httpRelativePath;
     private final String httpServletRequestScheme;
     private ExporterDbService exporterDbService;
@@ -63,13 +64,16 @@ public class ExporterController {
 
     public ExporterController(@Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
                               @Value(ExporterConst.HTTP_SERVLET_REQUEST_SCHEME_SV) String httpServletRequestScheme,
-                              @Autowired ExporterCore exporterCore, @Autowired ExporterDbService exporterDbService,
-                              @Autowired Zipper zipper) {
+                              ExporterCore exporterCore,
+                              ExporterDbService exporterDbService,
+                              Zipper zipper,
+                              ExplorerManager explorerManager) {
         this.httpRelativePath = httpRelativePath;
         this.httpServletRequestScheme = httpServletRequestScheme;
         this.exporterCore = exporterCore;
         this.exporterDbService = exporterDbService;
         this.zipper = zipper;
+        this.explorerManager = explorerManager;
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
@@ -338,7 +342,8 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId,
             @RequestParam(name = ExporterConst.FILE_FILTER, required = false) String fileFilter,
             @RequestParam(name = ExporterConst.FILE_COLUMN_PIVOT, required = false) String fileColumnPivot,
-            @RequestParam(name = ExporterConst.ELEMENT_COUNTER, required = false) String elementCounter) {
+            @RequestParam(name = ExporterConst.PIVOT_COUNTER, required = false) Integer pivotCounter,
+            @RequestParam(name = ExporterConst.PIVOT_VALUE, required = false) String pivotValue) {
         Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(
                 queryExecutionId);
         if (queryExecution.isPresent()) {
@@ -353,8 +358,9 @@ public class ExporterController {
                 }
                 case OK -> {
                     try {
-                        yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId, fileFilter);
-                    } catch (ExporterControllerException | ZipperException | FileNotFoundException e) {
+                        yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId, fileFilter, fileColumnPivot, pivotCounter, pivotValue);
+                    } catch (ExporterControllerException | ZipperException | FileNotFoundException | ExplorerException |
+                             PivotIdentifierException e) {
                         yield createInternalServerError(e);
                     }
                 }
@@ -371,20 +377,22 @@ public class ExporterController {
     }
 
     private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipIfNecessary(
-            Long queryExecutionFileId, String fileFilter)
-            throws ExporterControllerException, ZipperException, FileNotFoundException {
+            Long queryExecutionFileId, String fileFilter, String fileColumnPivot, Integer pivotCounter, String pivotValue)
+            throws ExporterControllerException, ZipperException, FileNotFoundException, ExplorerException, PivotIdentifierException {
         List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
                 queryExecutionFileId);
-        queryExecutionFiles = filterFiles(queryExecutionFiles, fileFilter);
-        if (queryExecutionFiles.size() > 0) {
-            if (queryExecutionFiles.size() == 1) {
+        List<Path> files = convertToPath(queryExecutionFiles);
+        if (fileColumnPivot != null && (pivotCounter != null || pivotValue != null)) {
+            files = filterFiles(files, fileColumnPivot, pivotCounter, pivotValue);
+        }
+        files = filterFiles(files, fileFilter);
+        if (files.size() > 0) {
+            if (files.size() == 1) {
                 return createResponseEntity(
-                        new InputStreamResource(new FileInputStream(queryExecutionFiles.get(0).getFilePath())),
-                        fetchFilename(queryExecutionFiles.get(0).getFilePath()));
+                        new InputStreamResource(new FileInputStream(files.get(0).toAbsolutePath().toString())),
+                        fetchFilename(files.get(0).getFileName().toString()));
             } else {
-                Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(
-                        queryExecutionFiles.stream().map(queryExecutionFile -> queryExecutionFile.getFilePath())
-                                .toList());
+                Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(files);
                 return createResponseEntity(inputStreamResourceFilenamePair.getFirst(),
                         fetchFilename(inputStreamResourceFilenamePair.getSecond()));
             }
@@ -393,15 +401,60 @@ public class ExporterController {
         }
     }
 
-    private List<QueryExecutionFile> filterFiles(List<QueryExecutionFile> files, String fileFilter) {
-        List<QueryExecutionFile> result;
+    private List<Path> convertToPath(List<QueryExecutionFile> queryExecutionFiles) {
+        return queryExecutionFiles.stream().map(queryExecutionFile -> Path.of(queryExecutionFile.getFilePath())).toList();
+    }
+
+    private List<Path> filterFiles(List<Path> files, String fileColumnPivot, Integer pivotCounter, String pivotValue) throws PivotIdentifierException, ExplorerException {
+        List<Path> result = new ArrayList<>();
+        PivotIdentifier pivotIdentifier = new PivotIdentifier(fileColumnPivot);
+        Path pivotFile = null;
+        for (Path file : files) {
+            if (file.getFileName().toString().contains(pivotIdentifier.getFilename())) {
+                pivotFile = file;
+                break;
+            }
+        }
+        if (pivotFile == null) {
+            throw new PivotIdentifierException("File not found");
+        }
+        Optional<Explorer> explorer = explorerManager.getExplorer(pivotFile);
+        if (explorer.isEmpty()) {
+            throw new PivotIdentifierException("Source file not found");
+        }
+        Pivot pivot;
+        if (pivotCounter != null) {
+            Optional<Pivot> tempPivot = explorer.get().fetchPivot(pivotFile, pivotIdentifier.getColumn(), pivotCounter);
+            if (tempPivot.isEmpty()) {
+                throw new PivotIdentifierException("Counter out of range");
+            }
+            pivot = tempPivot.get();
+        } else {
+            pivot = new Pivot(pivotIdentifier.getColumn(), pivotValue);
+        }
+        try {
+            files.forEach(file -> {
+                try {
+                    result.add(explorer.get().filter(file, pivot));
+                } catch (ExplorerException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (Exception e) {
+            throw new PivotIdentifierException(e);
+        }
+        return result;
+    }
+
+    private List<Path> filterFiles(List<Path> files, String fileFilter) {
+        List<Path> result;
         if (fileFilter != null) {
             result = new ArrayList<>();
             String[] filters = fileFilter.trim().split(ExporterConst.FILE_FILTER_SEPARATOR);
-            files.forEach(queryExecutionFile -> {
+            files.forEach(file -> {
                 for (String filter : filters) {
-                    if (queryExecutionFile.getFilePath().toLowerCase().contains(filter.toLowerCase())) {
-                        result.add(queryExecutionFile);
+                    if (file.toAbsolutePath().toString().toLowerCase().contains(filter.toLowerCase())) {
+                        result.add(file);
                         break;
                     }
                 }

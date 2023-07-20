@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2023-06-21]
+## [1.0.0 - 2023-07-20]
 ### Added
 - Search Controller
 - Blaze Store Client
@@ -78,6 +78,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Java 20
 - Buffered Logger
 - Request Logs
+- Csv Explorer
+- Json Explorer
+- XML Exporter
 
 ### Changed
 - Rename Conversion Template as Converter Template

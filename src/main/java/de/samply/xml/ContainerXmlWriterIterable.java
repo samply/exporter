@@ -29,12 +29,12 @@ public class ContainerXmlWriterIterable extends ContainerFileWriterIterable {
       String attributeValue = container.getAttributeValue(attributeTemplate);
       if (attributeValue != null) {
         hasElements.set(true);
-        stringBuilder.append("\n\t\t<" + attributeTemplate.getXmlElement() + ">");
+        stringBuilder.append("<" + attributeTemplate.getXmlElement() + ">");
         stringBuilder.append(attributeValue);
         stringBuilder.append("</" + attributeTemplate.getXmlElement() + ">");
       }
     });
-    stringBuilder.append("\n\t</" + containerTemplate.getXmlElement() + ">");
+    stringBuilder.append("</" + containerTemplate.getXmlElement() + ">");
     return stringBuilder.toString();
   }
 
