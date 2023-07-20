@@ -33,12 +33,12 @@ public class Zipper {
     this.temporalFileDirectory = Path.of(temporalFileDirectory);
   }
 
-  public Pair<InputStreamResource, String> zipFiles(List<String> filePaths)
+  public Pair<InputStreamResource, String> zipFiles(List<Path> filePaths)
       throws ZipperException {
     return zipFiles(temporalFileDirectory.resolve(generateZipFilename()), filePaths);
   }
 
-  public Pair<InputStreamResource, String> zipFiles(Path zipFilePath, List<String> filePaths)
+  public Pair<InputStreamResource, String> zipFiles(Path zipFilePath, List<Path> filePaths)
       throws ZipperException {
     try {
       return Pair.of(zipFilesWithoutExceptionHandling(zipFilePath, filePaths),
@@ -49,7 +49,7 @@ public class Zipper {
   }
 
   private InputStreamResource zipFilesWithoutExceptionHandling(Path zipFilePath,
-      List<String> filePaths) throws FileNotFoundException, ZipperException {
+      List<Path> filePaths) throws FileNotFoundException, ZipperException {
     try (FileOutputStream outputStream = new FileOutputStream(
         zipFilePath.toFile()); ZipOutputStream zipOutputStream = new ZipOutputStream(
         outputStream)) {
@@ -60,11 +60,11 @@ public class Zipper {
     }
   }
 
-  private void addFilesToZipOutputStream(ZipOutputStream zipOutputStream, List<String> filePaths)
+  private void addFilesToZipOutputStream(ZipOutputStream zipOutputStream, List<Path> filePaths)
       throws ZipperException {
     try {
       filePaths.forEach(filePath -> {
-        File fileToZip = new File(filePath);
+        File fileToZip = filePath.toFile();
         try (FileInputStream fileInputStream = new FileInputStream(fileToZip)) {
           ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
           zipOutputStream.putNextEntry(zipEntry);
