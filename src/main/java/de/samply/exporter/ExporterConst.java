@@ -152,6 +152,9 @@ public class ExporterConst {
             ARCHIVE_QUERY, STATUS, LOGS};
     // TODO: RESPONSE ??? Only with UUID enough?
 
+    // REST Headers
+    public static final String NUMBER_OF_PAGES = "number-of-pages";
+
     // REST Parameters
     public static final String PAGE = "page";
     public static final String PAGE_SIZE = "page-size";

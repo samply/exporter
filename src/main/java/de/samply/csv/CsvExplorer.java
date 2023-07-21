@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Component
 public class CsvExplorer extends ExplorerImpl {
@@ -98,6 +100,22 @@ public class CsvExplorer extends ExplorerImpl {
     @Override
     public Set<String> getCompatibleFileExtensions() {
         return compatibleFileExtensions;
+    }
+
+    @Override
+    public int fetchTotalNumberOfElements(Path source) throws ExplorerException {
+        try {
+            return fetchTotalNumberOfElementsWithoutExceptionHandling(source);
+        } catch (IOException e) {
+            throw new ExplorerException(e);
+        }
+    }
+
+    private int fetchTotalNumberOfElementsWithoutExceptionHandling(Path source) throws IOException {
+        try (Stream<String> fileStream = Files.lines(source)) {
+            int numberOfLines = (int) fileStream.count();
+            return (numberOfLines >= 1) ? numberOfLines - 1 : 0;
+        }
     }
 
     private Pivot convert(CSVRecord csvRecord, String pivotAttribute) {

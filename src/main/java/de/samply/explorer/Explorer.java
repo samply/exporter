@@ -12,4 +12,6 @@ public interface Explorer {
 
     Set<String> getCompatibleFileExtensions();
 
+    int fetchTotalNumberOfElements (Path source) throws ExplorerException;
+
 }
