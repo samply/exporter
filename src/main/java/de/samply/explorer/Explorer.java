@@ -6,9 +6,9 @@ import java.util.Set;
 
 public interface Explorer {
 
-    Path filter(Path source, Pivot pivot) throws ExplorerException;
+    Path filter(Path source, Pivot[] pivots) throws ExplorerException;
 
-    Optional<Pivot> fetchPivot(Path source, String pivotAttribute, int counter) throws ExplorerException;
+    Optional<Pivot[]> fetchPivot(Path source, String pivotAttribute, int pageCounter, int pageSize) throws ExplorerException;
 
     Set<String> getCompatibleFileExtensions();
 
