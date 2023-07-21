@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.util.Pair;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -383,19 +384,22 @@ public class ExporterController {
         List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
                 queryExecutionFileId);
         List<Path> files = convertToPath(queryExecutionFiles);
+        HttpHeaders httpHeaders = new HttpHeaders();
         if (fileColumnPivot != null && (pageCounter != null || pivotValue != null)) {
-            files = filterFiles(files, fileColumnPivot, pageCounter, pivotValue, pageSize);
+            FilesAndNumberOfPagesOfPivot filesAndNumberOfPagesOfPivot = filterFiles(files, fileColumnPivot, pageCounter, pivotValue, pageSize);
+            files = filesAndNumberOfPagesOfPivot.paths();
+            httpHeaders.add(ExporterConst.NUMBER_OF_PAGES, String.valueOf(filesAndNumberOfPagesOfPivot.numberOfPagesOfPivot()));
         }
         files = filterFiles(files, fileFilter);
         if (files.size() > 0) {
             if (files.size() == 1) {
                 return createResponseEntity(
                         new InputStreamResource(new FileInputStream(files.get(0).toAbsolutePath().toString())),
-                        fetchFilename(files.get(0).getFileName().toString()));
+                        fetchFilename(files.get(0).getFileName().toString()), httpHeaders);
             } else {
                 Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(files);
                 return createResponseEntity(inputStreamResourceFilenamePair.getFirst(),
-                        fetchFilename(inputStreamResourceFilenamePair.getSecond()));
+                        fetchFilename(inputStreamResourceFilenamePair.getSecond()), httpHeaders);
             }
         } else {
             return ResponseEntity.notFound().build();
@@ -406,7 +410,7 @@ public class ExporterController {
         return queryExecutionFiles.stream().map(queryExecutionFile -> Path.of(queryExecutionFile.getFilePath())).toList();
     }
 
-    private List<Path> filterFiles(List<Path> files, String fileColumnPivot, Integer pageCounter, String pivotValue, Integer pageSize) throws PivotIdentifierException, ExplorerException {
+    private FilesAndNumberOfPagesOfPivot filterFiles(List<Path> files, String fileColumnPivot, Integer pageCounter, String pivotValue, Integer pageSize) throws PivotIdentifierException, ExplorerException {
         List<Path> result = new ArrayList<>();
         PivotIdentifier pivotIdentifier = new PivotIdentifier(fileColumnPivot);
         Path pivotFile = null;
@@ -447,7 +451,12 @@ public class ExporterController {
         } catch (Exception e) {
             throw new PivotIdentifierException(e);
         }
-        return result;
+        return new FilesAndNumberOfPagesOfPivot(result, fetchNumberOfPagesOfPivot(pivotFile, explorer.get(), pageSize));
+    }
+
+    private int fetchNumberOfPagesOfPivot(Path pivotFile, Explorer explorer, int pageSize) throws ExplorerException {
+        int totalNumberOfElements = explorer.fetchTotalNumberOfElements(pivotFile);
+        return Double.valueOf(Math.ceil(1.0 * totalNumberOfElements / pageSize)).intValue();
     }
 
     private List<Path> filterFiles(List<Path> files, String fileFilter) {
@@ -476,7 +485,12 @@ public class ExporterController {
 
     private ResponseEntity<InputStreamResource> createResponseEntity(
             InputStreamResource inputStreamResource, String filename) {
-        return ResponseEntity.ok().header("Content-Disposition", "attachment; filename=" + filename)
+        return createResponseEntity(inputStreamResource, filename, new HttpHeaders());
+    }
+
+    private ResponseEntity<InputStreamResource> createResponseEntity(
+            InputStreamResource inputStreamResource, String filename, HttpHeaders httpHeaders) {
+        return ResponseEntity.ok().headers(httpHeaders).header("Content-Disposition", "attachment; filename=" + filename)
                 .body(inputStreamResource);
     }
 

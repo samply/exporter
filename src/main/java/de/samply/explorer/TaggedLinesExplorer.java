@@ -90,4 +90,20 @@ public abstract class TaggedLinesExplorer extends ExplorerImpl {
         }
     }
 
+    @Override
+    public int fetchTotalNumberOfElements(Path source) throws ExplorerException {
+        try {
+            return fetchTotalNumberOfElementsWithoutExceptionHandling(source);
+        } catch (IOException e) {
+            throw new ExplorerException(e);
+        }
+    }
+
+    private int fetchTotalNumberOfElementsWithoutExceptionHandling(Path source) throws IOException {
+        try (Stream<String> fileStream = Files.lines(source)) {
+            int numberOfLines = (int) fileStream.count();
+            return (numberOfLines >= 2) ? numberOfLines - 2 : 0;
+        }
+    }
+
 }
