@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.util.Pair;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -342,7 +343,8 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId,
             @RequestParam(name = ExporterConst.FILE_FILTER, required = false) String fileFilter,
             @RequestParam(name = ExporterConst.FILE_COLUMN_PIVOT, required = false) String fileColumnPivot,
-            @RequestParam(name = ExporterConst.PIVOT_COUNTER, required = false) Integer pivotCounter,
+            @RequestParam(name = ExporterConst.PAGE_COUNTER, required = false) Integer pageCounter,
+            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(name = ExporterConst.PIVOT_VALUE, required = false) String pivotValue) {
         Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(
                 queryExecutionId);
@@ -358,7 +360,7 @@ public class ExporterController {
                 }
                 case OK -> {
                     try {
-                        yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId, fileFilter, fileColumnPivot, pivotCounter, pivotValue);
+                        yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize);
                     } catch (ExporterControllerException | ZipperException | FileNotFoundException | ExplorerException |
                              PivotIdentifierException e) {
                         yield createInternalServerError(e);
@@ -377,24 +379,27 @@ public class ExporterController {
     }
 
     private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipIfNecessary(
-            Long queryExecutionFileId, String fileFilter, String fileColumnPivot, Integer pivotCounter, String pivotValue)
+            Long queryExecutionFileId, String fileFilter, String fileColumnPivot, Integer pageCounter, String pivotValue, Integer pageSize)
             throws ExporterControllerException, ZipperException, FileNotFoundException, ExplorerException, PivotIdentifierException {
         List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
                 queryExecutionFileId);
         List<Path> files = convertToPath(queryExecutionFiles);
-        if (fileColumnPivot != null && (pivotCounter != null || pivotValue != null)) {
-            files = filterFiles(files, fileColumnPivot, pivotCounter, pivotValue);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        if (fileColumnPivot != null && (pageCounter != null || pivotValue != null)) {
+            FilesAndNumberOfPagesOfPivot filesAndNumberOfPagesOfPivot = filterFiles(files, fileColumnPivot, pageCounter, pivotValue, pageSize);
+            files = filesAndNumberOfPagesOfPivot.paths();
+            httpHeaders.add(ExporterConst.NUMBER_OF_PAGES, String.valueOf(filesAndNumberOfPagesOfPivot.numberOfPagesOfPivot()));
         }
         files = filterFiles(files, fileFilter);
         if (files.size() > 0) {
             if (files.size() == 1) {
                 return createResponseEntity(
                         new InputStreamResource(new FileInputStream(files.get(0).toAbsolutePath().toString())),
-                        fetchFilename(files.get(0).getFileName().toString()));
+                        fetchFilename(files.get(0).getFileName().toString()), httpHeaders);
             } else {
                 Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(files);
                 return createResponseEntity(inputStreamResourceFilenamePair.getFirst(),
-                        fetchFilename(inputStreamResourceFilenamePair.getSecond()));
+                        fetchFilename(inputStreamResourceFilenamePair.getSecond()), httpHeaders);
             }
         } else {
             return ResponseEntity.notFound().build();
@@ -405,7 +410,7 @@ public class ExporterController {
         return queryExecutionFiles.stream().map(queryExecutionFile -> Path.of(queryExecutionFile.getFilePath())).toList();
     }
 
-    private List<Path> filterFiles(List<Path> files, String fileColumnPivot, Integer pivotCounter, String pivotValue) throws PivotIdentifierException, ExplorerException {
+    private FilesAndNumberOfPagesOfPivot filterFiles(List<Path> files, String fileColumnPivot, Integer pageCounter, String pivotValue, Integer pageSize) throws PivotIdentifierException, ExplorerException {
         List<Path> result = new ArrayList<>();
         PivotIdentifier pivotIdentifier = new PivotIdentifier(fileColumnPivot);
         Path pivotFile = null;
@@ -422,20 +427,23 @@ public class ExporterController {
         if (explorer.isEmpty()) {
             throw new PivotIdentifierException("Source file not found");
         }
-        Pivot pivot;
-        if (pivotCounter != null) {
-            Optional<Pivot> tempPivot = explorer.get().fetchPivot(pivotFile, pivotIdentifier.getColumn(), pivotCounter);
-            if (tempPivot.isEmpty()) {
+        Pivot[] pivots;
+        if (pageCounter != null) {
+            if (pageSize == null) {
+                pageSize = 1;
+            }
+            Optional<Pivot[]> tempPivots = explorer.get().fetchPivot(pivotFile, pivotIdentifier.getColumn(), pageCounter, pageSize);
+            if (tempPivots.isEmpty()) {
                 throw new PivotIdentifierException("Counter out of range");
             }
-            pivot = tempPivot.get();
+            pivots = tempPivots.get();
         } else {
-            pivot = new Pivot(pivotIdentifier.getColumn(), pivotValue);
+            pivots = new Pivot[]{new Pivot(pivotIdentifier.getColumn(), pivotValue)};
         }
         try {
             files.forEach(file -> {
                 try {
-                    result.add(explorer.get().filter(file, pivot));
+                    result.add(explorer.get().filter(file, pivots));
                 } catch (ExplorerException e) {
                     throw new RuntimeException(e);
                 }
@@ -443,7 +451,12 @@ public class ExporterController {
         } catch (Exception e) {
             throw new PivotIdentifierException(e);
         }
-        return result;
+        return new FilesAndNumberOfPagesOfPivot(result, fetchNumberOfPagesOfPivot(pivotFile, explorer.get(), pageSize));
+    }
+
+    private int fetchNumberOfPagesOfPivot(Path pivotFile, Explorer explorer, int pageSize) throws ExplorerException {
+        int totalNumberOfElements = explorer.fetchTotalNumberOfElements(pivotFile);
+        return Double.valueOf(Math.ceil(1.0 * totalNumberOfElements / pageSize)).intValue();
     }
 
     private List<Path> filterFiles(List<Path> files, String fileFilter) {
@@ -472,7 +485,12 @@ public class ExporterController {
 
     private ResponseEntity<InputStreamResource> createResponseEntity(
             InputStreamResource inputStreamResource, String filename) {
-        return ResponseEntity.ok().header("Content-Disposition", "attachment; filename=" + filename)
+        return createResponseEntity(inputStreamResource, filename, new HttpHeaders());
+    }
+
+    private ResponseEntity<InputStreamResource> createResponseEntity(
+            InputStreamResource inputStreamResource, String filename, HttpHeaders httpHeaders) {
+        return ResponseEntity.ok().headers(httpHeaders).header("Content-Disposition", "attachment; filename=" + filename)
                 .body(inputStreamResource);
     }
 

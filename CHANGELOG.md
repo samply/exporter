@@ -81,6 +81,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Csv Explorer
 - Json Explorer
 - XML Exporter
+- Request Page Size
+- Http response header number-of-pages
 
 ### Changed
 - Rename Conversion Template as Converter Template
