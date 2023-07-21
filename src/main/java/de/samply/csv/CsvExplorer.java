@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class CsvExplorer extends ExplorerImpl {
@@ -28,8 +25,8 @@ public class CsvExplorer extends ExplorerImpl {
     }
 
     @Override
-    protected List<String> fetchLines(Path source, Pivot pivot) throws ExplorerException {
-        List<CSVRecord> csvRecords = fetchMatchCsvRecords(source, pivot);
+    protected List<String> fetchLines(Path source, Pivot[] pivots) throws ExplorerException {
+        List<CSVRecord> csvRecords = fetchMatchCsvRecords(source, pivots);
         List<String> lines = new ArrayList<>();
         if (csvRecords.size() > 0) {
             lines.add(fetchHeader(csvRecords.get(0)));
@@ -55,14 +52,19 @@ public class CsvExplorer extends ExplorerImpl {
     }
 
 
-    private List<CSVRecord> fetchMatchCsvRecords(Path source, Pivot pivot) throws ExplorerException {
+    private List<CSVRecord> fetchMatchCsvRecords(Path source, Pivot[] pivots) throws ExplorerException {
         try (CsvRecordIterator csvRecordIterator = new CsvRecordIterator(source, csvConfig)) {
             List<CSVRecord> records = new ArrayList<>();
-            while (csvRecordIterator.hasNext()) {
-                CSVRecord csvRecord = csvRecordIterator.next();
-                String value = csvRecord.get(pivot.attribute());
-                if (value != null && pivot.value().equals(value)) {
-                    records.add(csvRecord);
+            if (pivots.length > 0) {
+                while (csvRecordIterator.hasNext()) {
+                    CSVRecord csvRecord = csvRecordIterator.next();
+                    Pivot tempPivot = Arrays.stream(pivots).filter(pivot -> {
+                        String value = csvRecord.get(pivot.attribute());
+                        return (value != null && value.trim().length() > 0 && pivot.value().equals(value));
+                    }).findFirst().orElse(null);
+                    if (tempPivot != null) {
+                        records.add(csvRecord);
+                    }
                 }
             }
             return records;
@@ -72,18 +74,22 @@ public class CsvExplorer extends ExplorerImpl {
     }
 
     @Override
-    public Optional<Pivot> fetchPivot(Path source, String pivotAttribute, int counter)
+    public Optional<Pivot[]> fetchPivot(Path source, String pivotAttribute, int pageCounter, int pageSize)
             throws ExplorerException {
         try (CsvRecordIterator csvRecordIterator = new CsvRecordIterator(source, csvConfig)) {
             int tempCounter = 0;
-            while (tempCounter < counter && csvRecordIterator.hasNext()) {
+            List<Pivot> results = new ArrayList<>();
+            while (tempCounter < pageCounter + pageSize && csvRecordIterator.hasNext()) {
                 CSVRecord csvRecord = csvRecordIterator.next();
                 tempCounter++;
-                if (tempCounter == counter) {
-                    return Optional.ofNullable(convert(csvRecord, pivotAttribute));
+                if (tempCounter >= pageCounter && tempCounter < pageCounter + pageSize) {
+                    Pivot pivot = convert(csvRecord, pivotAttribute);
+                    if (pivot != null) {
+                        results.add(pivot);
+                    }
                 }
             }
-            return Optional.empty();
+            return Optional.of(results.toArray(new Pivot[0]));
         } catch (IOException e) {
             throw new ExplorerException(e);
         }

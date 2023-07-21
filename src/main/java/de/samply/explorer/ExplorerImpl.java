@@ -22,12 +22,12 @@ public abstract class ExplorerImpl implements Explorer {
         csvConfig = new CsvConfig(StandardCharsets.UTF_8, System.lineSeparator(), ExporterConst.DEFAULT_CSV_SEPARATOR);
     }
 
-    protected abstract List<String> fetchLines(Path source, Pivot pivot) throws ExplorerException;
+    protected abstract List<String> fetchLines(Path source, Pivot[] pivots) throws ExplorerException;
 
     @Override
-    public Path filter(Path source, Pivot pivot) throws ExplorerException {
+    public Path filter(Path source, Pivot[] pivots) throws ExplorerException {
         Path result = createFilteredVersionOfSourcePath(source);
-        writeLinesInPath(fetchLines(source, pivot), result);
+        writeLinesInPath(fetchLines(source, pivots), result);
         return result;
     }
 
