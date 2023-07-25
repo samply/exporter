@@ -94,3 +94,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Bugfix: Change default template
 - Bugfix: Generate filenames only once in session for csv and excel
 - Bugfix: Recognize internal network requests
+- Bugfix: Avoid null resources

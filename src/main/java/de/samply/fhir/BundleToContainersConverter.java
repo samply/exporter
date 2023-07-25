@@ -82,7 +82,7 @@ public class BundleToContainersConverter extends
 
     private void addContainers(Bundle bundle, Containers containers,
                                ContainerTemplate containerTemplate, BundleContext context) {
-        logger.info("Adding container " + fetchContainerName(containerTemplate) + "...");
+        logger.debug("Adding container " + fetchContainerName(containerTemplate) + "...");
         containerTemplate.getAttributeTemplates().forEach(attributeTemplate ->
                 bundle.getEntry().forEach(bundleEntryComponent -> {
                     if (isSameResourceType(bundleEntryComponent.getResource(), attributeTemplate)) {
@@ -135,7 +135,9 @@ public class BundleToContainersConverter extends
                     (attributeTemplate.isDirectChildFhirPath()) ? resource : relatedResource;
             Resource idResource =
                     (attributeTemplate.isDirectChildFhirPath()) ? relatedResource : resource;
-            if (isToBeEvaluated(evalResource, idResource, attributeTemplate)) {
+            if (evalResource == null || idResource == null) {
+                logErrorByFetchingResourceAttribute(resource, relatedResource, evalResource, idResource, containerTemplate, attributeTemplate);
+            } else if (isToBeEvaluated(evalResource, idResource, attributeTemplate)) {
                 fhirPathEngine.evaluate(evalResource, expressionNode)
                         .forEach(base -> resourceAttributes.add(
                                 new ResourceAttribute(idResource,
@@ -144,6 +146,23 @@ public class BundleToContainersConverter extends
             }
         });
         return resourceAttributes;
+    }
+
+    private void logErrorByFetchingResourceAttribute(Resource resource, Resource relatedResource, Resource evalResource, Resource idResource, ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate) {
+        logger.error("Error fetching ressource attribute for container " + containerTemplate.getCsvFilename() + " and attribute " + attributeTemplate.getCsvColumnName());
+        logResource("Resource: ", resource);
+        logResource("Related Resource: ", relatedResource);
+        logResource("Eval Resource: ", evalResource);
+        logResource("Id Resource: ", idResource);
+    }
+
+    private void logResource(String initialMessage, Resource resource) {
+        String resourceId = (resource != null) ? fetchResourceId(resource) : "not found";
+        logger.error(initialMessage + resourceId);
+    }
+
+    private String fetchResourceId(Resource resource) {
+        return resource.getResourceType() + "/" + resource.getIdPart();
     }
 
     private String fetchAttributeValue(Resource evalResource, AttributeTemplate attributeTemplate,
