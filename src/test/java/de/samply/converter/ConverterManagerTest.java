@@ -12,6 +12,8 @@ import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
 import de.samply.xml.ContainersToXmlConverter;
 import java.util.Set;
+
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -43,8 +45,8 @@ class ConverterManagerTest {
         ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
     this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
         OUTPUT_DIRECTORY);
-    this.containersToExcelConverter = new ContainersToExcelConverter(30000000,
-        converterTemplateUtils, OUTPUT_DIRECTORY);
+    this.containersToExcelConverter = new ContainersToExcelConverter(converterTemplateUtils, 30000000
+        , OUTPUT_DIRECTORY, SpreadsheetVersion.EXCEL2007.getMaxRows());
     this.containersToJsonConverter = new ContainersToJsonConverter(converterTemplateUtils,
         OUTPUT_DIRECTORY);
     this.containersToXmlConverter = new ContainersToXmlConverter(converterTemplateUtils,

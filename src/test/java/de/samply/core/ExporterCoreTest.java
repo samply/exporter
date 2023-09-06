@@ -4,26 +4,24 @@ import de.samply.EnvironmentTestUtils;
 import de.samply.converter.ConverterManager;
 import de.samply.converter.Format;
 import de.samply.csv.ContainersToCsvConverter;
-import de.samply.db.repository.InquiryRespository;
-import de.samply.db.repository.QueryExecutionErrorRepository;
-import de.samply.db.repository.QueryExecutionFileRepository;
-import de.samply.db.repository.QueryExecutionRepository;
-import de.samply.db.repository.QueryRepository;
+import de.samply.db.crud.ExporterDbService;
+import de.samply.db.repository.*;
 import de.samply.excel.ContainersToExcelConverter;
 import de.samply.exporter.ExporterConst;
 import de.samply.fhir.BundleToContainersConverter;
-import de.samply.db.crud.ExporterDbService;
 import de.samply.json.ContainersToJsonConverter;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
 import de.samply.xml.ContainersToXmlConverter;
-import java.nio.file.Path;
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Flux;
+
+import java.nio.file.Path;
 
 @Disabled
 class ExporterCoreTest {
@@ -43,8 +41,8 @@ class ExporterCoreTest {
         ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
     ContainersToCsvConverter containersToCsvConverter = new ContainersToCsvConverter(
         converterTemplateUtils, writeDirectory);
-    ContainersToExcelConverter containersToExcelConverter = new ContainersToExcelConverter(30000000,
-        converterTemplateUtils, writeDirectory);
+    ContainersToExcelConverter containersToExcelConverter = new ContainersToExcelConverter(converterTemplateUtils,30000000,
+         writeDirectory, SpreadsheetVersion.EXCEL2007.getMaxRows());
     ContainersToJsonConverter containersToJsonConverter = new ContainersToJsonConverter(
         converterTemplateUtils, writeDirectory);
     ContainersToXmlConverter containersToXmlConverter = new ContainersToXmlConverter(
