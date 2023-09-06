@@ -91,6 +91,7 @@ public class ExporterConst {
     public final static String TIMESTAMP_FORMAT = "TIMESTAMP_FORMAT";
     public final static String FHIR_PACKAGES_DIRECTORY = "FHIR_PACKAGES_DIRECTORY";
     public final static String LOG_FHIR_VALIDATION = "LOG_FHIR_VALIDATION";
+    public final static String MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET = "MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -130,6 +131,8 @@ public class ExporterConst {
             HEAD_SV + FHIR_PACKAGES_DIRECTORY + ":#{'./fhir-packages'}" + BOTTOM_SV;
     public final static String LOG_FHIR_VALIDATION_SV =
             HEAD_SV + LOG_FHIR_VALIDATION + ":" + LOG_FHIR_VALIDATION_DEFAULT + BOTTOM_SV;
+    public final static String MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET_SV =
+            HEAD_SV + MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET + ":100000" + BOTTOM_SV;
 
 
     // REST Paths
