@@ -4,12 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2023-09-08]
+## [1.1.0 - 2023-09-20]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
 - CQL to Bundle Converter
 
+### Changed
+- Move FHIR Packages to dktk-exporter
 
 ## [1.0.0 - 2023-07-20]
 ### Added
@@ -96,10 +98,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename Conversion Template as Converter Template
 - First anonym: 1
 - Cors config
-- Bugfix: Allow join-fhir-path parent with many children
 - Rename teiler to exporter
-- Bugfix: Filter paths
-- Bugfix: Change default template
-- Bugfix: Generate filenames only once in session for csv and excel
-- Bugfix: Recognize internal network requests
-- Bugfix: Avoid null resources
+
+
+### Fixed
+- Allow join-fhir-path parent with many children
+- Filter paths
+- Change default template
+- Generate filenames only once in session for csv and excel
+- Recognize internal network requests
+- Avoid null resources
