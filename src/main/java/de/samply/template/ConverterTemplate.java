@@ -49,6 +49,10 @@ public class ConverterTemplate {
   @JsonProperty(value = "opal-permission")
   private Permission opalPermission;
 
+  @JacksonXmlProperty(isAttribute = true, localName = "cql")
+  @JsonProperty(value = "cql")
+  private CqlTemplate cqlTemplate;
+
   @JacksonXmlElementWrapper(useWrapping = false)
   @JsonProperty("container")
   private List<ContainerTemplate> containerTemplates = new ArrayList<>();
@@ -176,6 +180,14 @@ public class ConverterTemplate {
 
   public void setFhirTerminologyServers(List<String> fhirTerminologyServers) {
     this.fhirTerminologyServers = fhirTerminologyServers;
+  }
+
+  public CqlTemplate getCqlTemplate() {
+    return cqlTemplate;
+  }
+
+  public void setCqlTemplate(CqlTemplate cqlTemplate) {
+    this.cqlTemplate = cqlTemplate;
   }
 
 }
