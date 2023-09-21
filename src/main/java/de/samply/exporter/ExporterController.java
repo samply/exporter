@@ -276,6 +276,7 @@ public class ExporterController {
             exporterDbService.setQueryExecutionAsError(queryExecutionId);
             exporterDbService.saveQueryExecutionErrorAndGetId(
                     createQueryExecutionError(e, queryExecutionId));
+            BufferedLoggerFactory.clearBuffer();
             logger.error(ExceptionUtils.getStackTrace(e));
         }
     }
