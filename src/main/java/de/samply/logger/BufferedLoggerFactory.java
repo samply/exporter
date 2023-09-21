@@ -35,5 +35,9 @@ public class BufferedLoggerFactory {
         return result.toArray(new String[0]);
     }
 
+    public static void clearBuffer(){
+        evictingQueue.clear();
+    }
+
 
 }

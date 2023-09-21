@@ -271,6 +271,7 @@ public class ExporterController {
                     path -> exporterDbService.saveQueryExecutionFile(
                             createQueryExecutionFile(queryExecutionId, ((Path) path).toString())));
             exporterDbService.setQueryExecutionAsOk(queryExecutionId);
+            BufferedLoggerFactory.clearBuffer();
         } catch (ExporterCoreException e) {
             exporterDbService.setQueryExecutionAsError(queryExecutionId);
             exporterDbService.saveQueryExecutionErrorAndGetId(
