@@ -10,9 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Divide Excel file in several files if number of rows is too large
 - CQL to Bundle Converter
 - Clear Log Buffer
+- Get Template and list of templates
+- Files Merger for JSON and XML
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
+- Refactoring converter manager
 
 ## [1.0.0 - 2023-07-20]
 ### Added

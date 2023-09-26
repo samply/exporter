@@ -16,6 +16,8 @@ import de.samply.exporter.response.entity.CreateQueryResponseEntity;
 import de.samply.exporter.response.entity.RequestResponseEntity;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
+import de.samply.merger.FilesMergerManager;
+import de.samply.template.ConverterTemplateManager;
 import de.samply.utils.ProjectVersion;
 import de.samply.zip.Zipper;
 import de.samply.zip.ZipperException;
@@ -33,10 +35,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -60,21 +59,27 @@ public class ExporterController {
     private final ExplorerManager explorerManager;
     private final String httpRelativePath;
     private final String httpServletRequestScheme;
-    private ExporterDbService exporterDbService;
-    private Zipper zipper;
+    private final ExporterDbService exporterDbService;
+    private final ConverterTemplateManager converterTemplateManager;
+    private final Zipper zipper;
+    private final FilesMergerManager filesMergerManager;
 
     public ExporterController(@Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
                               @Value(ExporterConst.HTTP_SERVLET_REQUEST_SCHEME_SV) String httpServletRequestScheme,
                               ExporterCore exporterCore,
                               ExporterDbService exporterDbService,
+                              ConverterTemplateManager converterTemplateManager,
                               Zipper zipper,
-                              ExplorerManager explorerManager) {
+                              ExplorerManager explorerManager,
+                              FilesMergerManager filesMergerManager) {
         this.httpRelativePath = httpRelativePath;
         this.httpServletRequestScheme = httpServletRequestScheme;
         this.exporterCore = exporterCore;
         this.exporterDbService = exporterDbService;
         this.zipper = zipper;
         this.explorerManager = explorerManager;
+        this.converterTemplateManager = converterTemplateManager;
+        this.filesMergerManager = filesMergerManager;
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
@@ -347,7 +352,8 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.FILE_COLUMN_PIVOT, required = false) String fileColumnPivot,
             @RequestParam(name = ExporterConst.PAGE_COUNTER, required = false) Integer pageCounter,
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
-            @RequestParam(name = ExporterConst.PIVOT_VALUE, required = false) String pivotValue) {
+            @RequestParam(name = ExporterConst.PIVOT_VALUE, required = false) String pivotValue,
+            @RequestParam(name = ExporterConst.MERGE_FILES, required = false) Boolean mergeFiles) {
         Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(
                 queryExecutionId);
         if (queryExecution.isPresent()) {
@@ -362,9 +368,10 @@ public class ExporterController {
                 }
                 case OK -> {
                     try {
-                        yield fetchQueryExecutionFilesAndZipIfNecessary(queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize);
-                    } catch (ExporterControllerException | ZipperException | FileNotFoundException | ExplorerException |
-                             PivotIdentifierException e) {
+                        yield fetchQueryExecutionFilesAndZipOrMergeIfNecessary(
+                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles);
+                    } catch (ExporterControllerException | ZipperException | ExplorerException |
+                             PivotIdentifierException | IOException e) {
                         yield createInternalServerError(e);
                     }
                 }
@@ -380,9 +387,10 @@ public class ExporterController {
                 new ByteArrayInputStream(queryExecutionError.getError().getBytes(StandardCharsets.UTF_8)));
     }
 
-    private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipIfNecessary(
-            Long queryExecutionFileId, String fileFilter, String fileColumnPivot, Integer pageCounter, String pivotValue, Integer pageSize)
-            throws ExporterControllerException, ZipperException, FileNotFoundException, ExplorerException, PivotIdentifierException {
+    private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipOrMergeIfNecessary(
+            Long queryExecutionFileId, String fileFilter, String fileColumnPivot, Integer pageCounter,
+            String pivotValue, Integer pageSize, Boolean mergeFiles)
+            throws ExporterControllerException, ZipperException, IOException, ExplorerException, PivotIdentifierException {
         List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
                 queryExecutionFileId);
         List<Path> files = convertToPath(queryExecutionFiles);
@@ -395,9 +403,10 @@ public class ExporterController {
         files = filterFiles(files, fileFilter);
         if (files.size() > 0) {
             if (files.size() == 1) {
-                return createResponseEntity(
-                        new InputStreamResource(new FileInputStream(files.get(0).toAbsolutePath().toString())),
-                        fetchFilename(files.get(0).getFileName().toString()), httpHeaders);
+                return createResponseEntity(files.get(0), httpHeaders);
+            } else if (mergeFiles != null && mergeFiles == true && filesMergerManager.isFileExtensionSupported(files)) {
+                Optional<Path> mergedFile = filesMergerManager.merge(files);
+                return (mergedFile.isPresent()) ? createResponseEntity(mergedFile.get(), httpHeaders) : ResponseEntity.notFound().build();
             } else {
                 Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(files);
                 return createResponseEntity(inputStreamResourceFilenamePair.getFirst(),
@@ -406,6 +415,11 @@ public class ExporterController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private ResponseEntity<InputStreamResource> createResponseEntity(Path path, HttpHeaders httpHeaders) throws FileNotFoundException {
+        return createResponseEntity(new InputStreamResource(new FileInputStream(path.toAbsolutePath().toString())),
+                fetchFilename(path.getFileName().toString()), httpHeaders);
     }
 
     private List<Path> convertToPath(List<QueryExecutionFile> queryExecutionFiles) {
@@ -524,6 +538,28 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.LOGS_SIZE) int logsSize,
             @RequestParam(name = ExporterConst.LOGS_LAST_LINE, required = false) String logsLastLine) {
         return ResponseEntity.ok().body(BufferedLoggerFactory.getLastLoggerLines(logsSize, logsLastLine));
+    }
+
+    @GetMapping(value = ExporterConst.TEMPLATE_IDS)
+    public ResponseEntity<String[]> fetchTemplateIds() {
+        return ResponseEntity.ok().body(converterTemplateManager.getConverterTemplateIds().toArray(new String[0]));
+    }
+
+    @GetMapping(value = ExporterConst.TEMPLATE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<InputStreamResource> fetchTemplate(
+            @RequestParam(name = ExporterConst.TEMPLATE_ID) String templateId
+    ) throws FileNotFoundException {
+        Optional<Path> templatePath = converterTemplateManager.getTemplatePath(templateId);
+        if (templatePath.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return createResponseEntity(templatePath.get());
+    }
+
+    private ResponseEntity<InputStreamResource> createResponseEntity(Path path)
+            throws FileNotFoundException {
+        return createResponseEntity(new InputStreamResource(new FileInputStream(path.toFile())),
+                path.getFileName().toString());
     }
 
 
