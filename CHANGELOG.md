@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - CQL to Bundle Converter
 - Clear Log Buffer
 - Get Template and list of templates
+- Files Merger for JSON and XML
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

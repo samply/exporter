@@ -79,6 +79,7 @@ public class ExporterConst {
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH = "CONVERTER_XML_APPLICATION_CONTEXT_PATH";
     public final static String EXPORTER_API_KEY = "EXPORTER_API_KEY";
     public final static String ZIP_FILENAME = "ZIP_FILENAME";
+    public final static String MERGE_FILENAME = "MERGE_FILENAME";
     public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION = "CLEAN_TEMP_FILES_CRON_EXPRESSION";
     public final static String TEMP_FILES_LIFETIME_IN_DAYS = "TEMP_FILES_LIFETIME_IN_DAYS";
     public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION = "CLEAN_WRITE_FILES_CRON_EXPRESSION";
@@ -92,6 +93,7 @@ public class ExporterConst {
     public final static String FHIR_PACKAGES_DIRECTORY = "FHIR_PACKAGES_DIRECTORY";
     public final static String LOG_FHIR_VALIDATION = "LOG_FHIR_VALIDATION";
     public final static String MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET = "MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET";
+    public final static String XML_FILE_MERGER_ROOT_ELEMENT = "XML_FILE_MERGER_ROOT_ELEMENT";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -133,6 +135,11 @@ public class ExporterConst {
             HEAD_SV + LOG_FHIR_VALIDATION + ":" + LOG_FHIR_VALIDATION_DEFAULT + BOTTOM_SV;
     public final static String MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET_SV =
             HEAD_SV + MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET + ":100000" + BOTTOM_SV;
+    public final static String MERGE_FILENAME_SV =
+            HEAD_SV + MERGE_FILENAME + ":#{'exporter-files-${TIMESTAMP}'}" + BOTTOM_SV;
+    public final static String XML_FILE_MERGER_ROOT_ELEMENT_SV =
+            HEAD_SV + XML_FILE_MERGER_ROOT_ELEMENT + ":Containers" + BOTTOM_SV;
+
 
 
     // REST Paths
@@ -181,6 +188,7 @@ public class ExporterConst {
     public static final String LOGS_SIZE = "logs-size";
     public static final String LOGS_LAST_LINE = "logs-last-line";
     public final static String IS_INTERNAL_REQUEST = "internal-request";
+    public final static String MERGE_FILES = "merge-files";
 
 
     /*
@@ -213,5 +221,7 @@ public class ExporterConst {
     public static final String BLAZE_URL_QUERY_PARAMETER_PAGE_SIZE = "_count=";
     public static final int DEFAULT_FHIR_PAGE_SIZE = 50;
     public final static int BUFFERED_LOGGER_SIZE = 1000;
+    public final static String JSON_FILE_EXTENSION = "json";
+    public final static String XML_FILE_EXTENSION = "xml";
 
 }
