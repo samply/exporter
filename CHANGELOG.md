@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
+- Refactoring converter manager
 
 ## [1.0.0 - 2023-07-20]
 ### Added
