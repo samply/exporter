@@ -16,6 +16,7 @@ import de.samply.exporter.response.entity.CreateQueryResponseEntity;
 import de.samply.exporter.response.entity.RequestResponseEntity;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
+import de.samply.template.ConverterTemplateManager;
 import de.samply.utils.ProjectVersion;
 import de.samply.zip.Zipper;
 import de.samply.zip.ZipperException;
@@ -60,13 +61,15 @@ public class ExporterController {
     private final ExplorerManager explorerManager;
     private final String httpRelativePath;
     private final String httpServletRequestScheme;
-    private ExporterDbService exporterDbService;
+    private final ExporterDbService exporterDbService;
+    private final ConverterTemplateManager converterTemplateManager;
     private Zipper zipper;
 
     public ExporterController(@Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
                               @Value(ExporterConst.HTTP_SERVLET_REQUEST_SCHEME_SV) String httpServletRequestScheme,
                               ExporterCore exporterCore,
                               ExporterDbService exporterDbService,
+                              ConverterTemplateManager converterTemplateManager,
                               Zipper zipper,
                               ExplorerManager explorerManager) {
         this.httpRelativePath = httpRelativePath;
@@ -75,6 +78,7 @@ public class ExporterController {
         this.exporterDbService = exporterDbService;
         this.zipper = zipper;
         this.explorerManager = explorerManager;
+        this.converterTemplateManager = converterTemplateManager;
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
@@ -524,6 +528,28 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.LOGS_SIZE) int logsSize,
             @RequestParam(name = ExporterConst.LOGS_LAST_LINE, required = false) String logsLastLine) {
         return ResponseEntity.ok().body(BufferedLoggerFactory.getLastLoggerLines(logsSize, logsLastLine));
+    }
+
+    @GetMapping(value = ExporterConst.TEMPLATE_IDS)
+    public ResponseEntity<String[]> fetchTemplateIds() {
+        return ResponseEntity.ok().body(converterTemplateManager.getConverterTemplateIds().toArray(new String[0]));
+    }
+
+    @GetMapping(value = ExporterConst.TEMPLATE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<InputStreamResource> fetchTemplate(
+            @RequestParam(name = ExporterConst.TEMPLATE_ID) String templateId
+    ) throws FileNotFoundException {
+        Optional<Path> templatePath = converterTemplateManager.getTemplatePath(templateId);
+        if (templatePath.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return createResponseEntity(templatePath.get());
+    }
+
+    private ResponseEntity<InputStreamResource> createResponseEntity(Path path)
+            throws FileNotFoundException {
+        return createResponseEntity(new InputStreamResource(new FileInputStream(path.toFile())),
+                path.getFileName().toString());
     }
 
 

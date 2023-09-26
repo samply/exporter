@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class ConverterTemplateManager {
 
   private Map<String, ConverterTemplate> idConverterTemplateMap = new HashMap<>();
+  private Map<String, Path> idConverterTemplatePathMap = new HashMap<>();
 
   public ConverterTemplateManager(
       @Value(ExporterConst.CONVERTER_TEMPLATE_DIRECTORY_SV) String templateDirectory) {
@@ -51,6 +53,7 @@ public class ConverterTemplateManager {
   private void loadTemplateWithoutExceptionHandling(Path templatePath) throws IOException {
     ConverterTemplate converterTemplate = fetchConverterTemplate(templatePath);
     idConverterTemplateMap.put(converterTemplate.getId(), converterTemplate);
+    idConverterTemplatePathMap.put(converterTemplate.getId(), templatePath);
   }
 
   public ConverterTemplate fetchConverterTemplate(Path templatePath) throws IOException {
@@ -74,6 +77,10 @@ public class ConverterTemplateManager {
 
   public Set<String> getConverterTemplateIds() {
     return idConverterTemplateMap.keySet();
+  }
+
+  public Optional<Path> getTemplatePath (String templateId){
+    return Optional.ofNullable(idConverterTemplatePathMap.get(templateId));
   }
 
 }
