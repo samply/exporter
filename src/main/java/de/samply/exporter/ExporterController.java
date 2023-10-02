@@ -562,5 +562,14 @@ public class ExporterController {
                 path.getFileName().toString());
     }
 
+    @GetMapping(value = ExporterConst.INPUT_FORMATS)
+    public ResponseEntity<String[]> fetchInputFormats() {
+        return ResponseEntity.ok().body(Format.fetchQueries());
+    }
+
+    @GetMapping(value = ExporterConst.OUTPUT_FORMATS)
+    public ResponseEntity<String[]> fetchOutputFormats() {
+        return ResponseEntity.ok().body(Format.fetchNoQueries());
+    }
 
 }
