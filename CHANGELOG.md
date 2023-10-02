@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Clear Log Buffer
 - Get Template and list of templates
 - Files Merger for JSON and XML
+- Input and Output formats as array in web service
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
