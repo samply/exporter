@@ -29,7 +29,7 @@ class ConverterManagerTest {
     @Test
     void getConverter() {
         ConverterManager converterManager = new ConverterManager(applicationContext, CONVERTER_APPLICATION_CONTEXT_PATH);
-        Converter converter = converterManager.getBestMatchConverter(Format.FHIR_QUERY, Format.CSV,
+        Converter converter = converterManager.getBestMatchConverter(Format.FHIR_PATH, Format.CSV,
                 sourceId, targetId);
         ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager("./templates");
 

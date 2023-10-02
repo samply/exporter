@@ -23,7 +23,7 @@ public class CqlToBundleConverter extends FhirRelatedToBundleConverter {
 
     @Override
     public Format getInputFormat() {
-        return Format.CQL_QUERY;
+        return Format.CQL;
     }
 
     @Override

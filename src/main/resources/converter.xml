@@ -5,7 +5,7 @@
     http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <bean id="blazeStoreFhirQueryToBundleConverter" class="de.samply.fhir.FhirQueryToBundleConverter">
+  <bean id="blazeStoreFhirPathQueryToBundleConverter" class="de.samply.fhir.FhirPathQueryToBundleConverter">
     <constructor-arg name="fhirStoreUrl" value="http://localhost:8091/fhir" />
     <constructor-arg name="sourceId" value="blaze-store" />
     <property name="pageSize" value="50" />

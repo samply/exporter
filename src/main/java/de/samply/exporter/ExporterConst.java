@@ -184,7 +184,6 @@ public class ExporterConst {
     public static final String FILE_FILTER = "file-filter";
     public static final String FILE_COLUMN_PIVOT = "pivot";
     public static final String PIVOT_VALUE = "pivot-value";
-    public static final String PAGE_COUNTER = "page-counter";
     public static final String LOGS_SIZE = "logs-size";
     public static final String LOGS_LAST_LINE = "logs-last-line";
     public final static String IS_INTERNAL_REQUEST = "internal-request";

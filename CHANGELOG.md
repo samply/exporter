@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Move FHIR Packages to dktk-exporter
 - Refactoring converter manager
+- Rename page-counter as page
+- Rename FHIR_QUERY to FHIR_PATH and CQL_QUERY to CQL
+
+### Fixed
+- JSON and XML filter
 
 ## [1.0.0 - 2023-07-20]
 ### Added
