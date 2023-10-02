@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Move FHIR Packages to dktk-exporter
 - Refactoring converter manager
+- Rename page-counter as page
 
 ### Fixed
 - JSON and XML filter

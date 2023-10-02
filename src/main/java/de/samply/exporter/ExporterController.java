@@ -350,7 +350,7 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId,
             @RequestParam(name = ExporterConst.FILE_FILTER, required = false) String fileFilter,
             @RequestParam(name = ExporterConst.FILE_COLUMN_PIVOT, required = false) String fileColumnPivot,
-            @RequestParam(name = ExporterConst.PAGE_COUNTER, required = false) Integer pageCounter,
+            @RequestParam(name = ExporterConst.PAGE, required = false) Integer pageCounter,
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(name = ExporterConst.PIVOT_VALUE, required = false) String pivotValue,
             @RequestParam(name = ExporterConst.MERGE_FILES, required = false) Boolean mergeFiles) {
