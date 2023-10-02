@@ -8,8 +8,8 @@ import org.hl7.fhir.r4.model.Bundle;
 
 public enum Format {
 
-  FHIR_QUERY(String.class, true),
-  CQL_QUERY(String.class, true),
+  FHIR_PATH(String.class, true),
+  CQL(String.class, true),
   BUNDLE(Bundle.class, false),
   CONTAINERS(Containers.class, false),
   CSV(Path.class, false),

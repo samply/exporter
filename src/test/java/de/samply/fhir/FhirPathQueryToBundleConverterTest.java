@@ -17,9 +17,9 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
 @Disabled
-class FhirQueryToBundleConverterTest {
+class FhirPathQueryToBundleConverterTest {
 
-  private FhirQueryToBundleConverter fhirQueryToBundleConverter;
+  private FhirPathQueryToBundleConverter fhirPathQueryToBundleConverter;
   private ConverterTemplateManager converterTemplateManager;
   private BundleToContainersConverter bundleToContainersConverter;
   private BundleToContainersConverterSession bundleToContainersConverterSession;
@@ -35,7 +35,7 @@ class FhirQueryToBundleConverterTest {
 
   @BeforeEach
   void setUp() {
-    this.fhirQueryToBundleConverter = new FhirQueryToBundleConverter(blazeStoreUrl, sourceId);
+    this.fhirPathQueryToBundleConverter = new FhirPathQueryToBundleConverter(blazeStoreUrl, sourceId);
     EnvironmentUtils environmentUtils = new EnvironmentUtils(
         EnvironmentTestUtils.getEmptyMockEnvironment());
     ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(
@@ -51,7 +51,7 @@ class FhirQueryToBundleConverterTest {
   @Test
   void testExecute() {
     ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(templateId);
-    fhirQueryToBundleConverter.convert(Flux.just("Patient"), converterTemplate)
+    fhirPathQueryToBundleConverter.convert(Flux.just("Patient"), converterTemplate)
         .subscribe(bundle -> {
           Containers containers = bundleToContainersConverter.convertToContainers(bundle,
               converterTemplate, bundleToContainersConverterSession);
@@ -65,7 +65,7 @@ class FhirQueryToBundleConverterTest {
   void testConverters() {
     ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(templateId);
     Flux<String> stringFlux = Flux.just("Patient");
-    Flux<Bundle> bundleFlux = fhirQueryToBundleConverter.convert(stringFlux, converterTemplate);
+    Flux<Bundle> bundleFlux = fhirPathQueryToBundleConverter.convert(stringFlux, converterTemplate);
     Flux<Containers> containersFlux = bundleToContainersConverter.convert(bundleFlux,
         converterTemplate);
     Flux<Path> pathFlux = containersToCsvConverter.convert(containersFlux, converterTemplate);
