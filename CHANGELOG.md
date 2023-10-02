@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Move FHIR Packages to dktk-exporter
 - Refactoring converter manager
 
+### Fixed
+- JSON and XML filter
+
 ## [1.0.0 - 2023-07-20]
 ### Added
 - Search Controller

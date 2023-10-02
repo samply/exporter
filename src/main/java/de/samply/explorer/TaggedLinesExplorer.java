@@ -79,7 +79,7 @@ public abstract class TaggedLinesExplorer extends ExplorerImpl {
             List<Pivot> results = new ArrayList<>();
             lines.filter(line -> {
                 int counter = tempCounter.getAndIncrement();
-                return counter >= pageCounter && counter < pageCounter + pageSize;
+                return counter > pageCounter * pageSize && counter < (pageCounter + 1) * pageSize + 1;
             }).forEach(pivotLine -> {
                 Optional<String> pivotValue = fetchPivotValueFromLine(pivotAttribute, pivotLine);
                 if (pivotValue.isPresent()) {
