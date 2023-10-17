@@ -224,5 +224,7 @@ public class ExporterConst {
     public final static int BUFFERED_LOGGER_SIZE = 1000;
     public final static String JSON_FILE_EXTENSION = "json";
     public final static String XML_FILE_EXTENSION = "xml";
+    public final static String MEASURE_REPORT_GROUP_POPULATION_SUBJECT_RESULTS_REFERENCE_PREFIX = "List/";
+    public final static String FHIR_SEARCH_LIST_PARAMETER = "_list";
 
 }

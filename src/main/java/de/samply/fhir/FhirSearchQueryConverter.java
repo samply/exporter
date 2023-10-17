@@ -18,18 +18,18 @@ import java.time.Instant;
 import java.util.Optional;
 
 
-public class FhirPathQueryToBundleConverter extends FhirRelatedToBundleConverter {
+public class FhirSearchQueryConverter extends FhirRelatedConverter<Bundle> {
 
-    private final static Logger logger = BufferedLoggerFactory.getLogger(FhirPathQueryToBundleConverter.class);
+    private final static Logger logger = BufferedLoggerFactory.getLogger(FhirSearchQueryConverter.class);
     private int pageSize = ExporterConst.DEFAULT_FHIR_PAGE_SIZE;
 
-    public FhirPathQueryToBundleConverter(String fhirStoreUrl, String sourceId) {
+    public FhirSearchQueryConverter(String fhirStoreUrl, String sourceId) {
         super(fhirStoreUrl, sourceId);
     }
 
 
     @Override
-    public Flux<Bundle> convert(String fhirPathQuery, ConverterTemplate template, EmptySession session) {
+    public Flux<Bundle> convert(String fhirSearchQuery, ConverterTemplate template, EmptySession session) {
         return Flux.generate(
                 () -> {
                     logger.info("Fetching first bundle...");
@@ -37,7 +37,7 @@ public class FhirPathQueryToBundleConverter extends FhirRelatedToBundleConverter
                 },
                 (bundleContext, sync) -> {
                     String nextUrl = bundleContext.nextUrl();
-                    Bundle bundle = (nextUrl.isEmpty()) ? fetchFirstBundle(fhirPathQuery, template)
+                    Bundle bundle = (nextUrl.isEmpty()) ? fetchFirstBundle(fhirSearchQuery, template)
                             : fetchNextBundle(nextUrl);
                     sync.next(bundle);
                     nextUrl = getNextBundleUrl(bundle);
@@ -132,8 +132,8 @@ public class FhirPathQueryToBundleConverter extends FhirRelatedToBundleConverter
         return EmptySession.instance();
     }
 
-    private Bundle fetchFirstBundle(String fhirPathQuery, ConverterTemplate template) {
-        IQuery<IBaseBundle> iQuery = client.search().byUrl(fhirPathQuery);
+    private Bundle fetchFirstBundle(String fhirSearchQuery, ConverterTemplate template) {
+        IQuery<IBaseBundle> iQuery = client.search().byUrl(fhirSearchQuery);
         addRevIncludes(iQuery, template);
         iQuery.count(pageSize);
         return iQuery.returnBundle(Bundle.class).execute();
@@ -158,9 +158,13 @@ public class FhirPathQueryToBundleConverter extends FhirRelatedToBundleConverter
 
     @Override
     public Format getInputFormat() {
-        return Format.FHIR_PATH;
+        return Format.FHIR_SEARCH;
     }
 
+    @Override
+    public Format getOutputFormat() {
+        return Format.BUNDLE;
+    }
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
