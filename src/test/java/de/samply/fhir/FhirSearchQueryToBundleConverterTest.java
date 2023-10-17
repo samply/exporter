@@ -19,7 +19,7 @@ import reactor.core.publisher.Flux;
 @Disabled
 class FhirSearchQueryToBundleConverterTest {
 
-  private FhirSearchQueryToBundleConverter fhirSearchQueryToBundleConverter;
+  private FhirSearchQueryConverter fhirSearchQueryToBundleConverter;
   private ConverterTemplateManager converterTemplateManager;
   private BundleToContainersConverter bundleToContainersConverter;
   private BundleToContainersConverterSession bundleToContainersConverterSession;
@@ -35,7 +35,7 @@ class FhirSearchQueryToBundleConverterTest {
 
   @BeforeEach
   void setUp() {
-    this.fhirSearchQueryToBundleConverter = new FhirSearchQueryToBundleConverter(blazeStoreUrl, sourceId);
+    this.fhirSearchQueryToBundleConverter = new FhirSearchQueryConverter(blazeStoreUrl, sourceId);
     EnvironmentUtils environmentUtils = new EnvironmentUtils(
         EnvironmentTestUtils.getEmptyMockEnvironment());
     ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(

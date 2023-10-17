@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Get Template and list of templates
 - Files Merger for JSON and XML
 - Input and Output formats as array in web service
+- CQL for Row Data
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

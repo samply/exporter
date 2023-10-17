@@ -2,6 +2,7 @@ package de.samply.converter;
 
 import de.samply.container.Containers;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.MeasureReport;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -11,6 +12,8 @@ public enum Format {
 
     FHIR_SEARCH(String.class, true),
     CQL(String.class, true),
+    CQL_MEASURE_REPORT(String.class, true),
+    MEASURE_REPORT(MeasureReport.class, false),
     BUNDLE(Bundle.class, false),
     CONTAINERS(Containers.class, false),
     CSV(Path.class, false),

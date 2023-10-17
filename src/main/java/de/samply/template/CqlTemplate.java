@@ -17,6 +17,10 @@ public class CqlTemplate {
     @JsonProperty("measure-parameters")
     private String measureParameters;
 
+    @JacksonXmlProperty(localName = "default-fhir-search-query")
+    @JsonProperty("default-fhir-search-query")
+    private String defaultFhirSearchQuery;
+
     public List<TokenTemplate> getTokens() {
         return tokens;
     }
@@ -31,6 +35,14 @@ public class CqlTemplate {
 
     public void setMeasureParameters(String measureParameters) {
         this.measureParameters = measureParameters;
+    }
+
+    public String getDefaultFhirSearchQuery() {
+        return defaultFhirSearchQuery;
+    }
+
+    public void setDefaultFhirSearchQuery(String defaultFhirSearchQuery) {
+        this.defaultFhirSearchQuery = defaultFhirSearchQuery;
     }
 
 }

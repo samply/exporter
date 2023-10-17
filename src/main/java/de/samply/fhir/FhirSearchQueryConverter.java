@@ -18,12 +18,12 @@ import java.time.Instant;
 import java.util.Optional;
 
 
-public class FhirSearchQueryToBundleConverter extends FhirRelatedToBundleConverter {
+public class FhirSearchQueryConverter extends FhirRelatedConverter<Bundle> {
 
-    private final static Logger logger = BufferedLoggerFactory.getLogger(FhirSearchQueryToBundleConverter.class);
+    private final static Logger logger = BufferedLoggerFactory.getLogger(FhirSearchQueryConverter.class);
     private int pageSize = ExporterConst.DEFAULT_FHIR_PAGE_SIZE;
 
-    public FhirSearchQueryToBundleConverter(String fhirStoreUrl, String sourceId) {
+    public FhirSearchQueryConverter(String fhirStoreUrl, String sourceId) {
         super(fhirStoreUrl, sourceId);
     }
 
@@ -161,6 +161,10 @@ public class FhirSearchQueryToBundleConverter extends FhirRelatedToBundleConvert
         return Format.FHIR_SEARCH;
     }
 
+    @Override
+    public Format getOutputFormat() {
+        return Format.BUNDLE;
+    }
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
