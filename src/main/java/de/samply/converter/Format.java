@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public enum Format {
 
-    FHIR_PATH(String.class, true),
+    FHIR_SEARCH(String.class, true),
     CQL(String.class, true),
     BUNDLE(Bundle.class, false),
     CONTAINERS(Containers.class, false),

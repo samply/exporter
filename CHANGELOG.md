@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2023-10-12]
+## [1.1.0 - 2023-10-17]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename page-counter as page
 - Rename FHIR_QUERY to FHIR_PATH and CQL_QUERY to CQL
 - DB-Migration: FHIR_QUERY to FHIR_PATH
+- FHIR_PATH to FHIR_SEARCH
 
 ### Fixed
 - JSON and XML filter
