@@ -190,6 +190,7 @@ public class ExporterConst {
     public static final String LOGS_LAST_LINE = "logs-last-line";
     public final static String IS_INTERNAL_REQUEST = "internal-request";
     public final static String MERGE_FILES = "merge-files";
+    public final static String FILE_AS_PLAIN_TEXT_IN_BODY = "in-body";
 
 
     /*

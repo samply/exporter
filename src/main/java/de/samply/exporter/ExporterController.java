@@ -353,7 +353,8 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer pageCounter,
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(name = ExporterConst.PIVOT_VALUE, required = false) String pivotValue,
-            @RequestParam(name = ExporterConst.MERGE_FILES, required = false) Boolean mergeFiles) {
+            @RequestParam(name = ExporterConst.MERGE_FILES, required = false) Boolean mergeFiles,
+            @RequestParam(name = ExporterConst.FILE_AS_PLAIN_TEXT_IN_BODY, required = false) Boolean fileAsPlainTextInBody) {
         Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(
                 queryExecutionId);
         if (queryExecution.isPresent()) {
@@ -369,7 +370,7 @@ public class ExporterController {
                 case OK -> {
                     try {
                         yield fetchQueryExecutionFilesAndZipOrMergeIfNecessary(
-                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles);
+                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles, fileAsPlainTextInBody);
                     } catch (ExporterControllerException | ZipperException | ExplorerException |
                              PivotIdentifierException | IOException e) {
                         yield createInternalServerError(e);
@@ -389,7 +390,7 @@ public class ExporterController {
 
     private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipOrMergeIfNecessary(
             Long queryExecutionFileId, String fileFilter, String fileColumnPivot, Integer pageCounter,
-            String pivotValue, Integer pageSize, Boolean mergeFiles)
+            String pivotValue, Integer pageSize, Boolean mergeFiles, Boolean fileAsPlainTextInBody)
             throws ExporterControllerException, ZipperException, IOException, ExplorerException, PivotIdentifierException {
         List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
                 queryExecutionFileId);
@@ -403,10 +404,10 @@ public class ExporterController {
         files = filterFiles(files, fileFilter);
         if (files.size() > 0) {
             if (files.size() == 1) {
-                return createResponseEntity(files.get(0), httpHeaders);
+                return createResponseEntity(files.get(0), httpHeaders, fileAsPlainTextInBody);
             } else if (mergeFiles != null && mergeFiles == true && filesMergerManager.isFileExtensionSupported(files)) {
                 Optional<Path> mergedFile = filesMergerManager.merge(files);
-                return (mergedFile.isPresent()) ? createResponseEntity(mergedFile.get(), httpHeaders) : ResponseEntity.notFound().build();
+                return (mergedFile.isPresent()) ? createResponseEntity(mergedFile.get(), httpHeaders, fileAsPlainTextInBody) : ResponseEntity.notFound().build();
             } else {
                 Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(files);
                 return createResponseEntity(inputStreamResourceFilenamePair.getFirst(),
@@ -417,9 +418,11 @@ public class ExporterController {
         }
     }
 
-    private ResponseEntity<InputStreamResource> createResponseEntity(Path path, HttpHeaders httpHeaders) throws FileNotFoundException {
-        return createResponseEntity(new InputStreamResource(new FileInputStream(path.toAbsolutePath().toString())),
-                fetchFilename(path.getFileName().toString()), httpHeaders);
+    private ResponseEntity<InputStreamResource> createResponseEntity(Path path, HttpHeaders httpHeaders, Boolean fileAsPlainTextInBody) throws FileNotFoundException {
+        InputStreamResource inputStreamResource = new InputStreamResource(new FileInputStream(path.toAbsolutePath().toString()));
+        return (fileAsPlainTextInBody != null && fileAsPlainTextInBody) ?
+                createResponseEntityAsPlainTextInBody(inputStreamResource, httpHeaders) :
+                createResponseEntity(inputStreamResource, fetchFilename(path.getFileName().toString()), httpHeaders);
     }
 
     private List<Path> convertToPath(List<QueryExecutionFile> queryExecutionFiles) {
@@ -508,6 +511,11 @@ public class ExporterController {
             InputStreamResource inputStreamResource, String filename, HttpHeaders httpHeaders) {
         return ResponseEntity.ok().headers(httpHeaders).header("Content-Disposition", "attachment; filename=" + filename)
                 .body(inputStreamResource);
+    }
+
+    private ResponseEntity<InputStreamResource> createResponseEntityAsPlainTextInBody(
+            InputStreamResource inputStreamResource, HttpHeaders httpHeaders) {
+        return ResponseEntity.ok().headers(httpHeaders).contentType(MediaType.TEXT_PLAIN).body(inputStreamResource);
     }
 
     @GetMapping(value = ExporterConst.RETRIEVE_QUERY, produces = MediaType.APPLICATION_NDJSON_VALUE)
