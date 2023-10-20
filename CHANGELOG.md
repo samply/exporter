@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename FHIR_QUERY to FHIR_PATH and CQL_QUERY to CQL
 - DB-Migration: FHIR_QUERY to FHIR_PATH
 - FHIR_PATH to FHIR_SEARCH
+- CQL_MEASURE_REPORT to CQL and CQL to CQL_DATA
 
 ### Fixed
 - JSON and XML filter

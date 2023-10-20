@@ -12,7 +12,7 @@ public enum Format {
 
     FHIR_SEARCH(String.class, true),
     CQL(String.class, true),
-    CQL_MEASURE_REPORT(String.class, true),
+    CQL_DATA(String.class, true),
     MEASURE_REPORT(MeasureReport.class, false),
     BUNDLE(Bundle.class, false),
     CONTAINERS(Containers.class, false),

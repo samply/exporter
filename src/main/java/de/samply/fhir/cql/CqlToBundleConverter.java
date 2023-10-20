@@ -13,7 +13,7 @@ public class CqlToBundleConverter extends CqlRelatedConverter<Bundle> {
 
     @Override
     public Format getInputFormat() {
-        return Format.CQL_MEASURE_REPORT;
+        return Format.CQL;
     }
 
     @Override

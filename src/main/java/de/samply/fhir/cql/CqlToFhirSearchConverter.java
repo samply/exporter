@@ -13,7 +13,7 @@ public class CqlToFhirSearchConverter extends CqlRelatedConverter<String> {
 
     @Override
     public Format getInputFormat() {
-        return Format.CQL;
+        return Format.CQL_DATA;
     }
 
     @Override
