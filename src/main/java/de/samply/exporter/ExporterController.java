@@ -53,7 +53,7 @@ public class ExporterController {
     private final static Logger logger = BufferedLoggerFactory.getLogger(ExporterController.class);
 
     private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-            .registerModule(new JavaTimeModule());
+            .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     private final String projectVersion = ProjectVersion.getProjectVersion();
     private final ExporterCore exporterCore;
     private final ExplorerManager explorerManager;

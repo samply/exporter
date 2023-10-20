@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - JSON and XML filter
 - CQL_QUERY to CQL in Flyway
+- Instants as timestamps in REST services
 
 ## [1.0.0 - 2023-07-20]
 ### Added
