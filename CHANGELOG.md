@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Input and Output formats as array in web service
 - CQL for Row Data
 - File as plain text in body
+- Fetch query executions
+- Fetch query execution errors
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

@@ -141,11 +141,12 @@ public class ExporterConst {
             HEAD_SV + XML_FILE_MERGER_ROOT_ELEMENT + ":Containers" + BOTTOM_SV;
 
 
-
     // REST Paths
     public static final String INFO = "/info";
     public static final String CREATE_QUERY = "/create-query";
     public static final String QUERIES = "/queries";
+    public static final String QUERY_EXECUTIONS = "/query-executions";
+    public static final String QUERY_EXECUTION_ERRORS = "/query-execution-errors";
     public static final String REQUEST = "/request";
     public static final String RESPONSE = "/response";
     public static final String RETRIEVE_QUERY = "/retrieve-query";
@@ -162,8 +163,8 @@ public class ExporterConst {
     public static final String OUTPUT_FORMATS = "/output-formats";
 
     public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
-            QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES, INQUIRY,
-            ARCHIVE_QUERY, STATUS, LOGS};
+            QUERIES, QUERY_EXECUTIONS, QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
+            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS};
     // TODO: RESPONSE ??? Only with UUID enough?
 
     // REST Headers

@@ -62,6 +62,26 @@ public class ExporterDbService {
   }
 
   @Transactional
+  public List<QueryExecution> fetchAllQueryExecutions() {
+    return queryExecutionRepository.findAll();
+  }
+
+  @Transactional
+  public Page<QueryExecution> fetchAllQueryExecutions(int page, int pageSize) {
+    return new Page<>(queryExecutionRepository.findAll(PageRequest.of(page, pageSize)));
+  }
+
+  @Transactional
+  public List<QueryExecutionError> fetchAllQueryExecutionErrors() {
+    return queryExecutionErrorRepository.findAll();
+  }
+
+  @Transactional
+  public Page<QueryExecutionError> fetchAllQueryExecutionErrors(int page, int pageSize) {
+    return new Page<>(queryExecutionErrorRepository.findAll(PageRequest.of(page, pageSize)));
+  }
+
+  @Transactional
   public List<Inquiry> fetchActiveInquiries() {
     return inquiryRespository.findByArchivedAtIsNullAndErrorIsNull();
   }

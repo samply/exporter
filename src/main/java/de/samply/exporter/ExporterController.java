@@ -134,6 +134,22 @@ public class ExporterController {
                 exporterDbService::fetchAllQueries);
     }
 
+    @GetMapping(value = ExporterConst.QUERY_EXECUTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchQueryExecutions(
+            @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
+        return convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutions,
+                exporterDbService::fetchAllQueryExecutions);
+    }
+
+    @GetMapping(value = ExporterConst.QUERY_EXECUTION_ERRORS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchQueryExecutionErrors(
+            @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
+        return convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutionErrors,
+                exporterDbService::fetchAllQueryExecutionErrors);
+    }
+
     @GetMapping(value = ExporterConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchInquiry(HttpServletRequest httpServletRequest,
                                                @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
