@@ -42,8 +42,8 @@ public class ExporterDbService {
   }
 
   @Transactional
-  public Query fetchQuery(Long queryId) {
-    return queryRepository.findById(queryId).get();
+  public Optional<Query> fetchQuery(Long queryId) {
+    return queryRepository.findById(queryId);
   }
 
   @Transactional
@@ -156,6 +156,17 @@ public class ExporterDbService {
   }
 
   @Transactional
+  public List<QueryExecution> fetchQueryExecutionByQueryId(Long queryId) {
+    return queryExecutionRepository.findByQueryId(queryId);
+  }
+
+  @Transactional
+  public List<QueryExecution> fetchQueryExecutionByQueryId(Long queryId, int page, int pageSize) {
+    return queryExecutionRepository.findByQueryId(queryId, PageRequest.of(page, pageSize));
+  }
+
+
+  @Transactional
   public List<QueryExecutionFile> fetchQueryExecutionFilesByQueryExecutionId(
       Long queryExecutionId) {
     return queryExecutionFileRepository.findByQueryExecutionId(queryExecutionId);
@@ -170,6 +181,12 @@ public class ExporterDbService {
   public List<QueryExecutionError> fetchQueryExecutionErrorByQueryExecutionId(
       Long queryExecutionId) {
     return queryExecutionErrorRepository.findByQueryExecutionId(queryExecutionId);
+  }
+
+  @Transactional
+  public List<QueryExecutionError> fetchQueryExecutionErrorByQueryExecutionId(
+          Long queryExecutionId, int page, int pageSize) {
+    return queryExecutionErrorRepository.findByQueryExecutionId(queryExecutionId, PageRequest.of(page, pageSize));
   }
 
 }
