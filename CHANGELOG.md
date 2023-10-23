@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - File as plain text in body
 - Fetch query executions
 - Fetch query execution errors
+- Fetch query executions and execution errors by query id and query execution id
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

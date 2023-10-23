@@ -126,28 +126,37 @@ public class ExporterController {
         return convertToResponseEntity(queryExecutionId, exporterDbService::getQueryExecutionStatus);
     }
 
-    @GetMapping(value = ExporterConst.QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ExporterConst.FETCH_QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchQueries(
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
-            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
-        return convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueries,
-                exporterDbService::fetchAllQueries);
+            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = ExporterConst.QUERY_ID, required = false) Long queryId) {
+        return (queryId != null) ?
+                convertToResponseEntity(() -> exporterDbService.fetchQuery(queryId).get()) :
+                convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueries, exporterDbService::fetchAllQueries);
     }
 
-    @GetMapping(value = ExporterConst.QUERY_EXECUTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ExporterConst.FETCH_QUERY_EXECUTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchQueryExecutions(
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
-            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
-        return convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutions,
-                exporterDbService::fetchAllQueryExecutions);
+            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = ExporterConst.QUERY_ID, required = false) Long queryId,
+            @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID, required = false) Long queryExecutionId) {
+        return (queryId != null) ?
+                convertToResponseEntity(page, pageSize, () -> exporterDbService.fetchQueryExecutionByQueryId(queryId), (p, s) -> exporterDbService.fetchQueryExecutionByQueryId(queryId, p, s)) :
+                (queryExecutionId != null) ?
+                        convertToResponseEntity(() -> exporterDbService.fetchQueryExecution(queryExecutionId).get()) :
+                        convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutions, exporterDbService::fetchAllQueryExecutions);
     }
 
-    @GetMapping(value = ExporterConst.QUERY_EXECUTION_ERRORS, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ExporterConst.FETCH_QUERY_EXECUTION_ERRORS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchQueryExecutionErrors(
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
-            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
-        return convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutionErrors,
-                exporterDbService::fetchAllQueryExecutionErrors);
+            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID, required = false) Long queryExecutionId) {
+        return (queryExecutionId != null) ?
+                convertToResponseEntity(page, pageSize, () -> exporterDbService.fetchQueryExecutionErrorByQueryExecutionId(queryExecutionId), (p,s) -> exporterDbService.fetchQueryExecutionErrorByQueryExecutionId(queryExecutionId, p,s)) :
+                convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutionErrors, exporterDbService::fetchAllQueryExecutionErrors);
     }
 
     @GetMapping(value = ExporterConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
