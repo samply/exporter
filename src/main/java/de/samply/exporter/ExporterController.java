@@ -596,4 +596,11 @@ public class ExporterController {
         return ResponseEntity.ok().body(Format.fetchNoQueries());
     }
 
+    @GetMapping(value = ExporterConst.CANCEL, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> cancelQuery(
+            @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId){
+        //TODO
+        return null;
+    }
+
 }

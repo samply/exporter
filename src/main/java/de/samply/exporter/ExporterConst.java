@@ -161,10 +161,11 @@ public class ExporterConst {
     public static final String TEMPLATE = "/template";
     public static final String INPUT_FORMATS = "/input-formats";
     public static final String OUTPUT_FORMATS = "/output-formats";
+    public static final String CANCEL = "/cancel";
 
     public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
             QUERIES, QUERY_EXECUTIONS, QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
-            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS};
+            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS, CANCEL};
     // TODO: RESPONSE ??? Only with UUID enough?
 
     // REST Headers
