@@ -41,7 +41,7 @@ class FhirSearchQueryToBundleConverterTest {
     ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(
         ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
     this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
-        outputDirectory);
+        outputDirectory, " ");
     this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory);
     this.converterTemplateManager = new ConverterTemplateManager(templateDirectory);
     this.bundleToContainersConverter = new BundleToContainersConverter(fhirPackagesDirectory, false);

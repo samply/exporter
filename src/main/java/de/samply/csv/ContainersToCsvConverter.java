@@ -16,11 +16,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class ContainersToCsvConverter extends ContainersToFilesConverter<Session> {
 
+  private final String csvSeparatorReplacement;
 
   public ContainersToCsvConverter(
       @Autowired ConverterTemplateUtils converterTemplateUtils,
-      @Value(ExporterConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory) {
+      @Value(ExporterConst.WRITE_FILE_DIRECTORY_SV) String writeDirectory,
+      @Value(ExporterConst.CSV_SEPARATOR_REPLACEMENT_SV) String csvSeparatorReplacement) {
     super(converterTemplateUtils, writeDirectory);
+    this.csvSeparatorReplacement = csvSeparatorReplacement;
   }
 
   @Override
@@ -32,7 +35,7 @@ public class ContainersToCsvConverter extends ContainersToFilesConverter<Session
   protected ContainerFileWriterIterable createContainerFileWriterIterable(
       List<Container> containers, ConverterTemplate converterTemplate,
       ContainerTemplate containerTemplate, Session session) {
-    return new ContainerCsvWriterIterable(containers, converterTemplate, containerTemplate);
+    return new ContainerCsvWriterIterable(containers, converterTemplate, containerTemplate, csvSeparatorReplacement);
   }
 
   @Override

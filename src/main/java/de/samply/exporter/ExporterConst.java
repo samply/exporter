@@ -94,6 +94,7 @@ public class ExporterConst {
     public final static String LOG_FHIR_VALIDATION = "LOG_FHIR_VALIDATION";
     public final static String MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET = "MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET";
     public final static String XML_FILE_MERGER_ROOT_ELEMENT = "XML_FILE_MERGER_ROOT_ELEMENT";
+    public final static String CSV_SEPARATOR_REPLACEMENT = "CSV_SEPARATOR_REPLACEMENT";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -139,6 +140,9 @@ public class ExporterConst {
             HEAD_SV + MERGE_FILENAME + ":#{'exporter-files-${TIMESTAMP}'}" + BOTTOM_SV;
     public final static String XML_FILE_MERGER_ROOT_ELEMENT_SV =
             HEAD_SV + XML_FILE_MERGER_ROOT_ELEMENT + ":Containers" + BOTTOM_SV;
+    public final static String CSV_SEPARATOR_REPLACEMENT_SV =
+            HEAD_SV + CSV_SEPARATOR_REPLACEMENT + ": " + BOTTOM_SV;
+
 
 
     // REST Paths

@@ -32,7 +32,7 @@ public class ConvertersTestConfiguration {
         ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(
                 ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
         this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
-                OUTPUT_DIRECTORY);
+                OUTPUT_DIRECTORY, " ");
         this.containersToExcelConverter = new ContainersToExcelConverter(converterTemplateUtils, 30000000
                 , OUTPUT_DIRECTORY, SpreadsheetVersion.EXCEL2007.getMaxRows());
         this.containersToJsonConverter = new ContainersToJsonConverter(converterTemplateUtils,

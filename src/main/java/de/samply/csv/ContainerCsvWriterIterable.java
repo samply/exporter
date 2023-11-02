@@ -9,9 +9,11 @@ import java.util.List;
 
 public class ContainerCsvWriterIterable extends ContainerFileWriterIterable {
 
+  private final String csvSeparatorReplacement;
   public ContainerCsvWriterIterable(List<Container> containers, ConverterTemplate converterTemplate,
-      ContainerTemplate containerTemplate) {
+      ContainerTemplate containerTemplate, String csvSeparatorReplacement) {
     super(containers, converterTemplate, containerTemplate);
+    this.csvSeparatorReplacement = csvSeparatorReplacement;
   }
 
   @Override
@@ -31,16 +33,16 @@ public class ContainerCsvWriterIterable extends ContainerFileWriterIterable {
     List<AttributeTemplate> templates = containerTemplate.getAttributeTemplates();
     StringBuilder stringBuilder = new StringBuilder();
     templates.forEach(attributeTemplate -> {
-      String attributeValue = container.getAttributeValue(attributeTemplate);
-      if (attributeValue == null) {
-        attributeValue = "";
-      }
-      stringBuilder.append(attributeValue);
+      stringBuilder.append(fetchAttributeValue(container, converterTemplate, attributeTemplate));
       stringBuilder.append(converterTemplate.getCsvSeparator());
     });
     stringBuilder.deleteCharAt(stringBuilder.length() - 1);
     return stringBuilder.toString();
   }
 
+  private String fetchAttributeValue(Container container, ConverterTemplate converterTemplate, AttributeTemplate attributeTemplate){
+    String attributeValue = container.getAttributeValue(attributeTemplate);
+    return (attributeValue == null) ? "" : attributeValue.replace(converterTemplate.getCsvSeparator(), csvSeparatorReplacement);
+  }
 
 }
