@@ -1,5 +1,7 @@
 package de.samply.exporter;
 
+import de.samply.converter.Format;
+
 public class ExporterConst {
 
     public final static boolean LOG_FHIR_VALIDATION_DEFAULT = false;
@@ -11,7 +13,7 @@ public class ExporterConst {
     public final static String TOKEN_HEAD = "${";
     public final static String TOKEN_END = "}";
     public final static String TOKEN_EXTENSION_DELIMITER = ":";
-    public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyyMMdd-HH_mm";
+    public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyyMMdd-HH_mm_ss";
     public final static String RELATED_FHIR_PATH_DELIMITER = ",";
 
     // Blaze Store Constants
@@ -165,6 +167,7 @@ public class ExporterConst {
     public static final String TEMPLATE = "/template";
     public static final String INPUT_FORMATS = "/input-formats";
     public static final String OUTPUT_FORMATS = "/output-formats";
+    public static final String TEMPLATE_GRAPH = "/template-graph";
 
     public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
             FETCH_QUERIES, FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
@@ -232,5 +235,6 @@ public class ExporterConst {
     public final static String XML_FILE_EXTENSION = "xml";
     public final static String MEASURE_REPORT_GROUP_POPULATION_SUBJECT_RESULTS_REFERENCE_PREFIX = "List/";
     public final static String FHIR_SEARCH_LIST_PARAMETER = "_list";
+    public final static String DEFAULT_GRAPH_FORMAT = "JSON";
 
 }

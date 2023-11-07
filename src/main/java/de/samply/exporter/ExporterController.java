@@ -17,7 +17,10 @@ import de.samply.exporter.response.entity.RequestResponseEntity;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
 import de.samply.merger.FilesMergerManager;
+import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
+import de.samply.template.graph.ConverterTemplateGraph;
+import de.samply.template.graph.factory.ConverterTemplateGraphFactoryManager;
 import de.samply.utils.ProjectVersion;
 import de.samply.zip.Zipper;
 import de.samply.zip.ZipperException;
@@ -63,6 +66,7 @@ public class ExporterController {
     private final ConverterTemplateManager converterTemplateManager;
     private final Zipper zipper;
     private final FilesMergerManager filesMergerManager;
+    private final ConverterTemplateGraphFactoryManager converterTemplateGraphFactoryManager;
 
     public ExporterController(@Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
                               @Value(ExporterConst.HTTP_SERVLET_REQUEST_SCHEME_SV) String httpServletRequestScheme,
@@ -71,7 +75,8 @@ public class ExporterController {
                               ConverterTemplateManager converterTemplateManager,
                               Zipper zipper,
                               ExplorerManager explorerManager,
-                              FilesMergerManager filesMergerManager) {
+                              FilesMergerManager filesMergerManager,
+                              ConverterTemplateGraphFactoryManager converterTemplateGraphFactoryManager) {
         this.httpRelativePath = httpRelativePath;
         this.httpServletRequestScheme = httpServletRequestScheme;
         this.exporterCore = exporterCore;
@@ -80,6 +85,7 @@ public class ExporterController {
         this.explorerManager = explorerManager;
         this.converterTemplateManager = converterTemplateManager;
         this.filesMergerManager = filesMergerManager;
+        this.converterTemplateGraphFactoryManager = converterTemplateGraphFactoryManager;
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
@@ -155,7 +161,7 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID, required = false) Long queryExecutionId) {
         return (queryExecutionId != null) ?
-                convertToResponseEntity(page, pageSize, () -> exporterDbService.fetchQueryExecutionErrorByQueryExecutionId(queryExecutionId), (p,s) -> exporterDbService.fetchQueryExecutionErrorByQueryExecutionId(queryExecutionId, p,s)) :
+                convertToResponseEntity(page, pageSize, () -> exporterDbService.fetchQueryExecutionErrorByQueryExecutionId(queryExecutionId), (p, s) -> exporterDbService.fetchQueryExecutionErrorByQueryExecutionId(queryExecutionId, p, s)) :
                 convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutionErrors, exporterDbService::fetchAllQueryExecutionErrors);
     }
 
@@ -603,6 +609,27 @@ public class ExporterController {
     @GetMapping(value = ExporterConst.OUTPUT_FORMATS)
     public ResponseEntity<String[]> fetchOutputFormats() {
         return ResponseEntity.ok().body(Format.fetchNoQueries());
+    }
+
+    @GetMapping(value = ExporterConst.TEMPLATE_GRAPH)
+    public ResponseEntity<String> fetchOutputFormats(
+            @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID, required = false) Long queryExecutionId,
+            @RequestParam(name = ExporterConst.OUTPUT_FORMAT, required = false, defaultValue = ExporterConst.DEFAULT_GRAPH_FORMAT) Format outputFormat
+    ) {
+        if (queryExecutionId != null) {
+            Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(queryExecutionId);
+            if (queryExecution.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            templateId = queryExecution.get().getTemplateId();
+        }
+        if (templateId != null) {
+            ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(templateId);
+            Optional<ConverterTemplateGraph> converterTemplateGraph = converterTemplateGraphFactoryManager.fetchConverterTemplateGraph(converterTemplate, outputFormat);
+            return convertToResponseEntity(converterTemplateGraph::get);
+        }
+        return ResponseEntity.badRequest().body("template-id or query-execution-id are missing");
     }
 
 }
