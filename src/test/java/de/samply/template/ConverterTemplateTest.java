@@ -27,8 +27,10 @@ class ConverterTemplateTest {
     int counter = 1;
     containerTemplates.add(generateContainerTemplate(counter++));
     containerTemplates.add(generateContainerTemplate(counter++));
-    ConverterTemplate converterTemplate = new ConverterTemplate("test-template", "my-test.xml",
-        containerTemplates);
+    ConverterTemplate converterTemplate = new ConverterTemplate();
+    converterTemplate.setId("test-template");
+    converterTemplate.setExcelFilename("my-test.xlsx");
+    converterTemplate.setContainerTemplates(containerTemplates);
     converterTemplate.setSourceId("my-source");
     List<String> fhirRevIncludes = generateFhirRevIncludes();
     converterTemplate.setFhirRevIncludes(fhirRevIncludes);
@@ -48,15 +50,19 @@ class ConverterTemplateTest {
     int counter = 1;
     attributeTemplateList.add(generateAttributeTemplate(index, counter++));
     attributeTemplateList.add(generateAttributeTemplate(index, counter++));
-    return new ContainerTemplate("container-" + index + ".csv", "Sheet-" + index,
-        attributeTemplateList);
+    ContainerTemplate containerTemplate = new ContainerTemplate();
+    containerTemplate.setCsvFilename("container-" + index + ".csv");
+    containerTemplate.setExcelSheet("Sheet-" + index);
+    containerTemplate.setAttributeTemplates(attributeTemplateList);
+    return containerTemplate;
   }
 
   private AttributeTemplate generateAttributeTemplate(int i, int j) {
     String extension = i + "." + j;
-    AttributeTemplate attributeTemplate = new AttributeTemplate("col-" + extension,
-        "col-" + extension,
-        "path.to.attribute." + extension);
+    AttributeTemplate attributeTemplate = new AttributeTemplate();
+    attributeTemplate.setCsvColumnName("col-" + extension);
+    attributeTemplate.setExcelColumnName("col-" + extension);
+    attributeTemplate.setValFhirPath("path.to.attribute." + extension);
     attributeTemplate.setMdr("urn:test:dataelement:" + i + ":" + j);
     if (random.nextInt(2) == 0) {
       attributeTemplate.setAnonym(attributeTemplate.getCsvColumnName());
