@@ -3,6 +3,7 @@ package de.samply.template;
 import de.samply.exporter.ExporterConst;
 import de.samply.utils.EnvironmentUtils;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,10 @@ public class ConverterTemplateUtils {
   }
 
   public String replaceTokens(String originalText) {
+    return replaceTokens(originalText, null);
+  }
+
+  public String replaceTokens(String originalText, Map<String, String> keyValues) {
 
     AtomicReference<String> textReference = new AtomicReference<>(originalText);
     if (containsVariable(originalText)) {
@@ -35,7 +40,7 @@ public class ConverterTemplateUtils {
       // If is not a predefined token, replace through environment variable.
       while (containsVariable(textReference.get())) {
         textReference.set(
-            new TokenReplacer(environmentUtils, textReference.get()).getTokenReplacer());
+            new TokenReplacer(keyValues, environmentUtils, textReference.get()).getTokenReplacer());
       }
     }
 
