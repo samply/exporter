@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2023-11-07]
+## [1.1.0 - 2023-11-08]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch query executions and execution errors by query id and query execution id
 - CSV Separator Replacement
 - Template Graph
+- Replace key values as token
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
