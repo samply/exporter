@@ -579,11 +579,13 @@ public class ExporterController {
         return ResponseEntity.ok().body(BufferedLoggerFactory.getLastLoggerLines(logsSize, logsLastLine));
     }
 
+    @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.TEMPLATE_IDS)
     public ResponseEntity<String[]> fetchTemplateIds() {
         return ResponseEntity.ok().body(converterTemplateManager.getConverterTemplateIds().toArray(new String[0]));
     }
 
+    @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.TEMPLATE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<InputStreamResource> fetchTemplate(
             @RequestParam(name = ExporterConst.TEMPLATE_ID) String templateId
@@ -601,16 +603,19 @@ public class ExporterController {
                 path.getFileName().toString());
     }
 
+    @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.INPUT_FORMATS)
     public ResponseEntity<String[]> fetchInputFormats() {
         return ResponseEntity.ok().body(Format.fetchQueries());
     }
 
+    @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.OUTPUT_FORMATS)
     public ResponseEntity<String[]> fetchOutputFormats() {
         return ResponseEntity.ok().body(Format.fetchNoQueries());
     }
 
+    @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.TEMPLATE_GRAPH)
     public ResponseEntity<String> fetchOutputFormats(
             @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
