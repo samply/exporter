@@ -19,7 +19,7 @@ import de.samply.logger.Logger;
 import de.samply.merger.FilesMergerManager;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
-import de.samply.template.graph.ConverterTemplateGraph;
+import de.samply.template.graph.ConverterGraph;
 import de.samply.template.graph.factory.ConverterTemplateGraphFactoryManager;
 import de.samply.utils.ProjectVersion;
 import de.samply.zip.Zipper;
@@ -631,7 +631,7 @@ public class ExporterController {
         }
         if (templateId != null) {
             ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(templateId);
-            Optional<ConverterTemplateGraph> converterTemplateGraph = converterTemplateGraphFactoryManager.fetchConverterTemplateGraph(converterTemplate, outputFormat);
+            Optional<ConverterGraph> converterTemplateGraph = converterTemplateGraphFactoryManager.fetchConverterTemplateGraph(converterTemplate, outputFormat);
             return convertToResponseEntity(converterTemplateGraph::get);
         }
         return ResponseEntity.badRequest().body("template-id or query-execution-id are missing");

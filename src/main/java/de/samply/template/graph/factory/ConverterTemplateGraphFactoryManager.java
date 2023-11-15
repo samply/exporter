@@ -2,7 +2,7 @@ package de.samply.template.graph.factory;
 
 import de.samply.converter.Format;
 import de.samply.template.ConverterTemplate;
-import de.samply.template.graph.ConverterTemplateGraph;
+import de.samply.template.graph.ConverterGraph;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ public class ConverterTemplateGraphFactoryManager {
         });
     }
 
-    public Optional<ConverterTemplateGraph> fetchConverterTemplateGraph(ConverterTemplate converterTemplate, Format outputFormat){
+    public Optional<ConverterGraph> fetchConverterTemplateGraph(ConverterTemplate converterTemplate, Format outputFormat){
         ConverterTemplateGraphFactory converterTemplateGraphFactory = formatConverterTemplateGraphFactoryMap.get(outputFormat);
         if (converterTemplateGraphFactory != null){
             return Optional.of(converterTemplateGraphFactory.create(converterTemplate));

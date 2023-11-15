@@ -8,7 +8,7 @@ import de.samply.template.ContainerTemplate;
 
 import java.util.List;
 
-public class ContainerTemplateGraph<T extends ContainerAttributeKeys>   {
+public class ContainerGraph<T extends ContainerAttributeKeys>   {
 
     @JsonIgnore
     private final T containerAttributeKeys;
@@ -16,22 +16,22 @@ public class ContainerTemplateGraph<T extends ContainerAttributeKeys>   {
     private ContainerTemplate containerTemplate;
 
     @JacksonXmlElementWrapper(useWrapping = false)
-    @JsonProperty("linked-attribute")
-    private List<AttributeTemplateLinks<T>> links;
+    @JsonProperty("links")
+    private List<AttributeAndLinkAttributes<T>> links;
 
-    public ContainerTemplateGraph(T containerAttributeKeys, ContainerTemplate containerTemplate, List<AttributeTemplateLinks<T>> links) {
+    public ContainerGraph(T containerAttributeKeys, ContainerTemplate containerTemplate, List<AttributeAndLinkAttributes<T>> links) {
         this.containerAttributeKeys = containerAttributeKeys;
         this.containerTemplate = containerTemplate;
         this.links = links;
     }
 
-    @JacksonXmlProperty(isAttribute = true, localName = "container")
-    @JsonProperty("container")
+    @JacksonXmlProperty(isAttribute = true, localName = "reference-container")
+    @JsonProperty("reference-container")
     public String getContainer(){
         return containerAttributeKeys.getContainerKey(containerTemplate);
     }
 
-    public List<AttributeTemplateLinks<T>> getLinks() {
+    public List<AttributeAndLinkAttributes<T>> getLinks() {
         return links;
     }
 
