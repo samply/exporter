@@ -6,7 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 
-public class ContainerTemplateAttributeTemplate<T extends ContainerAttributeKeys> {
+public class ContainerAttribute<T extends ContainerAttributeKeys> {
 
     private final T containerAttributeKeys;
     @JsonIgnore
@@ -15,7 +15,7 @@ public class ContainerTemplateAttributeTemplate<T extends ContainerAttributeKeys
     @JsonIgnore
     private AttributeTemplate attributeTemplate;
 
-    public ContainerTemplateAttributeTemplate(T containerAttributeKeys, ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate) {
+    public ContainerAttribute(T containerAttributeKeys, ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate) {
         this.containerAttributeKeys = containerAttributeKeys;
         this.containerTemplate = containerTemplate;
         this.attributeTemplate = attributeTemplate;
@@ -27,10 +27,20 @@ public class ContainerTemplateAttributeTemplate<T extends ContainerAttributeKeys
         return containerAttributeKeys.getContainerKey(containerTemplate);
     }
 
-    @JacksonXmlProperty(isAttribute = true, localName = "linking-attribute")
+    @JacksonXmlProperty(isAttribute = true, localName = "attribute")
     @JsonProperty("attribute")
     public String getAttribute() {
         return containerAttributeKeys.getAttributeKey(attributeTemplate);
+    }
+
+    @JsonIgnore
+    public ContainerTemplate getContainerTemplate() {
+        return containerTemplate;
+    }
+
+    @JsonIgnore
+    public AttributeTemplate getAttributeTemplate() {
+        return attributeTemplate;
     }
 
 }
