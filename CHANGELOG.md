@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Instants as timestamps in REST services
 - JSON pages
 - Accept authorization header in rest services not requiring x-api-key
+- Is same resource
 
 ## [1.0.0 - 2023-07-20]
 ### Added
