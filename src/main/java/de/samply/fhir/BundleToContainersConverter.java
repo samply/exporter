@@ -115,14 +115,14 @@ public class BundleToContainersConverter extends
     }
 
     private boolean isSameResourceType(Resource resource, String fhirPath) {
-        String resourceType = resource.getMeta().getProfile().get(0).getValue();
-        if (resourceType.contains("/")) {
-            resourceType = resourceType.substring(resourceType.lastIndexOf('/') + 1);
+        try {
+            if (fhirPath.contains(".")) {
+                fhirPath = fhirPath.substring(0, fhirPath.indexOf("."));
+            }
+            return Class.forName(resource.getClass().getPackageName() + '.' + fhirPath).isInstance(resource);
+        } catch (ClassNotFoundException e) {
+            return false;
         }
-        if (fhirPath.contains(".")) {
-            fhirPath = fhirPath.substring(0, fhirPath.indexOf("."));
-        }
-        return resourceType.toLowerCase().contains(fhirPath.toLowerCase());
     }
 
     private List<ResourceAttribute> fetchResourceAttribute(Resource resource,
