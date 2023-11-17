@@ -616,7 +616,7 @@ public class ExporterController {
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.OUTPUT_FORMATS)
     public ResponseEntity<String[]> fetchOutputFormats() {
-        return ResponseEntity.ok().body(Format.fetchNoQueries());
+        return ResponseEntity.ok().body(Format.fetchOutputs());
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
