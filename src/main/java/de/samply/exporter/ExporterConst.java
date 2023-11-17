@@ -187,6 +187,8 @@ public class ExporterConst {
     public static final String QUERY_DESCRIPTION = "query-description";
     public static final String QUERY_CONTACT_ID = "query-contact-id";
     public static final String QUERY_EXPIRATION_DATE = "query-expiration-date";
+    public static final String QUERY_DEFAULT_OUTPUT_FORMAT = "query-default-output-format";
+    public static final String QUERY_DEFAULT_TEMPLATE_ID = "query-default-template-id";
     public static final String TEMPLATE_ID = "template-id";
     public static final String QUERY_FORMAT = "query-format";
     public static final String OUTPUT_FORMAT = "output-format";

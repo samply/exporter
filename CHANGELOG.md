@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2023-11-15]
+## [1.1.0 - 2023-11-17]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Template Graph
 - Replace key values as token
 - Linking and linked attributes in template graph
+- Default template-id and output-format in query
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
@@ -39,6 +40,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - JSON pages
 - Accept authorization header in rest services not requiring x-api-key
 - Is same resource
+- Rest service: Get output formats
 
 ## [1.0.0 - 2023-07-20]
 ### Added
