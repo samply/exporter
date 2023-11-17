@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Template Graph
 - Replace key values as token
 - Linking and linked attributes in template graph
+- Default template-id and output-format in query
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

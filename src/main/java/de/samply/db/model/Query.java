@@ -46,6 +46,14 @@ public class Query implements Serializable {
   @Column(name = "archived_at")
   private Instant archivedAt;
 
+  @Column(name = "default_template_id")
+  private String defaultTemplateId;
+
+  @Column (name = "default_output_format")
+  @Enumerated(EnumType.STRING)
+  private Format defaultOutputFormat;
+
+
   public Long getId() {
     return id;
   }
@@ -116,6 +124,22 @@ public class Query implements Serializable {
 
   public void setCreatedAt(Instant createdAt) {
     this.createdAt = createdAt;
+  }
+
+  public String getDefaultTemplateId() {
+    return defaultTemplateId;
+  }
+
+  public void setDefaultTemplateId(String defaultTemplateId) {
+    this.defaultTemplateId = defaultTemplateId;
+  }
+
+  public Format getDefaultOutputFormat() {
+    return defaultOutputFormat;
+  }
+
+  public void setDefaultOutputFormat(Format defaultOutputFormat) {
+    this.defaultOutputFormat = defaultOutputFormat;
   }
 
 }

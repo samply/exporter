@@ -100,6 +100,8 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.QUERY_LABEL) String queryLabel,
                                               @RequestParam(name = ExporterConst.QUERY_DESCRIPTION) String queryDescription,
                                               @RequestParam(name = ExporterConst.QUERY_CONTACT_ID) String queryContactId,
+                                              @RequestParam(name = ExporterConst.QUERY_DEFAULT_TEMPLATE_ID, required = false) String defaultTemplateId,
+                                              @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
                                               @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
         Query tempQuery = new Query();
         tempQuery.setQuery(query);
@@ -109,6 +111,8 @@ public class ExporterController {
         tempQuery.setContactId(queryContactId);
         tempQuery.setExpirationDate(queryExpirationDate);
         tempQuery.setCreatedAt(Instant.now());
+        tempQuery.setDefaultTemplateId(defaultTemplateId);
+        tempQuery.setDefaultOutputFormat(defaultOutputFormat);
         Long queryId = exporterDbService.saveQueryAndGetQueryId(tempQuery);
 
         try {
