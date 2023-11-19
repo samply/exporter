@@ -83,6 +83,7 @@ public class ExporterConst {
     public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION = "CLEAN_TEMP_FILES_CRON_EXPRESSION";
     public final static String TEMP_FILES_LIFETIME_IN_DAYS = "TEMP_FILES_LIFETIME_IN_DAYS";
     public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION = "CLEAN_WRITE_FILES_CRON_EXPRESSION";
+    public final static String ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION = "ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION";
     public final static String WRITE_FILES_LIFETIME_IN_DAYS = "WRITE_FILES_LIFETIME_IN_DAYS";
     public final static String CROSS_ORIGINS = "CROSS_ORIGINS";
     public final static String TIMEOUT_IN_SECONDS = "TIMEOUT";
@@ -120,6 +121,8 @@ public class ExporterConst {
             HEAD_SV + TEMP_FILES_LIFETIME_IN_DAYS + ":#{1}" + BOTTOM_SV;
     public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION_SV =
             HEAD_SV + CLEAN_WRITE_FILES_CRON_EXPRESSION + ":#{'0 0 2 * * *'}" + BOTTOM_SV;
+    public final static String ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION_SV =
+            HEAD_SV + ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION + ":#{'0 0 2 * * *'}" + BOTTOM_SV;
     public final static String WRITE_FILES_LIFETIME_IN_DAYS_SV =
             HEAD_SV + WRITE_FILES_LIFETIME_IN_DAYS + ":#{30}" + BOTTOM_SV;
     public final static String CROSS_ORIGINS_SV =
@@ -237,5 +240,6 @@ public class ExporterConst {
     public final static String MEASURE_REPORT_GROUP_POPULATION_SUBJECT_RESULTS_REFERENCE_PREFIX = "List/";
     public final static String FHIR_SEARCH_LIST_PARAMETER = "_list";
     public final static String DEFAULT_GRAPH_FORMAT = "JSON";
+    public final static String ERROR_MESSAGE_INTERRUPTED_QUERY_EXECUTION = "Query execution interrupted abruptly";
 
 }
