@@ -151,6 +151,7 @@ public class ExporterConst {
     // REST Paths
     public static final String INFO = "/info";
     public static final String CREATE_QUERY = "/create-query";
+    public static final String UPDATE_QUERY = "/update-query";
     public static final String FETCH_QUERIES = "/queries";
     public static final String FETCH_QUERY_EXECUTIONS = "/query-executions";
     public static final String FETCH_QUERY_EXECUTION_ERRORS = "/query-execution-errors";

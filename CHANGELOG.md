@@ -125,6 +125,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - CQL to Bundle Converter
 - Archive expired queries
 - Blaze Page Size environment variable
+- Update Query
 
 ### Changed
 - Rename Conversion Template as Converter Template

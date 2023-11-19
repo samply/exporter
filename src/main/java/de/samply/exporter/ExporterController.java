@@ -43,10 +43,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -644,6 +643,33 @@ public class ExporterController {
     @GetMapping(value = ExporterConst.RUNNING_QUERIES)
     public ResponseEntity<String> fetchRunningExports() {
         return convertToResponseEntity(exporterDbService::fetchRunningQueryExecutions);
+    }
+
+    @PostMapping(value = ExporterConst.UPDATE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updateQuery(@RequestParam(name = ExporterConst.QUERY_ID) Long queryId,
+                                              @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
+                                              @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
+                                              @RequestParam(name = ExporterConst.QUERY_DEFAULT_TEMPLATE_ID, required = false) String defaultTemplateId,
+                                              @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
+                                              @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
+        Optional<Query> optionalQuery = exporterDbService.fetchQuery(queryId);
+        if (optionalQuery.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Query query = optionalQuery.get();
+        Map<Object, Runnable> updaters = new HashMap<>();
+        updaters.put(queryLabel, () -> query.setLabel(queryLabel));
+        updaters.put(queryDescription, () -> query.setDescription(queryDescription));
+        updaters.put(defaultTemplateId, () -> query.setDefaultTemplateId(defaultTemplateId));
+        updaters.put(defaultOutputFormat, () -> query.setDefaultOutputFormat(defaultOutputFormat));
+        updaters.put(queryExpirationDate, () -> query.setExpirationDate(queryExpirationDate));
+        updaters.keySet().forEach(key -> {
+            if (key != null) {
+                updaters.get(key).run();
+            }
+        });
+        exporterDbService.saveQueryAndGetQueryId(query);
+        return ResponseEntity.ok().build();
     }
 
 
