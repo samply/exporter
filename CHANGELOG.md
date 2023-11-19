@@ -123,6 +123,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Request Page Size
 - Http response header number-of-pages
 - CQL to Bundle Converter
+- Archive expired queries
 
 ### Changed
 - Rename Conversion Template as Converter Template
