@@ -23,4 +23,6 @@ public interface QueryExecutionRepository extends JpaRepository<QueryExecution, 
 
     List<QueryExecution> findByQueryId(Long queryExecutionId, Pageable pageable);
 
+    List<QueryExecution> findByStatus(Status status);
+
 }

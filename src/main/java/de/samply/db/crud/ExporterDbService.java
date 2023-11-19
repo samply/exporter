@@ -156,6 +156,12 @@ public class ExporterDbService {
   }
 
   @Transactional
+  public List<QueryExecution> fetchRunningQueryExecutions() {
+    return queryExecutionRepository.findByStatus(Status.RUNNING);
+  }
+
+
+  @Transactional
   public List<QueryExecution> fetchQueryExecutionByQueryId(Long queryId) {
     return queryExecutionRepository.findByQueryId(queryId);
   }

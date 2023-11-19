@@ -641,4 +641,10 @@ public class ExporterController {
         return ResponseEntity.badRequest().body("template-id or query-execution-id are missing");
     }
 
+    @GetMapping(value = ExporterConst.RUNNING_QUERIES)
+    public ResponseEntity<String> fetchRunningExports() {
+        return convertToResponseEntity(exporterDbService::fetchRunningQueryExecutions);
+    }
+
+
 }

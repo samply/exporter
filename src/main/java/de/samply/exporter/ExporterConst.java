@@ -1,7 +1,5 @@
 package de.samply.exporter;
 
-import de.samply.converter.Format;
-
 public class ExporterConst {
 
     public final static boolean LOG_FHIR_VALIDATION_DEFAULT = false;
@@ -168,10 +166,11 @@ public class ExporterConst {
     public static final String INPUT_FORMATS = "/input-formats";
     public static final String OUTPUT_FORMATS = "/output-formats";
     public static final String TEMPLATE_GRAPH = "/template-graph";
+    public static final String RUNNING_QUERIES = "/running-queries";
 
     public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
             FETCH_QUERIES, FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
-            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS};
+            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS, RUNNING_QUERIES};
     // TODO: RESPONSE ??? Only with UUID enough?
 
     // REST Headers
