@@ -124,6 +124,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Http response header number-of-pages
 - CQL to Bundle Converter
 - Archive expired queries
+- Blaze Page Size environment variable
 
 ### Changed
 - Rename Conversion Template as Converter Template
