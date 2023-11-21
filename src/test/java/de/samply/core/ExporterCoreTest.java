@@ -6,6 +6,7 @@ import de.samply.converter.Format;
 import de.samply.db.crud.ExporterDbService;
 import de.samply.db.repository.*;
 import de.samply.template.ConverterTemplateManager;
+import de.samply.template.token.TokenContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ class ExporterCoreTest {
     private final String templateDirectory = "./templates";
     private final String converterTemplateId = "test-template1";
     private ExporterCore exporterCore;
+    private TokenContext tokenContext = new TokenContext(null);
 
     @BeforeEach
     void setUp() {
@@ -50,10 +52,10 @@ class ExporterCoreTest {
     @Test
     void retrieveByQueryId() throws ExporterCoreException {
         ExporterParameters exporterParameters = new ExporterParameters(null, "Patient",
-                converterTemplateId, null, null, Format.FHIR_SEARCH, null, null, null, null, Format.CSV);
+                converterTemplateId, null, null, Format.FHIR_SEARCH, null, null, null, null, null, Format.CSV);
         ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(
                 exporterParameters);
-        Flux<Path> resultFlux = exporterCore.retrieveQuery(exporterCoreParameters);
+        Flux<Path> resultFlux = exporterCore.retrieveQuery(exporterCoreParameters, tokenContext);
         resultFlux.blockLast();
     }
 

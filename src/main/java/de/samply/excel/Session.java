@@ -2,6 +2,7 @@ package de.samply.excel;
 
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
+import de.samply.template.token.TokenContext;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
@@ -13,20 +14,22 @@ import java.util.List;
 public class Session {
 
 
-    private ConverterTemplateUtils converterTemplateUtils;
-    private String writeDirectory;
-    private Integer workbookWindow;
-    private List<Workbook> workbooks = new ArrayList<>();
+    private final ConverterTemplateUtils converterTemplateUtils;
+    private final String writeDirectory;
+    private final Integer workbookWindow;
+    private final List<Workbook> workbooks = new ArrayList<>();
+    private final TokenContext tokenContext;
 
     private Path basicExcelPath;
 
     private boolean isExcelFileAlreadyCreated = false;
 
     public Session(ConverterTemplateUtils converterTemplateUtils, String writeDirectory,
-                   Integer workbookWindow) {
+                   Integer workbookWindow, TokenContext tokenContext) {
         this.converterTemplateUtils = converterTemplateUtils;
         this.writeDirectory = writeDirectory;
         this.workbookWindow = workbookWindow;
+        this.tokenContext = tokenContext;
     }
 
     public Workbook fetchWorkbook() {
@@ -50,7 +53,7 @@ public class Session {
 
     public Path getExcelPath(ConverterTemplate converterTemplate, Integer counter) {
         if (basicExcelPath == null) {
-            String filename = converterTemplateUtils.replaceTokens(converterTemplate.getExcelFilename());
+            String filename = converterTemplateUtils.replaceTokens(converterTemplate.getExcelFilename(), tokenContext);
             basicExcelPath = Paths.get(writeDirectory).resolve(filename);
         }
         return (counter != null) ? basicExcelPath.getParent().resolve(createFilenameWithCounter(basicExcelPath, counter)) : basicExcelPath;

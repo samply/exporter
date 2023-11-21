@@ -1,7 +1,7 @@
 package de.samply.fhir.cql;
 
 import de.samply.template.ConverterTemplate;
-import de.samply.template.TokenTemplate;
+import de.samply.template.token.TokenTemplate;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Library;
 

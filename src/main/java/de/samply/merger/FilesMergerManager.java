@@ -1,5 +1,6 @@
 package de.samply.merger;
 
+import de.samply.template.token.TokenContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -20,10 +21,10 @@ public class FilesMergerManager {
                 filesMerger -> extensionFileMergerMap.put(filesMerger.getFileExtension(), filesMerger));
     }
 
-    public Optional<Path> merge(List<Path> paths) throws IOException {
+    public Optional<Path> merge(List<Path> paths, TokenContext tokenContext) throws IOException {
         if (paths.size() > 0) {
             FilesMerger filesMerger = extensionFileMergerMap.get(fetchFileExtension(paths.get(0)));
-            return Optional.ofNullable((filesMerger != null) ? filesMerger.merge(paths) : null);
+            return Optional.ofNullable((filesMerger != null) ? filesMerger.merge(paths, tokenContext) : null);
         }
         return Optional.empty();
     }

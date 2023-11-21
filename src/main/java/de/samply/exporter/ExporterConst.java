@@ -193,6 +193,7 @@ public class ExporterConst {
     public static final String QUERY_DEFAULT_OUTPUT_FORMAT = "query-default-output-format";
     public static final String QUERY_DEFAULT_TEMPLATE_ID = "query-default-template-id";
     public static final String TEMPLATE_ID = "template-id";
+    public static final String QUERY_CONTEXT = "query-context";
     public static final String QUERY_FORMAT = "query-format";
     public static final String OUTPUT_FORMAT = "output-format";
     public static final String QUERY_EXECUTION_ID = "query-execution-id";
@@ -242,5 +243,7 @@ public class ExporterConst {
     public final static String FHIR_SEARCH_LIST_PARAMETER = "_list";
     public final static String DEFAULT_GRAPH_FORMAT = "JSON";
     public final static String ERROR_MESSAGE_INTERRUPTED_QUERY_EXECUTION = "Query execution interrupted abruptly";
+    public final static String QUERY_CONTEXT_SEPARATOR = ";";
+    public final static String QUERY_CONTEXT_EQUAL = "=";
 
 }

@@ -1,4 +1,4 @@
-package de.samply.template;
+package de.samply.template.token;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
