@@ -8,6 +8,7 @@ import de.samply.exporter.ExporterConst;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
 import de.samply.template.ConverterTemplate;
+import jakarta.servlet.http.HttpServletRequest;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
@@ -128,7 +129,7 @@ public class FhirSearchQueryConverter extends FhirRelatedConverter<Bundle> {
 
 
     @Override
-    protected EmptySession initializeSession(ConverterTemplate template) {
+    protected EmptySession initializeSession(ConverterTemplate template, HttpServletRequest httpServletRequest) {
         return EmptySession.instance();
     }
 

@@ -7,6 +7,7 @@ import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -49,9 +50,8 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
     }
 
     @Override
-    protected Session initializeSession(ConverterTemplate template) {
-        Session session = new Session(template, fetchConverterTemplateUtils(), fetchTimeoutInSeconds(),
-                fetchMaxNumberOfRetries());
+    protected Session initializeSession(ConverterTemplate template, HttpServletRequest httpServletRequest) {
+        Session session = new Session(template, fetchConverterTemplateUtils(), fetchTimeoutInSeconds(), fetchMaxNumberOfRetries(), httpServletRequest);
         createProjectIfNotExists(session);
         return session;
     }

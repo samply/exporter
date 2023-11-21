@@ -2,6 +2,7 @@ package de.samply.template;
 
 import de.samply.exporter.ExporterConst;
 import de.samply.utils.EnvironmentUtils;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -34,10 +35,10 @@ public class TokenReplacer {
         this(null, environmentUtils, text);
     }
 
-    public TokenReplacer(Map<String, String> keyValues, EnvironmentUtils environmentUtils, String text) {
+    public TokenReplacer(HttpServletRequest request, EnvironmentUtils environmentUtils, String text) {
         this.text = text;
         this.environmentUtils = environmentUtils;
-        this.keyValues = (keyValues != null) ? keyValues : new HashMap<>();
+        this.keyValues = fetchParametersFromHttpServletRequest(request);
         this.headIndex = text.indexOf(ExporterConst.TOKEN_HEAD);
         this.endIndex = text.indexOf(ExporterConst.TOKEN_END);
         if (text.contains(ExporterConst.TOKEN_EXTENSION_DELIMITER)) {
@@ -46,6 +47,18 @@ public class TokenReplacer {
         }
     }
 
+    private Map<String, String> fetchParametersFromHttpServletRequest(HttpServletRequest httpServletRequest){
+        Map<String, String> result = new HashMap<>();
+        if (httpServletRequest != null){
+            httpServletRequest.getParameterMap().keySet().forEach(key ->{
+                String[] values = httpServletRequest.getParameterMap().get(key);
+                if (values != null && values.length >= 1){
+                    result.put(key, values[0]);
+                }
+            });
+        }
+        return result;
+    }
 
     public String getTokenReplacer() {
         return text.substring(0, headIndex) + getTokenReplacingValue() + (

@@ -10,6 +10,8 @@ import de.samply.template.ConverterTemplateManager;
 import de.samply.template.ConverterTemplateUtils;
 import de.samply.utils.EnvironmentUtils;
 import java.nio.file.Path;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.hl7.fhir.r4.model.Bundle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -32,6 +34,7 @@ class FhirSearchQueryToBundleConverterTest {
   private String outputDirectory = "./output";
   private String fhirPackagesDirectory = "./fhir-packages";
   private String templateId = "test-template1";
+  private HttpServletRequest httpServletRequest = null;
 
   @BeforeEach
   void setUp() {
@@ -42,7 +45,7 @@ class FhirSearchQueryToBundleConverterTest {
         ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
     this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
         outputDirectory, " ");
-    this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory);
+    this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory, httpServletRequest);
     this.converterTemplateManager = new ConverterTemplateManager(templateDirectory);
     this.bundleToContainersConverter = new BundleToContainersConverter(fhirPackagesDirectory, false);
     this.bundleToContainersConverterSession = new BundleToContainersConverterSession();
@@ -51,7 +54,7 @@ class FhirSearchQueryToBundleConverterTest {
   @Test
   void testExecute() {
     ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(templateId);
-    fhirSearchQueryToBundleConverter.convert(Flux.just("Patient"), converterTemplate)
+    fhirSearchQueryToBundleConverter.convert(Flux.just("Patient"), converterTemplate, httpServletRequest)
         .subscribe(bundle -> {
           Containers containers = bundleToContainersConverter.convertToContainers(bundle,
               converterTemplate, bundleToContainersConverterSession);
@@ -65,10 +68,9 @@ class FhirSearchQueryToBundleConverterTest {
   void testConverters() {
     ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(templateId);
     Flux<String> stringFlux = Flux.just("Patient");
-    Flux<Bundle> bundleFlux = fhirSearchQueryToBundleConverter.convert(stringFlux, converterTemplate);
-    Flux<Containers> containersFlux = bundleToContainersConverter.convert(bundleFlux,
-        converterTemplate);
-    Flux<Path> pathFlux = containersToCsvConverter.convert(containersFlux, converterTemplate);
+    Flux<Bundle> bundleFlux = fhirSearchQueryToBundleConverter.convert(stringFlux, converterTemplate, null);
+    Flux<Containers> containersFlux = bundleToContainersConverter.convert(bundleFlux, converterTemplate, httpServletRequest);
+    Flux<Path> pathFlux = containersToCsvConverter.convert(containersFlux, converterTemplate, httpServletRequest);
     pathFlux.blockLast();
     //TODO
   }

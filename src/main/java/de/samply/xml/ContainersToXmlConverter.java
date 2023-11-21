@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,8 +34,8 @@ public class ContainersToXmlConverter extends ContainersToFilesConverter<Session
   }
 
   @Override
-  protected Session initializeSession(ConverterTemplate converterTemplate) {
-    return new Session(converterTemplateUtils, writeDirectory);
+  protected Session initializeSession(ConverterTemplate converterTemplate, HttpServletRequest httpServletRequest) {
+    return new Session(converterTemplateUtils, writeDirectory, httpServletRequest);
   }
 
   @Override

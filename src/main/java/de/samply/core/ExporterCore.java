@@ -6,6 +6,7 @@ import de.samply.db.crud.ExporterDbService;
 import de.samply.db.model.Query;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -50,11 +51,8 @@ public class ExporterCore {
         }
     }
 
-    public <O> Flux<O> retrieveQuery(ExporterCoreParameters exporterCoreParameters)
-            throws ExporterCoreException {
-        return retrieve(Flux.just(exporterCoreParameters.query().getQuery()),
-                exporterCoreParameters.converter(),
-                exporterCoreParameters.template());
+    public <O> Flux<O> retrieveQuery(ExporterCoreParameters exporterCoreParameters, HttpServletRequest httpServletRequest) throws ExporterCoreException {
+        return retrieve(Flux.just(exporterCoreParameters.query().getQuery()), exporterCoreParameters.converter(), exporterCoreParameters.template(), httpServletRequest);
     }
 
     private Query checkParametersAndFetchQuery(ExporterParameters exporterParameters, Errors errors) {
@@ -156,9 +154,8 @@ public class ExporterCore {
         return converter;
     }
 
-    public <I, O> Flux<O> retrieve(Flux<I> inputFlux, Converter<I, O> converter,
-                                   ConverterTemplate converterTemplate) {
-        return converter.convert(inputFlux, converterTemplate);
+    public <I, O> Flux<O> retrieve(Flux<I> inputFlux, Converter<I, O> converter, ConverterTemplate converterTemplate, HttpServletRequest httpServletRequest) {
+        return converter.convert(inputFlux, converterTemplate, httpServletRequest);
     }
 
 

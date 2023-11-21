@@ -1,6 +1,7 @@
 package de.samply.merger;
 
 import de.samply.template.ConverterTemplateUtils;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,8 +26,8 @@ public abstract class FilesMergerImpl implements FilesMerger {
     protected abstract boolean isCommaSeparated();
 
     @Override
-    public Path merge(List<Path> paths) throws IOException {
-        Path output = temporalDirectory.resolve(generateFilename());
+    public Path merge(List<Path> paths, HttpServletRequest httpServletRequest) throws IOException {
+        Path output = temporalDirectory.resolve(generateFilename(httpServletRequest));
         write(paths, output);
         return output;
     }
@@ -68,8 +69,8 @@ public abstract class FilesMergerImpl implements FilesMerger {
         }
     }
 
-    protected String generateFilename() {
-        return converterTemplateUtils.replaceTokens(defaultFilename + '.' + getFileExtension());
+    protected String generateFilename(HttpServletRequest httpServletRequest) {
+        return converterTemplateUtils.replaceTokens(defaultFilename + '.' + getFileExtension(), httpServletRequest);
     }
 
 }

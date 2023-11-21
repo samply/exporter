@@ -1,12 +1,14 @@
 package de.samply.explorer;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
 public interface Explorer {
 
-    Path filter(Path source, Pivot[] pivots) throws ExplorerException;
+    Path filter(Path source, Pivot[] pivots, HttpServletRequest httpServletRequest) throws ExplorerException;
 
     Optional<Pivot[]> fetchPivot(Path source, String pivotAttribute, int pageCounter, int pageSize) throws ExplorerException;
 

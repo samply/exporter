@@ -6,6 +6,7 @@ import de.samply.converter.Format;
 import de.samply.db.crud.ExporterDbService;
 import de.samply.db.repository.*;
 import de.samply.template.ConverterTemplateManager;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ class ExporterCoreTest {
     private final String templateDirectory = "./templates";
     private final String converterTemplateId = "test-template1";
     private ExporterCore exporterCore;
+    private HttpServletRequest httpServletRequest = null;
 
     @BeforeEach
     void setUp() {
@@ -53,7 +55,7 @@ class ExporterCoreTest {
                 converterTemplateId, null, null, Format.FHIR_SEARCH, null, null, null, null, Format.CSV);
         ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(
                 exporterParameters);
-        Flux<Path> resultFlux = exporterCore.retrieveQuery(exporterCoreParameters);
+        Flux<Path> resultFlux = exporterCore.retrieveQuery(exporterCoreParameters, httpServletRequest);
         resultFlux.blockLast();
     }
 

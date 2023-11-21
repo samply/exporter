@@ -3,6 +3,8 @@ package de.samply.opal;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.nio.file.Path;
 
 public class Session {
@@ -12,16 +14,17 @@ public class Session {
   private ConverterTemplateUtils converterTemplateUtils;
   private int timeoutInSeconds;
   private int maxNumberOfRetries;
-
   private String project;
+  private HttpServletRequest httpServletRequest;
 
   public Session(ConverterTemplate template, ConverterTemplateUtils converterTemplateUtils,
-      int timeoutInSeconds, int maxNumberOfRetries) {
+      int timeoutInSeconds, int maxNumberOfRetries, HttpServletRequest httpServletRequest) {
     this.converterTemplate = template;
     this.containerTemplateMatcher = new ContainerTemplateMatcher(template);
     this.converterTemplateUtils = converterTemplateUtils;
     this.timeoutInSeconds = timeoutInSeconds;
     this.maxNumberOfRetries = maxNumberOfRetries;
+    this.httpServletRequest = httpServletRequest;
   }
 
   public ContainerTemplate getContainerTemplate(String csvFilename) {
@@ -36,7 +39,7 @@ public class Session {
     if (project == null) {
       project = converterTemplate.getOpalProject();
       if (converterTemplateUtils != null) {
-        project = converterTemplateUtils.replaceTokens(project);
+        project = converterTemplateUtils.replaceTokens(project, httpServletRequest);
       }
     }
     return project;

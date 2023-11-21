@@ -3,6 +3,8 @@ package de.samply.converter;
 import de.samply.template.ConverterTemplate;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+
+import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Flux;
 
 public class ConverterGroup<I, O> implements Converter<I, O> {
@@ -14,9 +16,9 @@ public class ConverterGroup<I, O> implements Converter<I, O> {
   }
 
   @Override
-  public Flux<O> convert(Flux<I> input, ConverterTemplate template) {
+  public Flux<O> convert(Flux<I> input, ConverterTemplate template, HttpServletRequest httpServletRequest) {
     AtomicReference<Flux> tempFlux = new AtomicReference<>(input);
-    converters.forEach(converter -> tempFlux.set(converter.convert(tempFlux.get(), template)));
+    converters.forEach(converter -> tempFlux.set(converter.convert(tempFlux.get(), template, httpServletRequest)));
     return tempFlux.get();
   }
 

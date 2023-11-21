@@ -2,6 +2,8 @@ package de.samply.files;
 
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplateUtils;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -15,18 +17,19 @@ public abstract class Session {
   private String writeDirectory;
   private List<Path> pathList = new ArrayList<>();
   private Map<ContainerTemplate, Path> containerTemplatePathMap = new HashMap<>();
+  private HttpServletRequest httpServletRequest;
 
-  public Session(ConverterTemplateUtils converterTemplateUtils,
-      String writeDirectory) {
+  public Session(ConverterTemplateUtils converterTemplateUtils, String writeDirectory, HttpServletRequest httpServletRequest) {
     this.converterTemplateUtils = converterTemplateUtils;
     this.writeDirectory = writeDirectory;
+    this.httpServletRequest = httpServletRequest;
   }
 
 
   public Path getFilePath(ContainerTemplate containerTemplate) {
     Path path = containerTemplatePathMap.get(containerTemplate);
     if (path == null) {
-      String filename = converterTemplateUtils.replaceTokens(getFilename(containerTemplate));
+      String filename = converterTemplateUtils.replaceTokens(getFilename(containerTemplate), httpServletRequest);
       path = Paths.get(writeDirectory).resolve(filename);
       containerTemplatePathMap.put(containerTemplate, path);
     }

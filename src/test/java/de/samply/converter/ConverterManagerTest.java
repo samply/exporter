@@ -2,6 +2,7 @@ package de.samply.converter;
 
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ class ConverterManagerTest {
     private final String sourceId = "blaze-store";
     private String targetId;
     private final String CONVERTER_APPLICATION_CONTEXT_PATH = "./converter/converter.xml";
+    private HttpServletRequest httpServletRequest = null;
 
 
     @Autowired
@@ -40,7 +42,7 @@ class ConverterManagerTest {
 
         ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(
                 "test-template1");
-        Flux flux = converter.convert(Flux.just("Patient"), converterTemplate);
+        Flux flux = converter.convert(Flux.just("Patient"), converterTemplate, httpServletRequest);
         flux.blockLast();
         //TODO
 

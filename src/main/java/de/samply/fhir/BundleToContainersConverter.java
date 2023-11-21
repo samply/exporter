@@ -12,6 +12,7 @@ import de.samply.logger.Logger;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
+import jakarta.servlet.http.HttpServletRequest;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
 import org.hl7.fhir.r4.model.*;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
@@ -53,7 +54,7 @@ public class BundleToContainersConverter extends
     }
 
     @Override
-    protected BundleToContainersConverterSession initializeSession(ConverterTemplate template) {
+    protected BundleToContainersConverterSession initializeSession(ConverterTemplate template, HttpServletRequest httpServletRequest) {
         return new BundleToContainersConverterSession();
     }
 

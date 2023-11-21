@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -33,9 +35,9 @@ public class Zipper {
     this.temporalFileDirectory = Path.of(temporalFileDirectory);
   }
 
-  public Pair<InputStreamResource, String> zipFiles(List<Path> filePaths)
+  public Pair<InputStreamResource, String> zipFiles(List<Path> filePaths, HttpServletRequest httpServletRequest)
       throws ZipperException {
-    return zipFiles(temporalFileDirectory.resolve(generateZipFilename()), filePaths);
+    return zipFiles(temporalFileDirectory.resolve(generateZipFilename(httpServletRequest)), filePaths);
   }
 
   public Pair<InputStreamResource, String> zipFiles(Path zipFilePath, List<Path> filePaths)
@@ -82,8 +84,8 @@ public class Zipper {
     }
   }
 
-  public String generateZipFilename() {
-    return converterTemplateUtils.replaceTokens(defaultZipFilename);
+  public String generateZipFilename(HttpServletRequest httpServletRequest) {
+    return converterTemplateUtils.replaceTokens(defaultZipFilename, httpServletRequest);
   }
 
 }
