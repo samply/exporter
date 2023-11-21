@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - HttpServletRequest in Context
 - Query Context
 - Token Context
+- Insert query context to token context
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

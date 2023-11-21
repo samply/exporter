@@ -90,6 +90,9 @@ public class ExporterCore {
         query.setDescription(exporterParameters.queryDescription());
         query.setContactId(exporterParameters.queryContactId());
         query.setExpirationDate(exporterParameters.queryExpirationDate());
+        query.setContext(exporterParameters.queryContext());
+        query.setDefaultOutputFormat(exporterParameters.outputFormat());
+        query.setDefaultTemplateId(exporterParameters.templateId());
         Long queryId = exporterDbService.saveQueryAndGetQueryId(query);
         query.setId(queryId);
         return query;

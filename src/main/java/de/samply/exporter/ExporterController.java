@@ -104,6 +104,7 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.QUERY_DESCRIPTION) String queryDescription,
                                               @RequestParam(name = ExporterConst.QUERY_CONTACT_ID) String queryContactId,
                                               @RequestParam(name = ExporterConst.QUERY_DEFAULT_TEMPLATE_ID, required = false) String defaultTemplateId,
+                                              @RequestParam(name = ExporterConst.QUERY_CONTEXT, required = false) String queryContext,
                                               @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
                                               @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
         Query tempQuery = new Query();
@@ -116,6 +117,7 @@ public class ExporterController {
         tempQuery.setCreatedAt(Instant.now());
         tempQuery.setDefaultTemplateId(defaultTemplateId);
         tempQuery.setDefaultOutputFormat(defaultOutputFormat);
+        tempQuery.setContext(queryContext);
         Long queryId = exporterDbService.saveQueryAndGetQueryId(tempQuery);
 
         try {
@@ -277,6 +279,7 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.QUERY_FORMAT, required = false) Format queryFormat,
                                               @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
                                               @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
+                                              @RequestParam(name = ExporterConst.QUERY_CONTEXT, required = false) String queryContext,
                                               @RequestParam(name = ExporterConst.QUERY_CONTACT_ID, required = false) String queryContactId,
                                               @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
                                               @RequestParam(name = ExporterConst.OUTPUT_FORMAT) Format outputFormat,
@@ -292,14 +295,14 @@ public class ExporterController {
         try {
             exporterCoreParameters = exporterCore.extractParameters(
                     new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
-                            queryLabel, queryDescription, queryContactId, queryExpirationDate, outputFormat));
+                            queryLabel, queryDescription, queryContactId, queryContext, queryExpirationDate, outputFormat));
         } catch (ExporterCoreException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
         Long queryExecutionId = exporterDbService.saveQueryExecutionAndGetExecutionId(
                 createQueryExecution(exporterCoreParameters));
         final ExporterCoreParameters tempExporterCoreParameters = exporterCoreParameters;
-        new Thread(() -> generateFiles(tempExporterCoreParameters, queryExecutionId, createNewTokenContext(httpServletRequest))).start();
+        new Thread(() -> generateFiles(tempExporterCoreParameters, queryExecutionId, createNewTokenContext(httpServletRequest, queryExecutionId))).start();
         try {
             return ResponseEntity.ok()
                     .body(createRequestResponseEntity(httpServletRequest, queryExecutionId, isInternalRequest));
@@ -308,11 +311,17 @@ public class ExporterController {
         }
     }
 
-    private TokenContext createNewTokenContext(HttpServletRequest httpServletRequest) {
+    private TokenContext createNewTokenContext(HttpServletRequest httpServletRequest, Long queryExecutionId) {
+        return createNewTokenContext(httpServletRequest, exporterDbService.fetchQueryByQueryExecutionId(queryExecutionId).get());
+    }
+
+    private TokenContext createNewTokenContext(HttpServletRequest httpServletRequest, Query query) {
         TokenContext tokenContext = new TokenContext(environmentUtils);
         tokenContext.addKeyValues(httpServletRequest);
+        tokenContext.addKeyValues(query);
         return tokenContext;
     }
+
 
     private void generateFiles(ExporterCoreParameters exporterCoreParameters, Long queryExecutionId, TokenContext tokenContext) {
         try {
@@ -415,7 +424,7 @@ public class ExporterController {
                 case OK -> {
                     try {
                         yield fetchQueryExecutionFilesAndZipOrMergeIfNecessary(
-                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles, fileAsPlainTextInBody, createNewTokenContext(httpServletRequest));
+                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles, fileAsPlainTextInBody, createNewTokenContext(httpServletRequest, queryExecutionId));
                     } catch (ExporterControllerException | ZipperException | ExplorerException |
                              PivotIdentifierException | IOException e) {
                         yield createInternalServerError(e);
@@ -572,6 +581,7 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
             @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
             @RequestParam(name = ExporterConst.QUERY_CONTACT_ID, required = false) String queryContactId,
+            @RequestParam(name = ExporterConst.QUERY_CONTEXT, required = false) String queryContext,
             @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
             @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
             @RequestHeader(name = "Content-Type", required = false) String contentType,
@@ -580,8 +590,8 @@ public class ExporterController {
         try {
             ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(
                     new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
-                            queryLabel, queryDescription, queryContactId, queryExpirationDate, outputFormat));
-            return ResponseEntity.ok().body(exporterCore.retrieveQuery(exporterCoreParameters, createNewTokenContext(httpServletRequest)));
+                            queryLabel, queryDescription, queryContactId, queryContext, queryExpirationDate, outputFormat));
+            return ResponseEntity.ok().body(exporterCore.retrieveQuery(exporterCoreParameters, createNewTokenContext(httpServletRequest, exporterCoreParameters.query())));
         } catch (ExporterCoreException e) {
             return createInternalServerError(e);
         }
