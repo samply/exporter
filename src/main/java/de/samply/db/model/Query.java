@@ -53,6 +53,9 @@ public class Query implements Serializable {
   @Enumerated(EnumType.STRING)
   private Format defaultOutputFormat;
 
+  @Column(name = "context")
+  private String context;
+
 
   public Long getId() {
     return id;
@@ -140,6 +143,14 @@ public class Query implements Serializable {
 
   public void setDefaultOutputFormat(Format defaultOutputFormat) {
     this.defaultOutputFormat = defaultOutputFormat;
+  }
+
+  public String getContext() {
+    return context;
+  }
+
+  public void setContext(String context) {
+    this.context = context;
   }
 
 }

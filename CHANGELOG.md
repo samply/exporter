@@ -126,6 +126,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Archive expired queries
 - Blaze Page Size environment variable
 - Update Query
+- HttpServletRequest in Context
+- Query Context
 
 ### Changed
 - Rename Conversion Template as Converter Template
