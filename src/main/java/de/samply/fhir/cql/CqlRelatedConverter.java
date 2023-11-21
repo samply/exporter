@@ -7,7 +7,7 @@ import de.samply.fhir.FhirRelatedConverter;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
 import de.samply.template.ConverterTemplate;
-import jakarta.servlet.http.HttpServletRequest;
+import de.samply.template.token.TokenContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Measure;
@@ -46,7 +46,7 @@ public abstract class CqlRelatedConverter<O> extends FhirRelatedConverter<O> {
     }
 
     @Override
-    protected EmptySession initializeSession(ConverterTemplate converterTemplate, HttpServletRequest httpServletRequest) {
+    protected EmptySession initializeSession(ConverterTemplate converterTemplate, TokenContext tokenContext) {
         return EmptySession.instance();
     }
 

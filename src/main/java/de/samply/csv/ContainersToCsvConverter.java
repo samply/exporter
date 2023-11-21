@@ -10,6 +10,7 @@ import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
 import java.util.List;
 
+import de.samply.template.token.TokenContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,8 +30,8 @@ public class ContainersToCsvConverter extends ContainersToFilesConverter<Session
   }
 
   @Override
-  protected Session initializeSession(ConverterTemplate template, HttpServletRequest httpServletRequest) {
-    return new Session(converterTemplateUtils, writeDirectory, httpServletRequest);
+  protected Session initializeSession(ConverterTemplate template, TokenContext tokenContext) {
+    return new Session(converterTemplateUtils, writeDirectory, tokenContext);
   }
 
   @Override

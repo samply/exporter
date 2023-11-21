@@ -1,12 +1,13 @@
 package de.samply.merger;
 
-import jakarta.servlet.http.HttpServletRequest;
+import de.samply.template.token.TokenContext;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
 public interface FilesMerger {
-    Path merge (List<Path> paths, HttpServletRequest httpServletRequest) throws IOException;
+    Path merge(List<Path> paths, TokenContext tokenContext) throws IOException;
+
     String getFileExtension();
 }

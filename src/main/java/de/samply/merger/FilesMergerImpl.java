@@ -1,7 +1,7 @@
 package de.samply.merger;
 
 import de.samply.template.ConverterTemplateUtils;
-import jakarta.servlet.http.HttpServletRequest;
+import de.samply.template.token.TokenContext;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,11 +23,12 @@ public abstract class FilesMergerImpl implements FilesMerger {
     }
 
     protected abstract void write(List<Path> input, FileWriter fileWriter) throws IOException;
+
     protected abstract boolean isCommaSeparated();
 
     @Override
-    public Path merge(List<Path> paths, HttpServletRequest httpServletRequest) throws IOException {
-        Path output = temporalDirectory.resolve(generateFilename(httpServletRequest));
+    public Path merge(List<Path> paths, TokenContext tokenContext) throws IOException {
+        Path output = temporalDirectory.resolve(generateFilename(tokenContext));
         write(paths, output);
         return output;
     }
@@ -46,7 +47,7 @@ public abstract class FilesMergerImpl implements FilesMerger {
                     AtomicInteger counter2 = new AtomicInteger(0);
                     Files.lines(path).forEach(line -> {
                         try {
-                            if (counter.get() == 0 || counter2.getAndIncrement() > 0){
+                            if (counter.get() == 0 || counter2.getAndIncrement() > 0) {
                                 fileWriter.write('\t');
                             }
                             fileWriter.write(line + '\n');
@@ -54,9 +55,9 @@ public abstract class FilesMergerImpl implements FilesMerger {
                             throw new RuntimeException(e);
                         }
                     });
-                    if (counter.incrementAndGet() < input.size()){
+                    if (counter.incrementAndGet() < input.size()) {
                         fileWriter.write("\t");
-                        if (isCommaSeparated()){
+                        if (isCommaSeparated()) {
                             fileWriter.write(",");
                         }
                     }
@@ -69,8 +70,8 @@ public abstract class FilesMergerImpl implements FilesMerger {
         }
     }
 
-    protected String generateFilename(HttpServletRequest httpServletRequest) {
-        return converterTemplateUtils.replaceTokens(defaultFilename + '.' + getFileExtension(), httpServletRequest);
+    protected String generateFilename(TokenContext tokenContext) {
+        return converterTemplateUtils.replaceTokens(defaultFilename + '.' + getFileExtension(), tokenContext);
     }
 
 }

@@ -8,6 +8,7 @@ import de.samply.exporter.ExporterConst;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
+import de.samply.template.token.TokenContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -117,8 +118,8 @@ public class ContainersToExcelConverter extends ConverterImpl<Containers, Path, 
     }
 
     @Override
-    protected Session initializeSession(ConverterTemplate template, HttpServletRequest httpServletRequest) {
-        return new Session(converterTemplateUtils, writeDirectory, workbookWindow, httpServletRequest);
+    protected Session initializeSession(ConverterTemplate template, TokenContext tokenContext) {
+        return new Session(converterTemplateUtils, writeDirectory, workbookWindow, tokenContext);
     }
 
     @Override

@@ -21,6 +21,8 @@ import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.graph.ConverterGraph;
 import de.samply.template.graph.factory.ConverterTemplateGraphFactoryManager;
+import de.samply.template.token.TokenContext;
+import de.samply.utils.EnvironmentUtils;
 import de.samply.utils.ProjectVersion;
 import de.samply.zip.Zipper;
 import de.samply.zip.ZipperException;
@@ -45,7 +47,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -66,6 +67,7 @@ public class ExporterController {
     private final Zipper zipper;
     private final FilesMergerManager filesMergerManager;
     private final ConverterTemplateGraphFactoryManager converterTemplateGraphFactoryManager;
+    private final EnvironmentUtils environmentUtils;
 
     public ExporterController(@Value(ExporterConst.HTTP_RELATIVE_PATH_SV) String httpRelativePath,
                               @Value(ExporterConst.HTTP_SERVLET_REQUEST_SCHEME_SV) String httpServletRequestScheme,
@@ -75,7 +77,8 @@ public class ExporterController {
                               Zipper zipper,
                               ExplorerManager explorerManager,
                               FilesMergerManager filesMergerManager,
-                              ConverterTemplateGraphFactoryManager converterTemplateGraphFactoryManager) {
+                              ConverterTemplateGraphFactoryManager converterTemplateGraphFactoryManager,
+                              EnvironmentUtils environmentUtils) {
         this.httpRelativePath = httpRelativePath;
         this.httpServletRequestScheme = httpServletRequestScheme;
         this.exporterCore = exporterCore;
@@ -85,6 +88,7 @@ public class ExporterController {
         this.converterTemplateManager = converterTemplateManager;
         this.filesMergerManager = filesMergerManager;
         this.converterTemplateGraphFactoryManager = converterTemplateGraphFactoryManager;
+        this.environmentUtils = environmentUtils;
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
@@ -295,7 +299,7 @@ public class ExporterController {
         Long queryExecutionId = exporterDbService.saveQueryExecutionAndGetExecutionId(
                 createQueryExecution(exporterCoreParameters));
         final ExporterCoreParameters tempExporterCoreParameters = exporterCoreParameters;
-        new Thread(() -> generateFiles(tempExporterCoreParameters, queryExecutionId, httpServletRequest)).start();
+        new Thread(() -> generateFiles(tempExporterCoreParameters, queryExecutionId, createNewTokenContext(httpServletRequest))).start();
         try {
             return ResponseEntity.ok()
                     .body(createRequestResponseEntity(httpServletRequest, queryExecutionId, isInternalRequest));
@@ -304,9 +308,15 @@ public class ExporterController {
         }
     }
 
-    private void generateFiles(ExporterCoreParameters exporterCoreParameters, Long queryExecutionId, HttpServletRequest httpServletRequest) {
+    private TokenContext createNewTokenContext(HttpServletRequest httpServletRequest) {
+        TokenContext tokenContext = new TokenContext(environmentUtils);
+        tokenContext.addKeyValues(httpServletRequest);
+        return tokenContext;
+    }
+
+    private void generateFiles(ExporterCoreParameters exporterCoreParameters, Long queryExecutionId, TokenContext tokenContext) {
         try {
-            exporterCore.retrieveQuery(exporterCoreParameters, httpServletRequest).subscribe(
+            exporterCore.retrieveQuery(exporterCoreParameters, tokenContext).subscribe(
                     path -> exporterDbService.saveQueryExecutionFile(
                             createQueryExecutionFile(queryExecutionId, ((Path) path).toString())));
             exporterDbService.setQueryExecutionAsOk(queryExecutionId);
@@ -405,7 +415,7 @@ public class ExporterController {
                 case OK -> {
                     try {
                         yield fetchQueryExecutionFilesAndZipOrMergeIfNecessary(
-                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles, fileAsPlainTextInBody, httpServletRequest);
+                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles, fileAsPlainTextInBody, createNewTokenContext(httpServletRequest));
                     } catch (ExporterControllerException | ZipperException | ExplorerException |
                              PivotIdentifierException | IOException e) {
                         yield createInternalServerError(e);
@@ -425,14 +435,14 @@ public class ExporterController {
 
     private ResponseEntity<InputStreamResource> fetchQueryExecutionFilesAndZipOrMergeIfNecessary(
             Long queryExecutionFileId, String fileFilter, String fileColumnPivot, Integer pageCounter,
-            String pivotValue, Integer pageSize, Boolean mergeFiles, Boolean fileAsPlainTextInBody, HttpServletRequest httpServletRequest)
+            String pivotValue, Integer pageSize, Boolean mergeFiles, Boolean fileAsPlainTextInBody, TokenContext tokenContext)
             throws ExporterControllerException, ZipperException, IOException, ExplorerException, PivotIdentifierException {
         List<QueryExecutionFile> queryExecutionFiles = exporterDbService.fetchQueryExecutionFilesByQueryExecutionId(
                 queryExecutionFileId);
         List<Path> files = convertToPath(queryExecutionFiles);
         HttpHeaders httpHeaders = new HttpHeaders();
         if (fileColumnPivot != null && (pageCounter != null || pivotValue != null)) {
-            FilesAndNumberOfPagesOfPivot filesAndNumberOfPagesOfPivot = filterFiles(files, fileColumnPivot, pageCounter, pivotValue, pageSize, httpServletRequest);
+            FilesAndNumberOfPagesOfPivot filesAndNumberOfPagesOfPivot = filterFiles(files, fileColumnPivot, pageCounter, pivotValue, pageSize, tokenContext);
             files = filesAndNumberOfPagesOfPivot.paths();
             httpHeaders.add(ExporterConst.NUMBER_OF_PAGES, String.valueOf(filesAndNumberOfPagesOfPivot.numberOfPagesOfPivot()));
         }
@@ -441,10 +451,10 @@ public class ExporterController {
             if (files.size() == 1) {
                 return createResponseEntity(files.get(0), httpHeaders, fileAsPlainTextInBody);
             } else if (mergeFiles != null && mergeFiles == true && filesMergerManager.isFileExtensionSupported(files)) {
-                Optional<Path> mergedFile = filesMergerManager.merge(files, httpServletRequest);
+                Optional<Path> mergedFile = filesMergerManager.merge(files, tokenContext);
                 return (mergedFile.isPresent()) ? createResponseEntity(mergedFile.get(), httpHeaders, fileAsPlainTextInBody) : ResponseEntity.notFound().build();
             } else {
-                Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(files, httpServletRequest);
+                Pair<InputStreamResource, String> inputStreamResourceFilenamePair = zipper.zipFiles(files, tokenContext);
                 return createResponseEntity(inputStreamResourceFilenamePair.getFirst(),
                         fetchFilename(inputStreamResourceFilenamePair.getSecond()), httpHeaders);
             }
@@ -464,7 +474,7 @@ public class ExporterController {
         return queryExecutionFiles.stream().map(queryExecutionFile -> Path.of(queryExecutionFile.getFilePath())).toList();
     }
 
-    private FilesAndNumberOfPagesOfPivot filterFiles(List<Path> files, String fileColumnPivot, Integer pageCounter, String pivotValue, Integer pageSize, HttpServletRequest httpServletRequest) throws PivotIdentifierException, ExplorerException {
+    private FilesAndNumberOfPagesOfPivot filterFiles(List<Path> files, String fileColumnPivot, Integer pageCounter, String pivotValue, Integer pageSize, TokenContext tokenContext) throws PivotIdentifierException, ExplorerException {
         List<Path> result = new ArrayList<>();
         PivotIdentifier pivotIdentifier = new PivotIdentifier(fileColumnPivot);
         Path pivotFile = null;
@@ -497,7 +507,7 @@ public class ExporterController {
         try {
             files.forEach(file -> {
                 try {
-                    result.add(explorer.get().filter(file, pivots, httpServletRequest));
+                    result.add(explorer.get().filter(file, pivots, tokenContext));
                 } catch (ExplorerException e) {
                     throw new RuntimeException(e);
                 }
@@ -571,7 +581,7 @@ public class ExporterController {
             ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(
                     new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
                             queryLabel, queryDescription, queryContactId, queryExpirationDate, outputFormat));
-            return ResponseEntity.ok().body(exporterCore.retrieveQuery(exporterCoreParameters, httpServletRequest));
+            return ResponseEntity.ok().body(exporterCore.retrieveQuery(exporterCoreParameters, createNewTokenContext(httpServletRequest)));
         } catch (ExporterCoreException e) {
             return createInternalServerError(e);
         }
