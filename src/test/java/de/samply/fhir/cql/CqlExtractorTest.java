@@ -2,7 +2,7 @@ package de.samply.fhir.cql;
 
 import de.samply.template.ConverterTemplate;
 import de.samply.template.CqlTemplate;
-import de.samply.template.TokenTemplate;
+import de.samply.template.token.TokenTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

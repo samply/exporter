@@ -1,9 +1,9 @@
 package de.samply.template;
 
 import de.samply.exporter.ExporterConst;
+import de.samply.template.token.TokenReplacer;
 import de.samply.utils.EnvironmentUtils;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,6 +1,7 @@
-package de.samply.template;
+package de.samply.template.token;
 
 import de.samply.exporter.ExporterConst;
+import de.samply.template.ContainerToken;
 import de.samply.utils.EnvironmentUtils;
 import jakarta.servlet.http.HttpServletRequest;
 

@@ -134,6 +134,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First anonym: 1
 - Cors config
 - Rename teiler to exporter
+- Move TokenTemplate and TokenReplacer to package token 
 
 
 ### Fixed
