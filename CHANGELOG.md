@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Token Context
 - Insert query context to token context
 - Docs directory for documentation
+- Apt-get clean in docker
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
