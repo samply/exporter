@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2023-11-24]
+## [1.1.0 - 2023-11-30]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Insert query context to token context
 - Docs directory for documentation
 - Apt-get clean in docker
+- Tomcat max-http-header-size
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
