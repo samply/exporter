@@ -14,5 +14,6 @@ public record ExporterParameters(
     String queryDescription,
     String queryContactId,
     String queryContext,
+    String queryExecutionContactId,
     LocalDate queryExpirationDate,
     Format outputFormat) {}

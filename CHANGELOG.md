@@ -41,6 +41,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - DB-Migration: FHIR_QUERY to FHIR_PATH
 - FHIR_PATH to FHIR_SEARCH
 - CQL_MEASURE_REPORT to CQL and CQL to CQL_DATA
+- query-execution-contact-id to query-execution
+
+### Removed
+- Remove retrieve-query
 
 ### Fixed
 - JSON and XML filter

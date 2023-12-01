@@ -157,7 +157,6 @@ public class ExporterConst {
     public static final String FETCH_QUERY_EXECUTION_ERRORS = "/query-execution-errors";
     public static final String REQUEST = "/request";
     public static final String RESPONSE = "/response";
-    public static final String RETRIEVE_QUERY = "/retrieve-query";
     public static final String INQUIRY = "/inquiry";
     public static final String STATUS = "/status";
     public static final String ARCHIVE_QUERY = "/archive-query";
@@ -172,8 +171,8 @@ public class ExporterConst {
     public static final String TEMPLATE_GRAPH = "/template-graph";
     public static final String RUNNING_QUERIES = "/running-queries";
 
-    public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
-            FETCH_QUERIES, FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
+    public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, FETCH_QUERIES,
+            FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
             ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS, RUNNING_QUERIES};
     // TODO: RESPONSE ??? Only with UUID enough?
 
@@ -189,6 +188,7 @@ public class ExporterConst {
     public static final String QUERY_LABEL = "query-label";
     public static final String QUERY_DESCRIPTION = "query-description";
     public static final String QUERY_CONTACT_ID = "query-contact-id";
+    public static final String QUERY_EXECUTION_CONTACT_ID = "query-execution-contact-id";
     public static final String QUERY_EXPIRATION_DATE = "query-expiration-date";
     public static final String QUERY_DEFAULT_OUTPUT_FORMAT = "query-default-output-format";
     public static final String QUERY_DEFAULT_TEMPLATE_ID = "query-default-template-id";

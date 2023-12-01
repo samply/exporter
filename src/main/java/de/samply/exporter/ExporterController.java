@@ -38,7 +38,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import reactor.core.publisher.Flux;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -284,6 +283,7 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
                                               @RequestParam(name = ExporterConst.OUTPUT_FORMAT) Format outputFormat,
                                               @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
+                                              @RequestParam(name = ExporterConst.QUERY_EXECUTION_CONTACT_ID, required = false) String queryExecutionContactId,
                                               @RequestHeader(name = "Content-Type", required = false) String contentType,
                                               @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
                                               @RequestBody(required = false) String template) {
@@ -292,7 +292,7 @@ public class ExporterController {
         try {
             exporterCoreParameters = exporterCore.extractParameters(
                     new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
-                            queryLabel, queryDescription, queryContactId, queryContext, queryExpirationDate, outputFormat));
+                            queryLabel, queryDescription, queryContactId, queryContext, queryExecutionContactId, queryExpirationDate, outputFormat));
         } catch (ExporterCoreException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -331,7 +331,6 @@ public class ExporterController {
         }
         return result;
     }
-
 
 
     private void generateFiles(ExporterCoreParameters exporterCoreParameters, Long queryExecutionId, TokenContext tokenContext) {
@@ -397,6 +396,7 @@ public class ExporterController {
         queryExecution.setStatus(Status.RUNNING);
         queryExecution.setOutputFormat(exporterCoreParameters.converter().getOutputFormat());
         queryExecution.setTemplateId(exporterCoreParameters.template().getId());
+        queryExecution.setContactId(exporterCoreParameters.queryExecutionContactId());
         return queryExecution;
     }
 
@@ -582,32 +582,6 @@ public class ExporterController {
     private ResponseEntity<InputStreamResource> createResponseEntityAsPlainTextInBody(
             InputStreamResource inputStreamResource, HttpHeaders httpHeaders) {
         return ResponseEntity.ok().headers(httpHeaders).contentType(MediaType.TEXT_PLAIN).body(inputStreamResource);
-    }
-
-    @GetMapping(value = ExporterConst.RETRIEVE_QUERY, produces = MediaType.APPLICATION_NDJSON_VALUE)
-    public ResponseEntity<Flux<Path>> retrieveQuery(
-            @RequestParam(name = ExporterConst.QUERY_ID, required = false) Long queryId,
-            @RequestParam(name = ExporterConst.QUERY, required = false) String query,
-            @RequestParam(name = ExporterConst.QUERY_FORMAT) Format queryFormat,
-            @RequestParam(name = ExporterConst.OUTPUT_FORMAT) Format outputFormat,
-            @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
-            @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
-            @RequestParam(name = ExporterConst.QUERY_CONTACT_ID, required = false) String queryContactId,
-            @RequestParam(name = ExporterConst.QUERY_CONTEXT, required = false) String queryContext,
-            @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
-            @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
-            @RequestHeader(name = "Content-Type", required = false) String contentType,
-            @RequestBody(required = false) String template,
-            HttpServletRequest httpServletRequest) {
-        try {
-            Map<String, String> requestParameters = fetchParameterMap(httpServletRequest);
-            ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(
-                    new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
-                            queryLabel, queryDescription, queryContactId, queryContext, queryExpirationDate, outputFormat));
-            return ResponseEntity.ok().body(exporterCore.retrieveQuery(exporterCoreParameters, createNewTokenContext(requestParameters, exporterCoreParameters.query())));
-        } catch (ExporterCoreException e) {
-            return createInternalServerError(e);
-        }
     }
 
     @GetMapping(value = ExporterConst.LOGS)

@@ -44,8 +44,9 @@ public class ExporterCore {
         Converter converter =
                 (template != null) ? checkParametersAndFetchConverter(exporterParameters, query, template,
                         errors) : null;
+        String queryExecutionContactId = exporterParameters.queryExecutionContactId();
         if (errors.isEmpty()) {
-            return new ExporterCoreParameters(query, template, converter);
+            return new ExporterCoreParameters(query, template, converter, queryExecutionContactId);
         } else {
             throw new ExporterCoreException(errors.getMessages());
         }
