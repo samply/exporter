@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - FHIR_PATH to FHIR_SEARCH
 - CQL_MEASURE_REPORT to CQL and CQL to CQL_DATA
 - query-execution-contact-id to query-execution
+- github build configuration
 
 ### Removed
 - Remove retrieve-query
