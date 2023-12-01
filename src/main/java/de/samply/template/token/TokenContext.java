@@ -3,7 +3,6 @@ package de.samply.template.token;
 import de.samply.db.model.Query;
 import de.samply.utils.EnvironmentUtils;
 import de.samply.utils.QueryContextUtils;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,17 +15,6 @@ public class TokenContext {
 
     public TokenContext(EnvironmentUtils environmentUtils) {
         this.environmentUtils = environmentUtils;
-    }
-
-    public void addKeyValues(HttpServletRequest httpServletRequest) {
-        if (httpServletRequest != null) {
-            httpServletRequest.getParameterMap().keySet().forEach(key -> {
-                String[] values = httpServletRequest.getParameterMap().get(key);
-                if (values != null && values.length >= 1) {
-                    keyValues.put(key, values[0]);
-                }
-            });
-        }
     }
 
     public void addKeyValues(String key, String value) {

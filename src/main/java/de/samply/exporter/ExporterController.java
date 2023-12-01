@@ -287,11 +287,8 @@ public class ExporterController {
                                               @RequestHeader(name = "Content-Type", required = false) String contentType,
                                               @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
                                               @RequestBody(required = false) String template) {
-    /*
-    if (!outputFormat.isPath()) {
-      return ResponseEntity.badRequest().body("Output format is not a file");
-    }*/
-        ExporterCoreParameters exporterCoreParameters = null;
+        ExporterCoreParameters exporterCoreParameters;
+        Map<String, String> requestParameters = fetchParameterMap(httpServletRequest);
         try {
             exporterCoreParameters = exporterCore.extractParameters(
                     new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
@@ -302,7 +299,7 @@ public class ExporterController {
         Long queryExecutionId = exporterDbService.saveQueryExecutionAndGetExecutionId(
                 createQueryExecution(exporterCoreParameters));
         final ExporterCoreParameters tempExporterCoreParameters = exporterCoreParameters;
-        new Thread(() -> generateFiles(tempExporterCoreParameters, queryExecutionId, createNewTokenContext(httpServletRequest, queryExecutionId))).start();
+        new Thread(() -> generateFiles(tempExporterCoreParameters, queryExecutionId, createNewTokenContext(requestParameters, queryExecutionId))).start();
         try {
             return ResponseEntity.ok()
                     .body(createRequestResponseEntity(httpServletRequest, queryExecutionId, isInternalRequest));
@@ -311,16 +308,30 @@ public class ExporterController {
         }
     }
 
-    private TokenContext createNewTokenContext(HttpServletRequest httpServletRequest, Long queryExecutionId) {
-        return createNewTokenContext(httpServletRequest, exporterDbService.fetchQueryByQueryExecutionId(queryExecutionId).get());
+    private TokenContext createNewTokenContext(Map<String, String> requestParameters, Long queryExecutionId) {
+        return createNewTokenContext(requestParameters, exporterDbService.fetchQueryByQueryExecutionId(queryExecutionId).get());
     }
 
-    private TokenContext createNewTokenContext(HttpServletRequest httpServletRequest, Query query) {
+    private TokenContext createNewTokenContext(Map<String, String> requestParameters, Query query) {
         TokenContext tokenContext = new TokenContext(environmentUtils);
-        tokenContext.addKeyValues(httpServletRequest);
+        tokenContext.addKeyValues(requestParameters);
         tokenContext.addKeyValues(query);
         return tokenContext;
     }
+
+    private Map<String, String> fetchParameterMap(HttpServletRequest httpServletRequest) {
+        Map<String, String> result = new HashMap<>();
+        if (httpServletRequest != null) {
+            httpServletRequest.getParameterMap().keySet().forEach(key -> {
+                String[] values = httpServletRequest.getParameterMap().get(key);
+                if (values != null && values.length >= 1) {
+                    result.put(key, values[0]);
+                }
+            });
+        }
+        return result;
+    }
+
 
 
     private void generateFiles(ExporterCoreParameters exporterCoreParameters, Long queryExecutionId, TokenContext tokenContext) {
@@ -409,6 +420,7 @@ public class ExporterController {
             @RequestParam(name = ExporterConst.MERGE_FILES, required = false) Boolean mergeFiles,
             @RequestParam(name = ExporterConst.FILE_AS_PLAIN_TEXT_IN_BODY, required = false) Boolean fileAsPlainTextInBody,
             HttpServletRequest httpServletRequest) {
+        Map<String, String> requestParameters = fetchParameterMap(httpServletRequest);
         Optional<QueryExecution> queryExecution = exporterDbService.fetchQueryExecution(
                 queryExecutionId);
         if (queryExecution.isPresent()) {
@@ -424,7 +436,7 @@ public class ExporterController {
                 case OK -> {
                     try {
                         yield fetchQueryExecutionFilesAndZipOrMergeIfNecessary(
-                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles, fileAsPlainTextInBody, createNewTokenContext(httpServletRequest, queryExecutionId));
+                                queryExecutionId, fileFilter, fileColumnPivot, pageCounter, pivotValue, pageSize, mergeFiles, fileAsPlainTextInBody, createNewTokenContext(requestParameters, queryExecutionId));
                     } catch (ExporterControllerException | ZipperException | ExplorerException |
                              PivotIdentifierException | IOException e) {
                         yield createInternalServerError(e);
@@ -588,10 +600,11 @@ public class ExporterController {
             @RequestBody(required = false) String template,
             HttpServletRequest httpServletRequest) {
         try {
+            Map<String, String> requestParameters = fetchParameterMap(httpServletRequest);
             ExporterCoreParameters exporterCoreParameters = exporterCore.extractParameters(
                     new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
                             queryLabel, queryDescription, queryContactId, queryContext, queryExpirationDate, outputFormat));
-            return ResponseEntity.ok().body(exporterCore.retrieveQuery(exporterCoreParameters, createNewTokenContext(httpServletRequest, exporterCoreParameters.query())));
+            return ResponseEntity.ok().body(exporterCore.retrieveQuery(exporterCoreParameters, createNewTokenContext(requestParameters, exporterCoreParameters.query())));
         } catch (ExporterCoreException e) {
             return createInternalServerError(e);
         }
