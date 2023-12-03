@@ -1,11 +1,14 @@
 package de.samply.core;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import de.samply.converter.Converter;
 import de.samply.converter.ConverterManager;
 import de.samply.db.crud.ExporterDbService;
 import de.samply.db.model.Query;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
+import de.samply.template.RequestTemplate;
 import de.samply.template.token.TokenContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,14 +42,14 @@ public class ExporterCore {
             throws ExporterCoreException {
         Errors errors = new Errors();
 
-        Query query = checkParametersAndFetchQuery(exporterParameters, errors);
-        ConverterTemplate template = checkParametersAndFetchTemplate(exporterParameters, errors);
+        RequestTemplate template = checkParametersAndFetchRequestTemplate(exporterParameters, errors);
+        Query query = checkParametersAndFetchQuery(exporterParameters, template, errors);
         Converter converter =
-                (template != null) ? checkParametersAndFetchConverter(exporterParameters, query, template,
+                (template != null) ? checkParametersAndFetchConverter(exporterParameters, query, template.getConverterTemplate(),
                         errors) : null;
         String queryExecutionContactId = exporterParameters.queryExecutionContactId();
         if (errors.isEmpty()) {
-            return new ExporterCoreParameters(query, template, converter, queryExecutionContactId);
+            return new ExporterCoreParameters(query, template.getConverterTemplate(), converter, queryExecutionContactId);
         } else {
             throw new ExporterCoreException(errors.getMessages());
         }
@@ -56,10 +59,10 @@ public class ExporterCore {
         return retrieve(Flux.just(exporterCoreParameters.query().getQuery()), exporterCoreParameters.converter(), exporterCoreParameters.template(), tokenContext);
     }
 
-    private Query checkParametersAndFetchQuery(ExporterParameters exporterParameters, Errors errors) {
+    private Query checkParametersAndFetchQuery(ExporterParameters exporterParameters, RequestTemplate template, Errors errors) {
         Query query = null;
         if (exporterParameters.queryId() == null && exporterParameters.queryFormat() == null) {
-            errors.addError("Query id nor query format not provided");
+            errors.addError("Query format not provided");
         }
         if (exporterParameters.outputFormat() == null) {
             errors.addError("Output format not provided");
@@ -72,19 +75,25 @@ public class ExporterCore {
                 query = queryOptional.get();
             }
         } else {
-            if (exporterParameters.query() == null) {
-                errors.addError("Query not defined");
+            if (exporterParameters.query() != null || template.getQuery() != null){
+                query = createNewQuery(exporterParameters, template);
             } else {
-                query = createNewQuery(exporterParameters);
+                errors.addError("Query not defined");
             }
         }
         return query;
 
     }
 
-    private Query createNewQuery(ExporterParameters exporterParameters) {
+    private Query createNewQuery(ExporterParameters exporterParameters, RequestTemplate template) {
         Query query = new Query();
-        query.setQuery(exporterParameters.query());
+        String sQuery = null;
+        if (exporterParameters.query() != null){
+            sQuery = exporterParameters.query();
+        } else if (template != null && template.getQuery() != null){
+            sQuery = template.getQuery();
+        }
+        query.setQuery(sQuery);
         query.setFormat(exporterParameters.queryFormat());
         query.setCreatedAt(Instant.now());
         query.setLabel(exporterParameters.queryLabel());
@@ -99,18 +108,23 @@ public class ExporterCore {
         return query;
     }
 
-    private ConverterTemplate checkParametersAndFetchTemplate(ExporterParameters exporterParameters,
-                                                              Errors errors) {
-        ConverterTemplate template = null;
+    private RequestTemplate checkParametersAndFetchRequestTemplate(ExporterParameters exporterParameters,
+                                                                   Errors errors) {
+        RequestTemplate result = null;
         if (exporterParameters.templateId() != null) {
-            template = converterTemplateManager.getConverterTemplate(exporterParameters.templateId());
-            if (template == null) {
+            ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(exporterParameters.templateId());
+            if (result == null) {
                 errors.addError("Converter Template " + exporterParameters.templateId() + " not found");
+            } else {
+                result = new RequestTemplate();
+                result.setConverterTemplate(converterTemplate);
+                result.setQuery(exporterParameters.query());
             }
-        } else {
+        }
+        if (exporterParameters.templateId() == null || (exporterParameters.query() == null && exporterParameters.queryId() == null)){
             boolean fetchTemplate = true;
-            if (exporterParameters.template() == null) {
-                errors.addError("Template not defined");
+            if (exporterParameters.requestTemplate() == null) {
+                errors.addError("Request Template not defined");
                 fetchTemplate = false;
             }
             if (exporterParameters.contentType() == null) {
@@ -122,21 +136,29 @@ public class ExporterCore {
                 fetchTemplate = false;
             }
             if (fetchTemplate) {
-                template = fetchTemplate(exporterParameters, errors);
+                result = fetchRequestTemplate(exporterParameters, errors);
             }
         }
-        return template;
+        if (result.getConverterTemplate() == null){
+            errors.addError("Converter Template not defined");
+        }
+        return result;
     }
 
-    private ConverterTemplate fetchTemplate(ExporterParameters exporterParameters, Errors errors) {
+    private RequestTemplate fetchRequestTemplate(ExporterParameters exporterParameters, Errors errors) {
         try {
-            return converterTemplateManager.fetchConverterTemplate(exporterParameters.template(),
-                    exporterParameters.contentType());
+            return fetchRequestTemplate(exporterParameters.requestTemplate(), exporterParameters.contentType());
         } catch (IOException e) {
             errors.addError("Error deserializing template");
             errors.addError(ExceptionUtils.getStackTrace(e));
             return null;
         }
+    }
+
+    public RequestTemplate fetchRequestTemplate(String template, String contentType)
+            throws IOException {
+        return ((contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ? new XmlMapper() : new ObjectMapper())
+                .readValue(template, RequestTemplate.class);
     }
 
     private Converter checkParametersAndFetchConverter(ExporterParameters exporterParameters,
