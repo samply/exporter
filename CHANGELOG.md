@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - CQL_MEASURE_REPORT to CQL and CQL to CQL_DATA
 - query-execution-contact-id to query-execution
 - github build configuration
+- Java 21
 
 ### Removed
 - Remove retrieve-query
