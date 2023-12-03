@@ -286,15 +286,11 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
                                               @RequestHeader(name = "Content-Type", required = false) String contentType,
                                               @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
-                                              @RequestBody(required = false) String template) {
-    /*
-    if (!outputFormat.isPath()) {
-      return ResponseEntity.badRequest().body("Output format is not a file");
-    }*/
-        ExporterCoreParameters exporterCoreParameters = null;
+                                              @RequestBody(required = false) String requestTemplate) {
+        ExporterCoreParameters exporterCoreParameters;
         try {
             exporterCoreParameters = exporterCore.extractParameters(
-                    new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
+                    new ExporterParameters(queryId, query, templateId, requestTemplate, contentType, queryFormat,
                             queryLabel, queryDescription, queryContactId, queryContext, queryExpirationDate, outputFormat));
         } catch (ExporterCoreException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
