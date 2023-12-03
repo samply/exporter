@@ -7,7 +7,7 @@ public record ExporterParameters(
     Long queryId,
     String query,
     String templateId,
-    String template,
+    String requestTemplate,
     String contentType,
     Format queryFormat,
     String queryLabel,

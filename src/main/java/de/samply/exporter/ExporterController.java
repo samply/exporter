@@ -286,12 +286,12 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.QUERY_EXECUTION_CONTACT_ID, required = false) String queryExecutionContactId,
                                               @RequestHeader(name = "Content-Type", required = false) String contentType,
                                               @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
-                                              @RequestBody(required = false) String template) {
+                                              @RequestBody(required = false) String requestTemplate) {
         ExporterCoreParameters exporterCoreParameters;
         Map<String, String> requestParameters = fetchParameterMap(httpServletRequest);
         try {
             exporterCoreParameters = exporterCore.extractParameters(
-                    new ExporterParameters(queryId, query, templateId, template, contentType, queryFormat,
+                    new ExporterParameters(queryId, query, templateId, requestTemplate, contentType, queryFormat,
                             queryLabel, queryDescription, queryContactId, queryContext, queryExecutionContactId, queryExpirationDate, outputFormat));
         } catch (ExporterCoreException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
