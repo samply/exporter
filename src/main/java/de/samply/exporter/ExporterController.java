@@ -19,6 +19,7 @@ import de.samply.logger.Logger;
 import de.samply.merger.FilesMergerManager;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
+import de.samply.template.RequestTemplate;
 import de.samply.template.graph.ConverterGraph;
 import de.samply.template.graph.factory.ConverterTemplateGraphFactoryManager;
 import de.samply.template.token.TokenContext;
@@ -97,7 +98,7 @@ public class ExporterController {
     }
 
     @PostMapping(value = ExporterConst.CREATE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createQuery(@RequestParam(name = ExporterConst.QUERY) String query,
+    public ResponseEntity<String> createQuery(@RequestParam(name = ExporterConst.QUERY, required = false) String query, // It can also be in requestTemplate
                                               @RequestParam(name = ExporterConst.QUERY_FORMAT) Format queryFormat,
                                               @RequestParam(name = ExporterConst.QUERY_LABEL) String queryLabel,
                                               @RequestParam(name = ExporterConst.QUERY_DESCRIPTION) String queryDescription,
@@ -105,9 +106,28 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.QUERY_DEFAULT_TEMPLATE_ID, required = false) String defaultTemplateId,
                                               @RequestParam(name = ExporterConst.QUERY_CONTEXT, required = false) String queryContext,
                                               @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
-                                              @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
+                                              @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
+                                              @RequestHeader(name = "Content-Type", required = false) String contentType,
+                                              @RequestBody(required = false) String requestTemplate) {
         Query tempQuery = new Query();
-        tempQuery.setQuery(query);
+        String sQuery = null;
+        if (query != null){
+            sQuery = query;
+        } else if (requestTemplate != null){
+            if (contentType == null){
+                return ResponseEntity.badRequest().body("Content-Type not set");
+            }
+            try {
+                RequestTemplate requestTemplate1 = exporterCore.fetchRequestTemplate(requestTemplate, contentType);
+                sQuery = requestTemplate1.getQuery();
+            } catch (IOException e) {
+                return createInternalServerError(e);
+            }
+        }
+        if (sQuery == null){
+            return ResponseEntity.badRequest().body("Query not set");
+        }
+        tempQuery.setQuery(sQuery);
         tempQuery.setFormat(queryFormat);
         tempQuery.setLabel(queryLabel);
         tempQuery.setDescription(queryDescription);

@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Apt-get clean in docker
 - Tomcat max-http-header-size
 - Request Template
+- Query in body for CREATE_QUERY
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
