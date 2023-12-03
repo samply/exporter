@@ -75,7 +75,7 @@ public class ExporterCore {
                 query = queryOptional.get();
             }
         } else {
-            if (exporterParameters.query() != null || template.getQuery() != null){
+            if (exporterParameters.query() != null || template.getQuery() != null) {
                 query = createNewQuery(exporterParameters, template);
             } else {
                 errors.addError("Query not defined");
@@ -88,9 +88,9 @@ public class ExporterCore {
     private Query createNewQuery(ExporterParameters exporterParameters, RequestTemplate template) {
         Query query = new Query();
         String sQuery = null;
-        if (exporterParameters.query() != null){
+        if (exporterParameters.query() != null) {
             sQuery = exporterParameters.query();
-        } else if (template != null && template.getQuery() != null){
+        } else if (template != null && template.getQuery() != null) {
             sQuery = template.getQuery();
         }
         query.setQuery(sQuery);
@@ -111,19 +111,19 @@ public class ExporterCore {
     private RequestTemplate checkParametersAndFetchRequestTemplate(ExporterParameters exporterParameters,
                                                                    Errors errors) {
         RequestTemplate result = null;
+        ConverterTemplate converterTemplate = null;
         if (exporterParameters.templateId() != null) {
-            ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate(exporterParameters.templateId());
-            if (result == null) {
+            converterTemplate = converterTemplateManager.getConverterTemplate(exporterParameters.templateId());
+            if (converterTemplate == null) {
                 errors.addError("Converter Template " + exporterParameters.templateId() + " not found");
             } else {
                 result = new RequestTemplate();
-                result.setConverterTemplate(converterTemplate);
                 result.setQuery(exporterParameters.query());
             }
         }
-        if (exporterParameters.templateId() == null || (exporterParameters.query() == null && exporterParameters.queryId() == null)){
+        if (exporterParameters.templateId() == null || (exporterParameters.query() == null && exporterParameters.queryId() == null)) {
             boolean fetchTemplate = true;
-            if (exporterParameters.requestTemplate() == null) {
+            if ((result == null || result.getConverterTemplate() == null) && exporterParameters.requestTemplate() == null) {
                 errors.addError("Request Template not defined");
                 fetchTemplate = false;
             }
@@ -137,9 +137,12 @@ public class ExporterCore {
             }
             if (fetchTemplate) {
                 result = fetchRequestTemplate(exporterParameters, errors);
+                if (converterTemplate != null) {
+                    result.setConverterTemplate(converterTemplate); // Override template if it is already defined
+                }
             }
         }
-        if (result.getConverterTemplate() == null){
+        if (result.getConverterTemplate() == null) {
             errors.addError("Converter Template not defined");
         }
         return result;
