@@ -137,10 +137,13 @@ public class ExporterCore {
             }
             if (fetchTemplate) {
                 result = fetchRequestTemplate(exporterParameters, errors);
-                if (converterTemplate != null) {
-                    result.setConverterTemplate(converterTemplate); // Override template if it is already defined
+                if (result != null && result.getConverterTemplate() != null){
+                    converterTemplate = result.getConverterTemplate();
                 }
             }
+        }
+        if (converterTemplate != null) {
+            result.setConverterTemplate(converterTemplate); // Override template if it is already defined
         }
         if (result.getConverterTemplate() == null) {
             errors.addError("Converter Template not defined");
