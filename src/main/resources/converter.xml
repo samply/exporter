@@ -21,6 +21,22 @@
         <constructor-arg name="sourceId" value="blaze-store"/>
     </bean>
 
+    <bean id="bbmriBlazeStoreFhirSearchQueryToBundleConverter" class="de.samply.fhir.FhirSearchQueryConverter">
+        <constructor-arg name="fhirStoreUrl" value="http://localhost:8098/fhir"/>
+        <constructor-arg name="sourceId" value="bbmri-blaze-store"/>
+        <property name="pageSize" value="#{systemEnvironment['BLAZE_PAGE_SIZE'] ?: '50'}"/>
+    </bean>
+
+    <bean id="bbmriBlazeStoreCqlToFhirSearchConverter" class="de.samply.fhir.cql.CqlToFhirSearchConverter">
+        <constructor-arg name="fhirStoreUrl" value="http://localhost:8098/fhir"/>
+        <constructor-arg name="sourceId" value="bbmri-blaze-store"/>
+    </bean>
+
+    <bean id="bbmriBlazeStoreCqlToBundleConverter" class="de.samply.fhir.cql.CqlToBundleConverter">
+        <constructor-arg name="fhirStoreUrl" value="http://localhost:8098/fhir"/>
+        <constructor-arg name="sourceId" value="bbmri-blaze-store"/>
+    </bean>
+
     <bean id="csvToOpalConverter" class="de.samply.opal.CsvToOpalConverter">
         <constructor-arg name="opalServer" ref="opalServer"/>
         <constructor-arg name="targetId" value="opal"/>
