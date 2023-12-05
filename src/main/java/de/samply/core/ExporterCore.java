@@ -137,7 +137,7 @@ public class ExporterCore {
             }
             if (fetchTemplate) {
                 result = fetchRequestTemplate(exporterParameters, errors);
-                if (result != null && result.getConverterTemplate() != null){
+                if (result != null && result.getConverterTemplate() != null) {
                     converterTemplate = result.getConverterTemplate();
                 }
             }
@@ -169,12 +169,12 @@ public class ExporterCore {
 
     private Converter checkParametersAndFetchConverter(ExporterParameters exporterParameters,
                                                        Query query, ConverterTemplate template, Errors errors) {
-        Converter converter = null;
+        Optional<Converter> converter = null;
         if (query != null && query.getFormat() != null && exporterParameters.outputFormat() != null
                 && template != null) {
             converter = converterManager.getBestMatchConverter(query.getFormat(),
                     exporterParameters.outputFormat(), template.getSourceId(), template.getTargetId());
-            if (converter == null) {
+            if (converter.isEmpty()) {
                 errors.addError(
                         "No converter found for query format " + exporterParameters.queryFormat()
                                 + ", output format " + exporterParameters.outputFormat()
@@ -183,7 +183,7 @@ public class ExporterCore {
         } else {
             errors.addError("No converter could be found");
         }
-        return converter;
+        return converter.get();
     }
 
     public <I, O> Flux<O> retrieve(Flux<I> inputFlux, Converter<I, O> converter, ConverterTemplate converterTemplate, TokenContext tokenContext) {

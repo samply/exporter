@@ -51,6 +51,7 @@
     <flyway-core.version>9.22.1</flyway-core.version>
     <postgresql.version>42.6.0</postgresql.version>
     <commons-csv.version>1.10.0</commons-csv.version>
+    <jgrapht-core.version>1.5.2</jgrapht-core.version>
   </properties>
 
   <dependencies>
@@ -175,6 +176,11 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
       <version>${commons-csv.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jgrapht</groupId>
+      <artifactId>jgrapht-core</artifactId>
+      <version>${jgrapht-core.version}</version>
     </dependency>
 
   </dependencies>

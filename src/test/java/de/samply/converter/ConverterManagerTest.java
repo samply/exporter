@@ -3,7 +3,6 @@ package de.samply.converter;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.token.TokenContext;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import reactor.core.publisher.Flux;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Disabled
@@ -32,7 +32,7 @@ class ConverterManagerTest {
     @Test
     void getConverter() {
         ConverterManager converterManager = new ConverterManager(applicationContext, CONVERTER_APPLICATION_CONTEXT_PATH);
-        Converter converter = converterManager.getBestMatchConverter(Format.FHIR_SEARCH, Format.CSV,
+        Optional<Converter> converter = converterManager.getBestMatchConverter(Format.FHIR_SEARCH, Format.CSV,
                 sourceId, targetId);
         ConverterTemplateManager converterTemplateManager = new ConverterTemplateManager("./templates");
 
@@ -42,8 +42,10 @@ class ConverterManagerTest {
         //TODO
 
         ConverterTemplate converterTemplate = converterTemplateManager.getConverterTemplate("test-template1");
-        Flux flux = converter.convert(Flux.just("Patient"), converterTemplate, tokenContext);
-        flux.blockLast();
+        if (converter.isPresent()) {
+            Flux flux = converter.get().convert(Flux.just("Patient"), converterTemplate, tokenContext);
+            flux.blockLast();
+        }
         //TODO
 
     }

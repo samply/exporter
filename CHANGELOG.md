@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Tomcat max-http-header-size
 - Request Template
 - Query in body for CREATE_QUERY
+- ConverterGraph
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
