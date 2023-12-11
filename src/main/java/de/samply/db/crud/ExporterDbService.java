@@ -40,8 +40,8 @@ public class ExporterDbService {
 
     @Transactional
     public Optional<Query> fetchQueryByQueryExecutionId(Long queryExecutionId) {
-        QueryExecution queryExecution = queryExecutionRepository.getById(queryExecutionId);
-        return (queryExecution != null) ? queryRepository.findById(queryExecution.getQueryId()) : Optional.empty();
+        Optional<QueryExecution> queryExecution = queryExecutionRepository.findById(queryExecutionId);
+        return (queryExecution.isPresent()) ? queryRepository.findById(queryExecution.get().getQueryId()) : Optional.empty();
     }
 
     @Transactional
@@ -144,8 +144,8 @@ public class ExporterDbService {
 
     @Transactional
     public Optional<Status> getQueryExecutionStatus(Long queryExecutionId) {
-        QueryExecution queryExecution = queryExecutionRepository.getById(queryExecutionId);
-        return (queryExecution != null) ? Optional.of(queryExecution.getStatus()) : Optional.empty();
+        Optional<QueryExecution> queryExecution = queryExecutionRepository.findById(queryExecutionId);
+        return (queryExecution.isPresent()) ? Optional.of(queryExecution.get().getStatus()) : Optional.empty();
     }
 
     @Transactional

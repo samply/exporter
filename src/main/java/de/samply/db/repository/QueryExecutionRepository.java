@@ -17,8 +17,6 @@ public interface QueryExecutionRepository extends JpaRepository<QueryExecution, 
     @Query("UPDATE QueryExecution SET status=?2 WHERE id=?1")
     void updateStatus(Long id, Status status);
 
-    QueryExecution getById(Long id);
-
     List<QueryExecution> findByQueryId(Long queryExecutionId);
 
     List<QueryExecution> findByQueryId(Long queryExecutionId, Pageable pageable);
