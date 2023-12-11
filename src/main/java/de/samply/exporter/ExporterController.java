@@ -111,10 +111,10 @@ public class ExporterController {
                                               @RequestBody(required = false) String requestTemplate) {
         Query tempQuery = new Query();
         String sQuery = null;
-        if (query != null){
+        if (query != null) {
             sQuery = query;
-        } else if (requestTemplate != null){
-            if (contentType == null){
+        } else if (requestTemplate != null) {
+            if (contentType == null) {
                 return ResponseEntity.badRequest().body("Content-Type not set");
             }
             try {
@@ -124,7 +124,7 @@ public class ExporterController {
                 return createInternalServerError(e);
             }
         }
-        if (sQuery == null){
+        if (sQuery == null) {
             return ResponseEntity.badRequest().body("Query not set");
         }
         tempQuery.setQuery(sQuery);
@@ -157,7 +157,7 @@ public class ExporterController {
     @GetMapping(value = ExporterConst.STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getQueryExecutionStatus(
             @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId) {
-        return convertToResponseEntity(queryExecutionId, exporterDbService::getQueryExecutionStatus);
+        return convertToResponseEntity(() -> exporterDbService.getQueryExecutionStatus(queryExecutionId).get());
     }
 
     @GetMapping(value = ExporterConst.FETCH_QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
