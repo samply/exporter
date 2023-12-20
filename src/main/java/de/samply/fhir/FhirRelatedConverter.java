@@ -4,9 +4,9 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import de.samply.converter.EmptySession;
 import de.samply.converter.SourceConverterImpl;
-import org.hl7.fhir.r4.model.Bundle;
 
-public abstract class FhirRelatedConverter <O> extends SourceConverterImpl<String, O, EmptySession> {
+
+public abstract class FhirRelatedConverter<O> extends SourceConverterImpl<String, O, EmptySession> {
 
     protected final IGenericClient client;
     protected final String sourceId;

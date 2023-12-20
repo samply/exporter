@@ -5,6 +5,7 @@ import ca.uhn.fhir.parser.IParser;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Parameters;
 
+
 public class CqlUtils {
 
     private static IParser fhirParser = FhirContext.forR4().newJsonParser();

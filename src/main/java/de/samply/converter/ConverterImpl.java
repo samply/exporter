@@ -17,9 +17,18 @@ public abstract class ConverterImpl<I, O, S> implements Converter<I, O> {
 
     @Override
     public Flux<O> convert(Flux<I> inputFlux, ConverterTemplate template, TokenContext tokenContext) {
-        S session = initializeSession(template, tokenContext);
-        return inputFlux.flatMap(input -> convert(input, template, session))
+        S session = initializeSessionWithSync(template, tokenContext);
+        return inputFlux.flatMap(input -> convertWithSync(input, template, session))
                 .doOnComplete(getSessionCompleter(template, session));
     }
+
+    private synchronized S initializeSessionWithSync(ConverterTemplate converterTemplate, TokenContext tokenContext){
+        return initializeSession(converterTemplate, tokenContext);
+    }
+
+    private synchronized Flux<O> convertWithSync(I input, ConverterTemplate template, S session){
+        return convert(input, template, session);
+    }
+
 
 }

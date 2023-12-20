@@ -38,9 +38,9 @@
 
   <properties>
     <java.version>21</java.version>
-    <hapi.version>6.4.7</hapi.version>
+    <hapi.version>6.10.0</hapi.version>
     <ucum.version>1.0.8</ucum.version>
-    <org.hl7.fhir.r4.version>5.6.971</org.hl7.fhir.r4.version>
+    <org.hl7.fhir.r4.version>6.0.25</org.hl7.fhir.r4.version>
     <caffeine.version>3.1.8</caffeine.version>
     <jackson.version>2.15.2</jackson.version>
     <reactor-core.version>3.5.10</reactor-core.version>
