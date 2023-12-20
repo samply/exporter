@@ -1,6 +1,7 @@
 package de.samply.fhir;
 
 import ca.uhn.fhir.model.api.Include;
+import ca.uhn.fhir.rest.client.exceptions.FhirClientConnectionException;
 import ca.uhn.fhir.rest.gclient.IQuery;
 import de.samply.converter.EmptySession;
 import de.samply.converter.Format;
@@ -9,6 +10,7 @@ import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.token.TokenContext;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
@@ -134,6 +136,10 @@ public class FhirSearchQueryConverter extends FhirRelatedConverter<Bundle> {
     }
 
     private Bundle fetchFirstBundle(String fhirSearchQuery, ConverterTemplate template) {
+        return fetchBundle(() -> fetchFirstBundleWithoutHandlingException(fhirSearchQuery, template));
+    }
+
+    private Bundle fetchFirstBundleWithoutHandlingException(String fhirSearchQuery, ConverterTemplate template) {
         IQuery<IBaseBundle> iQuery = client.search().byUrl(fhirSearchQuery);
         addRevIncludes(iQuery, template);
         iQuery.count(pageSize);
@@ -141,7 +147,31 @@ public class FhirSearchQueryConverter extends FhirRelatedConverter<Bundle> {
     }
 
     private Bundle fetchNextBundle(String nextBundleUrl) {
-        return client.search().byUrl(nextBundleUrl).returnBundle(Bundle.class).execute();
+        return fetchBundle(() -> client.search().byUrl(nextBundleUrl).returnBundle(Bundle.class).execute());
+    }
+
+    private Bundle fetchBundle(BundleSupplier bundleSupplier) {
+        for (int i = 0; i < ExporterConst.DEFAULT_MAX_NUMBER_OF_RETRIES; i++) {
+            try {
+                return bundleSupplier.get();
+            } catch (FhirClientConnectionException e) {
+                logger.error("Connection refused with FHIR Server. Retrying (" + i + "/" + ExporterConst.DEFAULT_MAX_NUMBER_OF_RETRIES + ")");
+                if (i + 1 > ExporterConst.DEFAULT_MAX_NUMBER_OF_RETRIES) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(ExporterConst.DEFAULT_TIMEOUT_IN_SECONDS * 1000);
+                } catch (InterruptedException ex) {
+                    logger.error(ExceptionUtils.getStackTrace(e));
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+        throw new RuntimeException("Reached maximal number of retries");
+    }
+
+    private interface BundleSupplier {
+        Bundle get() throws FhirClientConnectionException;
     }
 
     private String getNextBundleUrl(Bundle bundle) {

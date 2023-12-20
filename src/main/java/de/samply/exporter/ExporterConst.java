@@ -226,6 +226,9 @@ public class ExporterConst {
     public static final String INQUIRY_NULL_DESCRIPTION = "No description provided";
     public static final String CROSS_ORIGINS_SEPARATOR = ",";
     public static final int DEFAULT_TIMEOUT_IN_SECONDS = 5;
+    public static final int DEFAULT_CONNECTION_TIMEOUT_IN_SECONDS = 10;
+    public static final int DEFAULT_CONNECTION_REQUEST_TIMEOUT_IN_SECONDS = 20;
+    public static final int DEFAULT_SOCKET_TIMEOUT_IN_SECONDS = 30;
     public static final int DEFAULT_MAX_NUMBER_OF_RETRIES = 10;
     public static final String[] PASSWORD_BLACKLIST = {"password", "secret", "apikey"};
     public static final String PASSWORD_REPLACEMENT = "XXXXX";

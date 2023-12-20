@@ -1,3 +1,4 @@
+#FROM docker.verbis.dkfz.de/ccp/exporter-base:latest # For development. Image with Java, Python and the Opal Client
 FROM eclipse-temurin:21-jre
 
 RUN apt-get update && apt-get upgrade -y && apt-get install python3-pip -y &&  \
