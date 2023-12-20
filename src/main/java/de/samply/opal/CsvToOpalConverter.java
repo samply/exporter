@@ -41,12 +41,21 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
 
     @Override
     protected Flux<Path> convert(Path input, ConverterTemplate template, Session session) {
+        session.addPath(input);
+        return Flux.just(input);
+    }
+
+    @Override
+    protected Runnable getSessionCompleter(ConverterTemplate template, Session session) {
+        return () -> session.getOpalPaths().forEach(path -> sendPathToOpal(path, session));
+    }
+
+    private void sendPathToOpal(Path input, Session session){
         try {
             opalEngine.sendPathToOpal(input, session);
         } catch (OpalEngineException e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
-        return Flux.just(input);
     }
 
     @Override

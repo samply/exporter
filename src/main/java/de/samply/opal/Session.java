@@ -6,6 +6,8 @@ import de.samply.template.ConverterTemplateUtils;
 import de.samply.template.token.TokenContext;
 
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Session {
 
@@ -16,6 +18,7 @@ public class Session {
     private int maxNumberOfRetries;
     private String project;
     private final TokenContext tokenContext;
+    private final Set<Path> opalPaths = new HashSet<>();
 
     public Session(ConverterTemplate template, ConverterTemplateUtils converterTemplateUtils,
                    int timeoutInSeconds, int maxNumberOfRetries, TokenContext tokenContext) {
@@ -67,6 +70,14 @@ public class Session {
 
     public void setMaxNumberOfRetries(int maxNumberOfRetries) {
         this.maxNumberOfRetries = maxNumberOfRetries;
+    }
+
+    public void addPath (Path path){
+        this.opalPaths.add(path);
+    }
+
+    public Set<Path> getOpalPaths() {
+        return opalPaths;
     }
 
 }
