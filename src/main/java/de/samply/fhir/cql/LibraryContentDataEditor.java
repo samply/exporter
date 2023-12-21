@@ -29,9 +29,8 @@ public class LibraryContentDataEditor {
 
     private static String edit(String attachmentData, ConverterTemplate template) {
         AtomicReference<String> result = new AtomicReference<>(attachmentData);
-        fetchTokens(template).forEach(tokenTemplate -> {
-            result.set(result.get().replace(tokenTemplate.getKey(), tokenTemplate.getValue()));
-        });
+        fetchTokens(template).forEach(tokenTemplate ->
+                result.set(result.get().replace(tokenTemplate.getKey(), tokenTemplate.getValue())));
         return result.get();
     }
 

@@ -193,6 +193,7 @@ public class ExporterConst {
     public static final String QUERY_DEFAULT_OUTPUT_FORMAT = "query-default-output-format";
     public static final String QUERY_DEFAULT_TEMPLATE_ID = "query-default-template-id";
     public static final String TEMPLATE_ID = "template-id";
+    public static final String REQUEST_TEMPLATE = "template";
     public static final String QUERY_CONTEXT = "query-context";
     public static final String QUERY_FORMAT = "query-format";
     public static final String OUTPUT_FORMAT = "output-format";

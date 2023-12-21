@@ -8,10 +8,12 @@ import de.samply.converter.Format;
 import de.samply.core.ExporterCore;
 import de.samply.core.ExporterCoreException;
 import de.samply.core.ExporterCoreParameters;
-import de.samply.core.ExporterParameters;
+import de.samply.core.ParametersBuilder;
 import de.samply.db.crud.ExporterDbService;
 import de.samply.db.model.*;
 import de.samply.explorer.*;
+import de.samply.exporter.request.RequestMapper;
+import de.samply.exporter.request.RequestMapperException;
 import de.samply.exporter.response.entity.CreateQueryResponseEntity;
 import de.samply.exporter.response.entity.RequestResponseEntity;
 import de.samply.logger.BufferedLoggerFactory;
@@ -19,7 +21,6 @@ import de.samply.logger.Logger;
 import de.samply.merger.FilesMergerManager;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
-import de.samply.template.RequestTemplate;
 import de.samply.template.graph.ConverterGraph;
 import de.samply.template.graph.factory.ConverterTemplateGraphFactoryManager;
 import de.samply.template.token.TokenContext;
@@ -45,6 +46,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -102,49 +104,29 @@ public class ExporterController {
         return new ResponseEntity<>(projectVersion, HttpStatus.OK);
     }
 
+    // Parameters are extracted directly from httpServletRequest. They can be as parameters or in body. However, RequestParam is set to specify
+    // the parameters recognized by this REST service and the format.
     @PostMapping(value = ExporterConst.CREATE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create Query", description = "Creates a new query based on the provided parameters.")
     public ResponseEntity<String> createQuery(@RequestParam(name = ExporterConst.QUERY, required = false) String query, // It can also be in requestTemplate
-                                              @RequestParam(name = ExporterConst.QUERY_FORMAT) Format queryFormat,
-                                              @RequestParam(name = ExporterConst.QUERY_LABEL) String queryLabel,
-                                              @RequestParam(name = ExporterConst.QUERY_DESCRIPTION) String queryDescription,
-                                              @RequestParam(name = ExporterConst.QUERY_CONTACT_ID) String queryContactId,
+                                              @RequestParam(name = ExporterConst.QUERY_FORMAT, required = false) Format queryFormat,
+                                              @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
+                                              @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
+                                              @RequestParam(name = ExporterConst.QUERY_CONTACT_ID, required = false) String queryContactId,
                                               @RequestParam(name = ExporterConst.QUERY_DEFAULT_TEMPLATE_ID, required = false) String defaultTemplateId,
                                               @RequestParam(name = ExporterConst.QUERY_CONTEXT, required = false) String queryContext,
                                               @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
                                               @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
                                               @RequestHeader(name = "Content-Type", required = false) String contentType,
-                                              @RequestBody(required = false) String requestTemplate) {
-        Query tempQuery = new Query();
-        String sQuery = null;
-        if (query != null) {
-            sQuery = query;
-        } else if (requestTemplate != null) {
-            if (contentType == null) {
-                return ResponseEntity.badRequest().body("Content-Type not set");
-            }
-            try {
-                RequestTemplate requestTemplate1 = exporterCore.fetchRequestTemplate(requestTemplate, contentType);
-                sQuery = requestTemplate1.getQuery();
-            } catch (IOException e) {
-                return createInternalServerError(e);
-            }
-        }
+                                              HttpServletRequest httpServletRequest) throws NoSuchMethodException, RequestMapperException {
+        Map<String, String> requestParameters = RequestMapper.fetchKeyValues(httpServletRequest, fetchCallingMethod());
+        Query tempQuery = new ParametersBuilder(requestParameters).buildQuery();
+        String sQuery = requestParameters.get(ExporterConst.QUERY);
         if (sQuery == null) {
             return ResponseEntity.badRequest().body("Query not set");
         }
         tempQuery.setQuery(sQuery);
-        tempQuery.setFormat(queryFormat);
-        tempQuery.setLabel(queryLabel);
-        tempQuery.setDescription(queryDescription);
-        tempQuery.setContactId(queryContactId);
-        tempQuery.setExpirationDate(queryExpirationDate);
-        tempQuery.setCreatedAt(Instant.now());
-        tempQuery.setDefaultTemplateId(defaultTemplateId);
-        tempQuery.setDefaultOutputFormat(defaultOutputFormat);
-        tempQuery.setContext(queryContext);
         Long queryId = exporterDbService.saveQueryAndGetQueryId(tempQuery);
-
         try {
             return ResponseEntity.ok(createCreateQueryResponseEntity(queryId));
         } catch (ExporterControllerException e) {
@@ -342,6 +324,8 @@ public class ExporterController {
         }
     }
 
+    // Parameters are extracted directly from httpServletRequest. They can be as parameters or in body. However, RequestParam is set to specify
+    // the parameters recognized by this REST service and the format.
     @PostMapping(value = ExporterConst.REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Post Request", description = "Processes and handles the export request based on the provided parameters.")
     @ApiResponses({
@@ -358,18 +342,16 @@ public class ExporterController {
                                               @RequestParam(name = ExporterConst.QUERY_CONTEXT, required = false) String queryContext,
                                               @RequestParam(name = ExporterConst.QUERY_CONTACT_ID, required = false) String queryContactId,
                                               @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
-                                              @RequestParam(name = ExporterConst.OUTPUT_FORMAT) Format outputFormat,
+                                              @RequestParam(name = ExporterConst.OUTPUT_FORMAT, required = false) Format outputFormat,
                                               @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
                                               @RequestParam(name = ExporterConst.QUERY_EXECUTION_CONTACT_ID, required = false) String queryExecutionContactId,
-                                              @RequestHeader(name = "Content-Type", required = false) String contentType,
-                                              @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
-                                              @RequestBody(required = false) String requestTemplate) {
+                                              @RequestHeader(name = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
+                                              @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest
+    ) throws NoSuchMethodException, RequestMapperException {
+        Map<String, String> requestParameters = RequestMapper.fetchKeyValues(httpServletRequest, fetchCallingMethod());
         ExporterCoreParameters exporterCoreParameters;
-        Map<String, String> requestParameters = fetchParameterMap(httpServletRequest);
         try {
-            exporterCoreParameters = exporterCore.extractParameters(
-                    new ExporterParameters(queryId, query, templateId, requestTemplate, contentType, queryFormat,
-                            queryLabel, queryDescription, queryContactId, queryContext, queryExecutionContactId, queryExpirationDate, outputFormat));
+            exporterCoreParameters = exporterCore.extractParameters(new ParametersBuilder(requestParameters).buildExporterParameters());
         } catch (ExporterCoreException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -816,5 +798,20 @@ public class ExporterController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Fetchs the method that calls it.
+     *
+     * @return Calling method.
+     * @throws NoSuchMethodException
+     */
+    Method fetchCallingMethod() throws NoSuchMethodException {
+        String methodName = Thread.currentThread().getStackTrace()[2].getMethodName();
+        for (Method method : this.getClass().getDeclaredMethods()) {
+            if (method.getName().equals(methodName)) {
+                return method;
+            }
+        }
+        throw new NoSuchMethodException("Method " + methodName + " not found");
+    }
 
 }

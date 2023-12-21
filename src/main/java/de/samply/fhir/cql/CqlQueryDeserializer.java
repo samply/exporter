@@ -29,10 +29,9 @@ public class CqlQueryDeserializer extends StdDeserializer<CqlQuery> {
     @Override
     public CqlQuery deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
         JsonNode jsonNode = jsonParser.readValueAsTree();
-        String language = jsonNode.get("lang").asText();
         Measure measure = fetchNode(jsonParser, jsonNode, "measure", Measure.class);
         Library library = fetchNode(jsonParser, jsonNode, "lib", Library.class);
-        return new CqlQuery(language, measure, library);
+        return new CqlQuery(measure, library);
     }
 
     private <T extends IBaseResource> T fetchNode(JsonParser jsonParser, JsonNode jsonNode, String fieldName, Class<T> fieldClass) throws JacksonException {
