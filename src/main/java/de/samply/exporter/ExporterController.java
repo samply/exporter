@@ -27,6 +27,10 @@ import de.samply.utils.EnvironmentUtils;
 import de.samply.utils.ProjectVersion;
 import de.samply.zip.Zipper;
 import de.samply.zip.ZipperException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,11 +97,13 @@ public class ExporterController {
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.INFO)
+    @Operation(summary = "Get info", description = "Provides Information")
     public ResponseEntity<String> info() {
         return new ResponseEntity<>(projectVersion, HttpStatus.OK);
     }
 
     @PostMapping(value = ExporterConst.CREATE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Create Query", description = "Creates a new query based on the provided parameters.")
     public ResponseEntity<String> createQuery(@RequestParam(name = ExporterConst.QUERY, required = false) String query, // It can also be in requestTemplate
                                               @RequestParam(name = ExporterConst.QUERY_FORMAT) Format queryFormat,
                                               @RequestParam(name = ExporterConst.QUERY_LABEL) String queryLabel,
@@ -155,12 +161,25 @@ public class ExporterController {
     }
 
     @GetMapping(value = ExporterConst.STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch Query Execution Status", description = "Retrieve the status of a query execution based on the provided ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful retrieval of queries"),
+            @ApiResponse(responseCode = "404", description = "Query not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<String> getQueryExecutionStatus(
+            @Parameter(name = ExporterConst.QUERY_EXECUTION_ID, description = "ID der Abfrageausführung", required = true)
             @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId) {
         return convertToResponseEntity(() -> exporterDbService.getQueryExecutionStatus(queryExecutionId).get());
     }
 
     @GetMapping(value = ExporterConst.FETCH_QUERIES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch Queries", description = "Fetches queries based on the provided parameters.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful retrieval of queries"),
+            @ApiResponse(responseCode = "404", description = "Query not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<String> fetchQueries(
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
@@ -170,20 +189,14 @@ public class ExporterController {
                 convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueries, exporterDbService::fetchAllQueries);
     }
 
-    @GetMapping(value = ExporterConst.FETCH_QUERY_EXECUTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> fetchQueryExecutions(
-            @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
-            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
-            @RequestParam(name = ExporterConst.QUERY_ID, required = false) Long queryId,
-            @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID, required = false) Long queryExecutionId) {
-        return (queryId != null) ?
-                convertToResponseEntity(page, pageSize, () -> exporterDbService.fetchQueryExecutionByQueryId(queryId), (p, s) -> exporterDbService.fetchQueryExecutionByQueryId(queryId, p, s)) :
-                (queryExecutionId != null) ?
-                        convertToResponseEntity(() -> exporterDbService.fetchQueryExecution(queryExecutionId).get()) :
-                        convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutions, exporterDbService::fetchAllQueryExecutions);
-    }
 
     @GetMapping(value = ExporterConst.FETCH_QUERY_EXECUTION_ERRORS, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch Query Execution Errors", description = "Fetches query execution errors based on the provided parameters.")
+    /*@ApiImplicitParams({
+            @ApiImplicitParam(name = ExporterConst.PAGE, value = "Page number for pagination", required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = ExporterConst.PAGE_SIZE, value = "Number of items per page", required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = ExporterConst.QUERY_EXECUTION_ID, value = "ID of the query execution", required = false, dataType = "Long", paramType = "query")
+    })*/
     public ResponseEntity<String> fetchQueryExecutionErrors(
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
@@ -194,9 +207,15 @@ public class ExporterController {
     }
 
     @GetMapping(value = ExporterConst.INQUIRY, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> fetchInquiry(HttpServletRequest httpServletRequest,
-                                               @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
-                                               @RequestParam(name = ExporterConst.QUERY_ID) Long queryId) {
+    @Operation(summary = "Fetch Inquiry", description = "Fetches an inquiry based on the provided query ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully fetched the inquiry"),
+            @ApiResponse(responseCode = "404", description = "Inquiry not found")
+    })
+    public ResponseEntity<String> fetchInquiry(
+            HttpServletRequest httpServletRequest,
+            @RequestHeader(name = ExporterConst.IS_INTERNAL_REQUEST, required = false) Boolean isInternalRequest,
+            @RequestParam(name = ExporterConst.QUERY_ID) Long queryId) {
         try {
             Optional<Inquiry> inquiryOptional = exporterDbService.fetchInquiry(queryId);
             if (inquiryOptional.isPresent()) {
@@ -216,8 +235,15 @@ public class ExporterController {
         }
     }
 
+
     @PutMapping(value = ExporterConst.ARCHIVE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Archive Query", description = "Archives a query based on the provided query ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully archived the query"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<String> archiveQuery(
+            @Parameter(name = ExporterConst.QUERY_ID, description = "ID of the query to be archived", required = true)
             @RequestParam(name = ExporterConst.QUERY_ID) Long queryId) {
         try {
             exporterDbService.archiveQuery(queryId);
@@ -227,29 +253,54 @@ public class ExporterController {
         }
     }
 
+
     @GetMapping(value = ExporterConst.ACTIVE_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch Active Inquiries", description = "Fetches active inquiries based on the provided parameters.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully fetched active inquiries"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<String> fetchActiveInquiries(
+            @Parameter(name = ExporterConst.PAGE, description = "Page number for pagination", required = false)
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+            @Parameter(name = ExporterConst.PAGE_SIZE, description = "Number of items per page", required = false)
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
         return convertToResponseEntity(page, pageSize, exporterDbService::fetchActiveInquiries,
                 exporterDbService::fetchActiveInquiries);
     }
 
+
     @GetMapping(value = ExporterConst.ARCHIVED_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch Archived Inquiries", description = "Fetches archived inquiries based on the provided parameters.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully fetched archived inquiries"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<String> fetchArchivedInquiries(
+            @Parameter(name = ExporterConst.PAGE, description = "Page number for pagination", required = false)
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+            @Parameter(name = ExporterConst.PAGE_SIZE, description = "Number of items per page", required = false)
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
+        // Method implementation
         return convertToResponseEntity(page, pageSize, exporterDbService::fetchArchivedInquiries,
                 exporterDbService::fetchArchivedInquiries);
     }
 
     @GetMapping(value = ExporterConst.ERROR_INQUIRIES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch Error Inquiries", description = "Fetches error inquiries based on the provided parameters.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully fetched error inquiries"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<String> fetchErrorInquiries(
+            @Parameter(name = ExporterConst.PAGE, description = "Page number for pagination", required = false)
             @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+            @Parameter(name = ExporterConst.PAGE_SIZE, description = "Number of items per page", required = false)
             @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize) {
         return convertToResponseEntity(page, pageSize, exporterDbService::fetchErrorInquiries,
                 exporterDbService::fetchErrorInquiries);
     }
+
 
     private ResponseEntity createInternalServerError(Exception e) {
         return ResponseEntity.internalServerError().body(ExceptionUtils.getStackTrace(e));
@@ -292,6 +343,12 @@ public class ExporterController {
     }
 
     @PostMapping(value = ExporterConst.REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Post Request", description = "Processes and handles the export request based on the provided parameters.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully processed export request"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<String> postRequest(HttpServletRequest httpServletRequest,
                                               @RequestParam(name = ExporterConst.QUERY_ID, required = false) Long queryId,
                                               @RequestParam(name = ExporterConst.QUERY, required = false) String query,
@@ -430,6 +487,14 @@ public class ExporterController {
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"}, exposedHeaders = {
             "Content-Disposition"})
     @GetMapping(value = ExporterConst.RESPONSE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @Operation(summary = "Get Response", description = "Gets the export response based on the provided parameters.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "202", description = "Accepted - Query execution in progress"),
+            @ApiResponse(responseCode = "500", description = "Internal server error"),
+            @ApiResponse(responseCode = "200", description = "OK - Successfully processed export request"),
+            @ApiResponse(responseCode = "500", description = "Internal server error"),
+            @ApiResponse(responseCode = "404", description = "Not Found - Query execution not found")
+    })
     public ResponseEntity<InputStreamResource> getResponse(
             @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID) Long queryExecutionId,
             @RequestParam(name = ExporterConst.FILE_FILTER, required = false) String fileFilter,
@@ -605,21 +670,37 @@ public class ExporterController {
     }
 
     @GetMapping(value = ExporterConst.LOGS)
+    @Operation(summary = "Fetch Logs", description = "Fetches log entries based on the provided parameters.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK - Successfully fetched logs")
+    })
     public ResponseEntity<String[]> fetchLogs(
+            @Parameter(name = ExporterConst.LOGS_SIZE, description = "Number of log entries to fetch", required = true)
             @RequestParam(name = ExporterConst.LOGS_SIZE) int logsSize,
+            @Parameter(name = ExporterConst.LOGS_LAST_LINE, description = "Last log entry identifier (optional)", required = false)
             @RequestParam(name = ExporterConst.LOGS_LAST_LINE, required = false) String logsLastLine) {
         return ResponseEntity.ok().body(BufferedLoggerFactory.getLastLoggerLines(logsSize, logsLastLine));
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.TEMPLATE_IDS)
+    @Operation(summary = "Fetch Template IDs", description = "Fetches available template IDs.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK - Successfully fetched the template"),
+    })
     public ResponseEntity<String[]> fetchTemplateIds() {
         return ResponseEntity.ok().body(converterTemplateManager.getConverterTemplateIds().toArray(new String[0]));
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.TEMPLATE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @Operation(summary = "Fetch Template", description = "Fetches a template based on the provided template ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK - Successfully fetched the template"),
+            @ApiResponse(responseCode = "404", description = "Not Found - Template not found")
+    })
     public ResponseEntity<InputStreamResource> fetchTemplate(
+            @Parameter(name = ExporterConst.TEMPLATE_ID, description = "ID of the template to be fetched", required = true)
             @RequestParam(name = ExporterConst.TEMPLATE_ID) String templateId
     ) throws FileNotFoundException {
         Optional<Path> templatePath = converterTemplateManager.getTemplatePath(templateId);
@@ -637,21 +718,39 @@ public class ExporterController {
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.INPUT_FORMATS)
+    @Operation(summary = "Fetch Input Formats", description = "Fetches available input formats.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK - Successfully fetched input formats")
+    })
     public ResponseEntity<String[]> fetchInputFormats() {
         return ResponseEntity.ok().body(Format.fetchQueries());
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.OUTPUT_FORMATS)
+    @Operation(summary = "Fetch Output Formats", description = "Fetches available output formats.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK - Successfully fetched output formats")
+    })
     public ResponseEntity<String[]> fetchOutputFormats() {
         return ResponseEntity.ok().body(Format.fetchOutputs());
     }
 
     @CrossOrigin(origins = "${CROSS_ORIGINS}", allowedHeaders = {"Authorization"})
     @GetMapping(value = ExporterConst.TEMPLATE_GRAPH)
+    @Operation(summary = "Fetch Template Graph", description = "Fetches the template graph based on the provided parameters."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK - Successfully fetched the template graph"),
+            @ApiResponse(responseCode = "400", description = "Bad Request - template-id or query-execution-id are missing"),
+            @ApiResponse(responseCode = "404", description = "Not Found - Template or query execution not found")
+    })
     public ResponseEntity<String> fetchOutputFormats(
+            @Parameter(name = ExporterConst.TEMPLATE_ID, description = "ID of the template to fetch the graph for", required = false)
             @RequestParam(name = ExporterConst.TEMPLATE_ID, required = false) String templateId,
+            @Parameter(name = ExporterConst.QUERY_EXECUTION_ID, description = "ID of the query execution to fetch the template graph for", required = false)
             @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID, required = false) Long queryExecutionId,
+            @Parameter(name = ExporterConst.OUTPUT_FORMAT, description = "Output format for the template graph", required = false)
             @RequestParam(name = ExporterConst.OUTPUT_FORMAT, required = false, defaultValue = ExporterConst.DEFAULT_GRAPH_FORMAT) Format outputFormat
     ) {
         if (queryExecutionId != null) {
@@ -670,17 +769,33 @@ public class ExporterController {
     }
 
     @GetMapping(value = ExporterConst.RUNNING_QUERIES)
+    @Operation(summary = "Fetch Running Exports", description = "Fetches information about running query executions.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK - Successfully fetched running exports")
+    })
     public ResponseEntity<String> fetchRunningExports() {
         return convertToResponseEntity(exporterDbService::fetchRunningQueryExecutions);
     }
 
     @PostMapping(value = ExporterConst.UPDATE_QUERY, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> updateQuery(@RequestParam(name = ExporterConst.QUERY_ID) Long queryId,
-                                              @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
-                                              @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
-                                              @RequestParam(name = ExporterConst.QUERY_DEFAULT_TEMPLATE_ID, required = false) String defaultTemplateId,
-                                              @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
-                                              @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
+    @Operation(summary = "Update Query", description = "Updates an existing query based on the provided parameters.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK - Successfully updated the query"),
+            @ApiResponse(responseCode = "404", description = "Not Found - Query not found")
+    })
+    public ResponseEntity<String> updateQuery(
+            @Parameter(name = ExporterConst.QUERY_ID, description = "ID of the query to be updated", required = true)
+            @RequestParam(name = ExporterConst.QUERY_ID) Long queryId,
+            @Parameter(name = ExporterConst.QUERY_LABEL, description = "New label for the query", required = false)
+            @RequestParam(name = ExporterConst.QUERY_LABEL, required = false) String queryLabel,
+            @Parameter(name = ExporterConst.QUERY_DESCRIPTION, description = "New description for the query", required = false)
+            @RequestParam(name = ExporterConst.QUERY_DESCRIPTION, required = false) String queryDescription,
+            @Parameter(name = ExporterConst.QUERY_DEFAULT_TEMPLATE_ID, description = "New default template ID for the query", required = false)
+            @RequestParam(name = ExporterConst.QUERY_DEFAULT_TEMPLATE_ID, required = false) String defaultTemplateId,
+            @Parameter(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, description = "New default output format for the query", required = false)
+            @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
+            @Parameter(name = ExporterConst.QUERY_EXPIRATION_DATE, description = "New expiration date for the query", required = false)
+            @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
         Optional<Query> optionalQuery = exporterDbService.fetchQuery(queryId);
         if (optionalQuery.isEmpty()) {
             return ResponseEntity.notFound().build();

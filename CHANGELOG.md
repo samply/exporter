@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Query in body for CREATE_QUERY
 - ConverterGraph
 - Export to Opal only after all files are sent
+- Swagger
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
