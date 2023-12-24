@@ -9,6 +9,7 @@ import de.samply.db.model.Query;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateManager;
 import de.samply.template.token.TokenContext;
+import de.samply.utils.Base64Utils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -145,7 +146,7 @@ public class ExporterCore {
     public ConverterTemplate fetchConverterTemplate(String template, String contentType)
             throws IOException {
         return ((contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ? new XmlMapper() : new ObjectMapper())
-                .readValue(template, ConverterTemplate.class);
+                .readValue(Base64Utils.decodeIfNecessary(template), ConverterTemplate.class);
     }
 
     private Converter checkParametersAndFetchConverter(ExporterParameters exporterParameters,

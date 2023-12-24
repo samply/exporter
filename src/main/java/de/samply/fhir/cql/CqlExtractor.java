@@ -16,19 +16,11 @@ public class CqlExtractor {
 
 
     public static CqlQuery extract(String encodedCqlQuery, ConverterTemplate template) throws CqlExtractorException {
-        String decodedCqlQuery = decodeCqlQueryIfNecessary(encodedCqlQuery);
+        String decodedCqlQuery = Base64Utils.decodeIfNecessary(encodedCqlQuery);
         logger.info("Extracting query: " + decodedCqlQuery);
         CqlQuery cqlQuery = parse(decodedCqlQuery);
         LibraryContentDataEditor.edit(cqlQuery.library(), template);
         return cqlQuery;
-    }
-
-    private static String decodeCqlQueryIfNecessary(String encodedCqlQuery) {
-        try {
-            return Base64Utils.decode(encodedCqlQuery);
-        } catch (IllegalArgumentException e) {
-            return encodedCqlQuery;
-        }
     }
 
     private static CqlQuery parse(String cqlQuery) throws CqlExtractorException {
