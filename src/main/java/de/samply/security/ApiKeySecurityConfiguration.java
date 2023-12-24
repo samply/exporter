@@ -43,7 +43,7 @@ public class ApiKeySecurityConfiguration {
         httpSecurity
                 .cors(Customizer.withDefaults())
                 .securityMatcher(ExporterConst.REST_PATHS_WITH_API_KEY)
-                .csrf(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
                         httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilter(createApiKeyFilter())
