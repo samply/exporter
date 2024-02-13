@@ -171,6 +171,18 @@ public class ExporterController {
                 convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueries, exporterDbService::fetchAllQueries);
     }
 
+    @GetMapping(value = ExporterConst.FETCH_QUERY_EXECUTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchQueryExecutions(
+            @RequestParam(name = ExporterConst.PAGE, required = false) Integer page,
+            @RequestParam(name = ExporterConst.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = ExporterConst.QUERY_ID, required = false) Long queryId,
+            @RequestParam(name = ExporterConst.QUERY_EXECUTION_ID, required = false) Long queryExecutionId) {
+        return (queryId != null) ?
+                convertToResponseEntity(page, pageSize, () -> exporterDbService.fetchQueryExecutionByQueryId(queryId), (p, s) -> exporterDbService.fetchQueryExecutionByQueryId(queryId, p, s)) :
+                (queryExecutionId != null) ?
+                        convertToResponseEntity(() -> exporterDbService.fetchQueryExecution(queryExecutionId).get()) :
+                        convertToResponseEntity(page, pageSize, exporterDbService::fetchAllQueryExecutions, exporterDbService::fetchAllQueryExecutions);
+    }
 
     @GetMapping(value = ExporterConst.FETCH_QUERY_EXECUTION_ERRORS, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Fetch Query Execution Errors", description = "Fetches query execution errors based on the provided parameters.")
