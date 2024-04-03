@@ -61,8 +61,8 @@ public class ParametersBuilder {
         query.setContactId(fetchValue(ExporterConst.QUERY_CONTACT_ID));
         query.setExpirationDate(fetchValue(ExporterConst.QUERY_EXPIRATION_DATE,LocalDate.class));
         query.setCreatedAt(Instant.now());
-        query.setDefaultTemplateId(fetchValue(ExporterConst.TEMPLATE_ID));
-        query.setDefaultOutputFormat(fetchValue(ExporterConst.OUTPUT_FORMAT, Format.class));
+        query.setDefaultTemplateId(fetchValue(ExporterConst.QUERY_DEFAULT_TEMPLATE_ID));
+        query.setDefaultOutputFormat(fetchValue(ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, Format.class));
         query.setContext(fetchValue(ExporterConst.QUERY_CONTEXT));
 
         return query;
