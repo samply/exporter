@@ -42,7 +42,19 @@ public class ContainerCsvWriterIterable extends ContainerFileWriterIterable {
 
   private String fetchAttributeValue(Container container, ConverterTemplate converterTemplate, AttributeTemplate attributeTemplate){
     String attributeValue = container.getAttributeValue(attributeTemplate);
-    return (attributeValue == null) ? "" : attributeValue.replace(converterTemplate.getCsvSeparator(), csvSeparatorReplacement);
+    return (attributeValue == null) ? "" : replaceEndOfLines(attributeValue);
+  }
+
+  private String replaceEndOfLines(String value){
+    if (value != null){
+      value = value.replaceAll(converterTemplate.getCsvSeparator(), csvSeparatorReplacement);
+      value = value.replaceAll("\r\n", "");
+      value = value.replaceAll("\n", "");
+      value = value.replaceAll("\r", "");
+      value = value.replaceAll("\u2028", "");
+      value = value.replaceAll("\u2029", "");
+    }
+    return value;
   }
 
 }

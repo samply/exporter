@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2024-04-03]
+## [1.1.0 - 2024-04-11]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -165,3 +165,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Recognize internal network requests
 - Avoid null resources
 - Default template id and default output format in create query
+- Remove end of lines of attribute values of source
