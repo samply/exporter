@@ -778,6 +778,7 @@ public class ExporterController {
             @ApiResponse(responseCode = "404", description = "Not Found - Query not found")
     })
     public ResponseEntity<String> updateQuery(
+            HttpServletRequest httpServletRequest,
             @Parameter(name = ExporterConst.QUERY_ID, description = "ID of the query to be updated", required = true)
             @RequestParam(name = ExporterConst.QUERY_ID) Long queryId,
             @Parameter(name = ExporterConst.QUERY_LABEL, description = "New label for the query", required = false)
@@ -789,25 +790,31 @@ public class ExporterController {
             @Parameter(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, description = "New default output format for the query", required = false)
             @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
             @Parameter(name = ExporterConst.QUERY_EXPIRATION_DATE, description = "New expiration date for the query", required = false)
-            @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) {
+            @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) throws NoSuchMethodException, RequestMapperException {
         Optional<Query> optionalQuery = exporterDbService.fetchQuery(queryId);
         if (optionalQuery.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        Map<String, String> requestParameters = RequestMapper.fetchKeyValues(httpServletRequest, fetchCallingMethod());
+        Query tempQuery = new ParametersBuilder(requestParameters).buildQuery();
         Query query = optionalQuery.get();
-        Map<Object, Runnable> updaters = new HashMap<>();
-        updaters.put(queryLabel, () -> query.setLabel(queryLabel));
-        updaters.put(queryDescription, () -> query.setDescription(queryDescription));
-        updaters.put(defaultTemplateId, () -> query.setDefaultTemplateId(defaultTemplateId));
-        updaters.put(defaultOutputFormat, () -> query.setDefaultOutputFormat(defaultOutputFormat));
-        updaters.put(queryExpirationDate, () -> query.setExpirationDate(queryExpirationDate));
-        updaters.keySet().forEach(key -> {
-            if (key != null) {
-                updaters.get(key).run();
-            }
-        });
+        mergeQueries(query, tempQuery);
         exporterDbService.saveQueryAndGetQueryId(query);
         return ResponseEntity.ok().build();
+    }
+
+    private void mergeQueries(Query originalQuery, Query queryWithChanges) {
+        Arrays.stream(Query.class.getDeclaredFields()).forEach(field -> {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(queryWithChanges);
+                if (value != null) {
+                    field.set(originalQuery, value);
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /**

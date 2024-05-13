@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2024-04-11]
+## [1.1.0 - 2024-05-13]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Export to Opal only after all files are sent
 - Swagger
 - Decode if necessary for template and cql query
+- Update query gets data also from body
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
