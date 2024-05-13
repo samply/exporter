@@ -42,7 +42,7 @@ class FhirSearchQueryToBundleConverterTest {
         EnvironmentUtils environmentUtils = new EnvironmentUtils(
                 EnvironmentTestUtils.getEmptyMockEnvironment());
         ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(
-                ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
+                ExporterConst.DEFAULT_TIMESTAMP_FORMAT, ExporterConst.DEFAULT_SITE, environmentUtils);
         this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
                 outputDirectory, " ");
         this.containersToCsvConverterSession = new Session(converterTemplateUtils, outputDirectory, tokenContext);

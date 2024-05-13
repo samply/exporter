@@ -30,7 +30,7 @@ class ConverterTemplateUtilsTest {
         Map<String, Object> properties = generateProperties();
         ConfigurableEnvironment environment = EnvironmentTestUtils.getMockEnvironment(properties);
         EnvironmentUtils environmentUtils = new EnvironmentUtils(environment);
-        this.converterTemplateUtils = new ConverterTemplateUtils(ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
+        this.converterTemplateUtils = new ConverterTemplateUtils(ExporterConst.DEFAULT_TIMESTAMP_FORMAT, ExporterConst.DEFAULT_SITE, environmentUtils);
     }
 
     private Map<String, Object> generateProperties() {
