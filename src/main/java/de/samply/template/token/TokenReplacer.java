@@ -18,12 +18,14 @@ public class TokenReplacer {
     private int headIndex;
     private int endIndex;
     private TokenContext tokenContext;
+    private String site;
 
     public TokenReplacer(ContainerToken containerToken,
-                         String timestampFormat, TokenContext tokenContext, String text) {
+                         String timestampFormat, String site, TokenContext tokenContext, String text) {
         this(tokenContext, text);
         this.containerToken = containerToken;
         this.timestampFormat = timestampFormat;
+        this.site = site;
         this.headIndex = text.indexOf(ExporterConst.TOKEN_HEAD + containerToken.name());
         this.endIndex = headIndex + text.substring(headIndex).indexOf(ExporterConst.TOKEN_END);
     }
@@ -49,6 +51,7 @@ public class TokenReplacer {
         if (containerToken != null) {
             return switch (containerToken) {
                 case TIMESTAMP -> getTimestamp(extension);
+                case SITE -> site;
             };
         }
         // Replace variable from keyValues

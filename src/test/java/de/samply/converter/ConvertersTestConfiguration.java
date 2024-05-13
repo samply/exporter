@@ -30,7 +30,7 @@ public class ConvertersTestConfiguration {
         this.bundleToContainersConverter = new BundleToContainersConverter(
                 fhirPackagesDirectory, false);
         ConverterTemplateUtils converterTemplateUtils = new ConverterTemplateUtils(
-                ExporterConst.DEFAULT_TIMESTAMP_FORMAT, environmentUtils);
+                ExporterConst.DEFAULT_TIMESTAMP_FORMAT, ExporterConst.DEFAULT_SITE, environmentUtils);
         this.containersToCsvConverter = new ContainersToCsvConverter(converterTemplateUtils,
                 OUTPUT_DIRECTORY, " ");
         this.containersToExcelConverter = new ContainersToExcelConverter(converterTemplateUtils, 30000000

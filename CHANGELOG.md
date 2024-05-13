@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Swagger
 - Decode if necessary for template and cql query
 - Update query gets data also from body
+- Environment variable SITE for templates
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

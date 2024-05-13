@@ -12,6 +12,7 @@ public class ExporterConst {
     public final static String TOKEN_END = "}";
     public final static String TOKEN_EXTENSION_DELIMITER = ":";
     public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyyMMdd-HH_mm_ss";
+    public final static String DEFAULT_SITE = "local";
     public final static String RELATED_FHIR_PATH_DELIMITER = ",";
 
     // Blaze Store Constants
@@ -96,6 +97,7 @@ public class ExporterConst {
     public final static String MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET = "MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET";
     public final static String XML_FILE_MERGER_ROOT_ELEMENT = "XML_FILE_MERGER_ROOT_ELEMENT";
     public final static String CSV_SEPARATOR_REPLACEMENT = "CSV_SEPARATOR_REPLACEMENT";
+    public final static String SITE = "SITE";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -145,6 +147,7 @@ public class ExporterConst {
             HEAD_SV + XML_FILE_MERGER_ROOT_ELEMENT + ":Containers" + BOTTOM_SV;
     public final static String CSV_SEPARATOR_REPLACEMENT_SV =
             HEAD_SV + CSV_SEPARATOR_REPLACEMENT + ": " + BOTTOM_SV;
+    public final static String SITE_SV = HEAD_SV + SITE + ":" + DEFAULT_SITE + BOTTOM_SV;
 
 
     // REST Paths

@@ -4,7 +4,6 @@ import de.samply.exporter.ExporterConst;
 import de.samply.template.token.TokenContext;
 import de.samply.template.token.TokenReplacer;
 import de.samply.utils.EnvironmentUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,14 +13,17 @@ import java.util.concurrent.atomic.AtomicReference;
 @Component
 public class ConverterTemplateUtils {
 
-    private EnvironmentUtils environmentUtils;
-    private String timestampFormat;
+    private final EnvironmentUtils environmentUtils;
+    private final String timestampFormat;
+    private final String site;
 
     public ConverterTemplateUtils(
             @Value(ExporterConst.TIMESTAMP_FORMAT_SV) String timestampFormat,
-            @Autowired EnvironmentUtils environmentUtils) {
+            @Value(ExporterConst.SITE_SV) String site,
+            EnvironmentUtils environmentUtils) {
         this.timestampFormat = timestampFormat;
         this.environmentUtils = environmentUtils;
+        this.site = site;
     }
 
     public String replaceTokens(String originalText) {
@@ -35,7 +37,8 @@ public class ConverterTemplateUtils {
             // Replace predefined tokens
             Arrays.stream(ContainerToken.values()).forEach(containerToken -> {
                 if (textReference.get().contains(containerToken.name())) {
-                    textReference.set(new TokenReplacer(containerToken, timestampFormat, tokenContext, textReference.get()).getTokenReplacer());
+                    textReference.set(
+                            new TokenReplacer(containerToken, timestampFormat, site, tokenContext, textReference.get()).getTokenReplacer());
                 }
             });
             // If is not a predefined token, replace through environment variable.
