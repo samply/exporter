@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2024-05-23]
+## [1.1.0 - 2024-07-01]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - query-execution-contact-id to query-execution
 - github build configuration
 - Java 21
+- Zip filename with SITE and TIMESTAMP
 
 ### Removed
 - Remove retrieve-query

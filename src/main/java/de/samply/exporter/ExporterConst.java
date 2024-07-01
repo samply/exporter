@@ -116,7 +116,7 @@ public class ExporterConst {
                     + BOTTOM_SV;
     public final static String EXPORTER_API_KEY_SV = HEAD_SV + EXPORTER_API_KEY + BOTTOM_SV;
     public final static String ZIP_FILENAME_SV =
-            HEAD_SV + ZIP_FILENAME + ":#{'exporter-files-${TIMESTAMP}.zip'}" + BOTTOM_SV;
+            HEAD_SV + ZIP_FILENAME + ":#{'exporter-files-${SITE}-${TIMESTAMP}.zip'}" + BOTTOM_SV;
     public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION_SV =
             HEAD_SV + CLEAN_TEMP_FILES_CRON_EXPRESSION + ":#{'0 0 1 * * *'}" + BOTTOM_SV;
     public final static String TEMP_FILES_LIFETIME_IN_DAYS_SV =
