@@ -42,6 +42,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Environment variable SITE for templates
 - Log FhirClientConnectionException
 - Check null in Decoder
+- Detect attribute dependencies in containers
+- Container Attributes Comparator (for FHIR)
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
@@ -56,6 +58,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Java 21
 - Zip filename with SITE and TIMESTAMP
 - Refactoring Dockerfile
+
 
 ### Removed
 - Remove retrieve-query

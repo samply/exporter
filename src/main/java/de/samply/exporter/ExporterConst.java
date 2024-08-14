@@ -252,5 +252,6 @@ public class ExporterConst {
     public final static String ERROR_MESSAGE_INTERRUPTED_QUERY_EXECUTION = "Query execution interrupted abruptly";
     public final static String QUERY_CONTEXT_SEPARATOR = ";";
     public final static String QUERY_CONTEXT_EQUAL = "=";
+    public final static String FHIR_SEARCH_PATH_ROOT = "ROOT";
 
 }
