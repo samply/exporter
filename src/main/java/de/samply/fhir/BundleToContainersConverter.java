@@ -141,7 +141,7 @@ public class BundleToContainersConverter extends
             } else if (isToBeEvaluated(evalResource, idResource, attributeTemplate)) {
                 fhirPathEngine.evaluate(evalResource, expressionNode)
                         .forEach(base -> resourceAttributes.add(
-                                new ResourceAttribute(idResource,
+                                new ResourceAttribute(idResource, evalResource,
                                         fetchAttributeValue(evalResource, attributeTemplate, base, context),
                                         containerTemplate, attributeTemplate)));
             }
@@ -201,7 +201,7 @@ public class BundleToContainersConverter extends
         containers.addAttribute(resourceAttribute.containerTemplate(),
                 resourceAttribute.fetchContainerId(),
                 new Attribute(resourceAttribute.attributeTemplate(),
-                        fetchResourceAttributeValue(resourceAttribute, context)));
+                        fetchResourceAttributeValue(resourceAttribute, context), resourceAttribute.idResource(), resourceAttribute.valueResource()));
     }
 
     private String fetchResourceAttributeValue(ResourceAttribute resourceAttribute,
