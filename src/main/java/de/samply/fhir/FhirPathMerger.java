@@ -136,7 +136,6 @@ public class FhirPathMerger {
     }
 
     private static String mergeWithoutCache(String mainFhirPath, String secondaryFhirPath, String value) {
-        String cacheKey = mainFhirPath + "|" + secondaryFhirPath;
 
         List<String> mainPathComponents = parseFhirPath(mainFhirPath);
         List<String> secondaryPathComponents = parseFhirPath(secondaryFhirPath);
@@ -158,13 +157,18 @@ public class FhirPathMerger {
         }
 
         // Generate a new token and cache the result
+        cacheMainAndSecondaryPathsAndResult(mainFhirPath, secondaryFhirPath, result);
+
+        // Return the result with the actual value
+        return result.replace("PLACEHOLDER", "'" + value + "'");
+    }
+
+    private static void cacheMainAndSecondaryPathsAndResult(String mainFhirPath, String secondaryFhirPath, String result) {
+        String cacheKey = mainFhirPath + "|" + secondaryFhirPath;
         int tokenNumber = tokenCounterMap.getOrDefault(cacheKey, 1); // Start at 1 if not present
         String token = "TOKEN" + tokenNumber;
         cache.put(cacheKey, result.replace("PLACEHOLDER", token));
         tokenCounterMap.put(cacheKey, tokenNumber + 1); // Increment the counter for this path
-
-        // Return the result with the actual value
-        return result.replace("PLACEHOLDER", "'" + value + "'");
     }
 
     private static int findFirstDifferentIndex(List<String> mainPathComponents, List<String> secondaryPathComponents) {
@@ -292,6 +296,7 @@ public class FhirPathMerger {
         String cachedPattern = cachedKeyParts[1];
 
         // Check if the cached pattern matches the current key
+        // Match the current cache key pattern against stored patterns with placeholders (TOKEN) using regular expressions.
         return Pattern.compile(Pattern.quote(cachedPattern).replace("TOKEN", "\\E.*?\\Q")).matcher(pathPart).matches();
     }
 
