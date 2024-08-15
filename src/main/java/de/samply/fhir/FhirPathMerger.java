@@ -37,21 +37,20 @@ public class FhirPathMerger {
      * Value: XXX
      * Result of merge: Procedure.where(category.coding.code = 'OP').outcome.where(coding.where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/GesamtbeurteilungResidualstatusCS').code.value = 'XXX').coding.where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code.value
      * Here, we add after the previous element of the previous element of the where, another where.
-     *
-     *
+     * <p>
+     * <p>
      * Cache Structure:
-     *
+     * <p>
      * We will use two maps:
      * Map<String, String> cache: This will store the concatenated FHIR path pair as the key and the corresponding tokenized result as the value.
      * Map<String, Integer> tokenCounterMap: This will store the concatenated FHIR path pair as the key and the counter for generating unique tokens for that specific key.
      * Token Generation:
-     *
+     * <p>
      * For each new FHIR path pair, generate a new token using the counter stored in tokenCounterMap.
      * Cache Insertion:
-     *
+     * <p>
      * Insert the merged result into the cache using the FHIR path pair as the key.
      * Increment the token counter for that specific FHIR path pair.
-     *
      *
      * @param fhirPath
      * @param newFhirPath
@@ -137,7 +136,6 @@ public class FhirPathMerger {
     }
 
     private static String mergeWithoutCache(String mainFhirPath, String secondaryFhirPath, String value) {
-        // Correctly define cacheKey here
         String cacheKey = mainFhirPath + "|" + secondaryFhirPath;
 
         List<String> mainPathComponents = parseFhirPath(mainFhirPath);
@@ -236,18 +234,28 @@ public class FhirPathMerger {
     private static String handleScenario3(List<String> mainPathComponents, List<String> secondaryPathComponents, int firstDifferentIndex, String placeholder) {
         StringBuilder mergedPath = new StringBuilder();
 
-        for (int i = 0; i < firstDifferentIndex; i++) {
+        // Add all components up to the point of divergence (exclusive)
+        for (int i = 0; i < firstDifferentIndex - 1; i++) { // -1 to stop before the last common element (e.g., coding)
             mergedPath.append(mainPathComponents.get(i)).append(".");
         }
 
-        mergedPath.append("where(")
-                .append(mainPathComponents.get(firstDifferentIndex - 1)).append(".")
-                .append(secondaryPathComponents.get(firstDifferentIndex))
+        // Determine if we should append 'and' or 'where'
+        // Check if the last common element before the split is a 'where' clause
+        if (firstDifferentIndex > 1 && mainPathComponents.get(firstDifferentIndex - 2).startsWith("where")) {
+            mergedPath.append("and(");
+        } else {
+            mergedPath.append("where(");
+        }
+
+        // Add the where clause from the secondary path starting from the last common element (e.g., coding)
+        mergedPath.append(mainPathComponents.get(firstDifferentIndex - 1)).append(".") // Add the last common element (e.g., coding)
+                .append(secondaryPathComponents.get(firstDifferentIndex)) // Insert secondary path's specific component (e.g., comparator)
                 .append(" = ")
                 .append(placeholder)
                 .append(").");
 
-        for (int i = firstDifferentIndex; i < mainPathComponents.size(); i++) {
+        // Continue with the rest of the main path components
+        for (int i = firstDifferentIndex - 1; i < mainPathComponents.size(); i++) {
             mergedPath.append(mainPathComponents.get(i));
             if (i < mainPathComponents.size() - 1) {
                 mergedPath.append(".");
