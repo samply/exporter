@@ -6,10 +6,14 @@ import java.util.regex.Pattern;
 
 public class FhirPathMerger {
 
+
+    private static final Map<String, String> cache = new HashMap<>();
+    private static final Map<String, Integer> tokenCounterMap = new HashMap<>();
+
     /**
      * First of all, it parses the fhir path, so that it gives back a List<String> where every element of the list is each element of the path (parts separated by '.'). The '.' within '(' and ')' must be ignored.
      * <p>
-     * Next step: It compares both List<String>. In this comparisson, the first element of both List<String> is ignored. Element after element is compared until it finds an element that is different. Here we have three scenarios:
+     * Next step: It compares both List<String>. In this comparison, the first element of both List<String> is ignored. Element after element is compared until it finds an element that is different. Here we have three scenarios:
      * <p>
      * Scenario 1.:
      * The different element is not a "where(..." and there is not a "where(...)" preceding that element:
@@ -28,7 +32,7 @@ public class FhirPathMerger {
      * Main fhir path:      Procedure.where(category.coding.code = 'OP').outcome.coding.where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code.value
      * Secondary fhir path: Procedure.where(category.coding.code = 'OP').outcome.coding.where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code2.value
      * Value: XXX
-     * Result of merge: Procedure.where(category.coding.code = 'OP').outcome.coding.where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').and(metaelement.value = 'XXX).code.value
+     * Result of merge: Procedure.where(category.coding.code = 'OP').outcome.coding.where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS' and metaelement.value = 'XXX).code.value
      * <p>
      * Scenario 3:
      * The different element is a "where(...)
@@ -52,20 +56,29 @@ public class FhirPathMerger {
      * Insert the merged result into the cache using the FHIR path pair as the key.
      * Increment the token counter for that specific FHIR path pair.
      *
-     * @param fhirPath
+     * @param mainFhirPath
      * @param newFhirPath
      * @param valueAssociatedToNewFhirPath
      * @return
      */
+    public static String merge(String mainFhirPath, String newFhirPath, String valueAssociatedToNewFhirPath) {
+        String cacheKey = mainFhirPath + "|" + newFhirPath;
 
-    public static String merge(String fhirPath, String newFhirPath, String valueAssociatedToNewFhirPath) {
-        //TODO
-        return fhirPath;
+        // Check if the merge result is already cached
+        String cachedResult = cache.get(cacheKey);
+        if (cachedResult != null) {
+            // Replace the token with the actual value and return the result
+            return replaceTokenWithValue(cachedResult, valueAssociatedToNewFhirPath);
+        } else {
+            // Handle cache miss and try to find a matching pattern in the cache
+            Optional<String> resultOptional = handleCacheMiss(mainFhirPath, newFhirPath, valueAssociatedToNewFhirPath);
+            if (resultOptional.isPresent()) {
+                return resultOptional.get();
+            }
+            // If no matching pattern is found, perform the merge normally
+            return mergeWithoutCache(mainFhirPath, newFhirPath, valueAssociatedToNewFhirPath);
+        }
     }
-
-
-    private static final Map<String, String> cache = new HashMap<>();
-    private static final Map<String, Integer> tokenCounterMap = new HashMap<>();
 
     public static List<String> parseFhirPath(String fhirPath) {
         List<String> components = new ArrayList<>();
@@ -94,25 +107,6 @@ public class FhirPathMerger {
         }
 
         return components;
-    }
-
-    public static String mergeFhirPaths(String mainFhirPath, String secondaryFhirPath, String value) {
-        String cacheKey = mainFhirPath + "|" + secondaryFhirPath;
-
-        // Check if the merge result is already cached
-        String cachedResult = cache.get(cacheKey);
-        if (cachedResult != null) {
-            // Replace the token with the actual value and return the result
-            return replaceTokenWithValue(cachedResult, value);
-        } else {
-            // Handle cache miss and try to find a matching pattern in the cache
-            Optional<String> resultOptional = handleCacheMiss(mainFhirPath, secondaryFhirPath, value);
-            if (resultOptional.isPresent()) {
-                return resultOptional.get();
-            }
-            // If no matching pattern is found, perform the merge normally
-            return mergeWithoutCache(mainFhirPath, secondaryFhirPath, value);
-        }
     }
 
     private static Optional<String> handleCacheMiss(String mainFhirPath, String secondaryFhirPath, String value) {
@@ -216,7 +210,11 @@ public class FhirPathMerger {
             mergedPath.append(mainPathComponents.get(i)).append(".");
         }
 
-        mergedPath.append("and(");
+        if (mergedPath.length() > 1 && mergedPath.charAt(mergedPath.length() - 2) == ')') {
+            mergedPath.deleteCharAt(mergedPath.length() - 1);
+            mergedPath.deleteCharAt(mergedPath.length() - 1);
+        }
+        mergedPath.append(" and ");
         for (int i = firstDifferentIndex; i < secondaryPathComponents.size(); i++) {
             mergedPath.append(secondaryPathComponents.get(i));
             if (i < secondaryPathComponents.size() - 1) {
@@ -246,7 +244,11 @@ public class FhirPathMerger {
         // Determine if we should append 'and' or 'where'
         // Check if the last common element before the split is a 'where' clause
         if (firstDifferentIndex > 1 && mainPathComponents.get(firstDifferentIndex - 2).startsWith("where")) {
-            mergedPath.append("and(");
+            if (mergedPath.charAt(mergedPath.length() - 2) == ')') { //remove ")."
+                mergedPath.deleteCharAt(mergedPath.length() - 1);
+                mergedPath.deleteCharAt(mergedPath.length() - 1);
+            }
+            mergedPath.append(" and ");
         } else {
             mergedPath.append("where(");
         }
@@ -306,7 +308,7 @@ public class FhirPathMerger {
                 + ".where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code.value";
         String secondaryFhirPath1 = "Procedure.where(category.coding.code = 'OP').outcome.coding"
                 + ".where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code.metaelement.value";
-        String result1 = mergeFhirPaths(mainFhirPath1, secondaryFhirPath1, "XXX");
+        String result1 = merge(mainFhirPath1, secondaryFhirPath1, "XXX");
         System.out.println("Result 1: " + result1);
 
         // Example 2: Test Scenario 2
@@ -314,7 +316,7 @@ public class FhirPathMerger {
                 + ".where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code.value";
         String secondaryFhirPath2 = "Procedure.where(category.coding.code = 'OP').outcome.coding"
                 + ".where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code2.value";
-        String result2 = mergeFhirPaths(mainFhirPath2, secondaryFhirPath2, "XXX");
+        String result2 = merge(mainFhirPath2, secondaryFhirPath2, "XXX");
         System.out.println("Result 2: " + result2);
 
         // Example 3: Test Scenario 3
@@ -322,32 +324,32 @@ public class FhirPathMerger {
                 + ".where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code.value";
         String secondaryFhirPath3 = "Procedure.where(category.coding.code = 'OP').outcome.coding"
                 + ".where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/GesamtbeurteilungResidualstatusCS').code.value";
-        String result3 = mergeFhirPaths(mainFhirPath3, secondaryFhirPath3, "XXX");
+        String result3 = merge(mainFhirPath3, secondaryFhirPath3, "XXX");
         System.out.println("Result 3: " + result3);
 
         // New Test 1: Simple Merge with Cache Check
         String mainFhirPath4 = "Observation.where(code.coding.code = 'BP').valueQuantity.value";
         String secondaryFhirPath4 = "Observation.where(code.coding.code = 'BP').valueQuantity.unit";
-        String result4 = mergeFhirPaths(mainFhirPath4, secondaryFhirPath4, "mmHg");
+        String result4 = merge(mainFhirPath4, secondaryFhirPath4, "mmHg");
         System.out.println("Result 4 (First Merge): " + result4);
 
         // Repeating the same merge to check if cache is used
-        String result4_cached = mergeFhirPaths(mainFhirPath4, secondaryFhirPath4, "mmHg");
+        String result4_cached = merge(mainFhirPath4, secondaryFhirPath4, "mmHg");
         System.out.println("Result 4 (Cached Merge): " + result4_cached);
 
         // New Test 2: Chained Merges with Cache Check
         String mainFhirPath5 = "Observation.where(code.coding.code = 'BP').valueQuantity.value";
         String secondaryFhirPath5 = "Observation.where(code.coding.code = 'BP').valueQuantity.unit";
-        String result5 = mergeFhirPaths(mainFhirPath5, secondaryFhirPath5, "mmHg");
+        String result5 = merge(mainFhirPath5, secondaryFhirPath5, "mmHg");
         System.out.println("Result 5: " + result5);
 
         // Perform another merge with the previous result as part of the next merges
         String secondaryFhirPath6 = "Observation.where(code.coding.code = 'BP').valueQuantity.comparator";
-        String result6 = mergeFhirPaths(result5, secondaryFhirPath6, "<");
+        String result6 = merge(result5, secondaryFhirPath6, "<");
         System.out.println("Result 6 (Chained Merge): " + result6);
 
         // Check cache usage for chained merges
-        String result6_cached = mergeFhirPaths(result5, secondaryFhirPath6, "<");
+        String result6_cached = merge(result5, secondaryFhirPath6, "<");
         System.out.println("Result 6 (Cached Chained Merge): " + result6_cached);
     }
 

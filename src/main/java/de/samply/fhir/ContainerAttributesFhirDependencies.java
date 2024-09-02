@@ -38,14 +38,7 @@ public class ContainerAttributesFhirDependencies {
     }
 
     private static boolean hasCommonPart(List<String> path1, List<String> path2) {
-        for (String part1 : path1) {
-            for (String part2 : path2) {
-                if (part1.equals(part2)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return (path1.size() > 0 && path2.size() > 0 && path1.get(0).equals(path2.get(0)));
     }
 
     /**
