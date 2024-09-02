@@ -164,11 +164,50 @@ public class FhirPathMerger {
     }
 
     private static void cacheMainAndSecondaryPathsAndResult(String mainFhirPath, String secondaryFhirPath, String result) {
+        // In our use case, it is only interesting to cache the main fhir path.
+        Optional<String> patternForFhirPath = findPatternForFhirPath(mainFhirPath);
+        if (patternForFhirPath.isPresent()) {
+            mainFhirPath = patternForFhirPath.get();
+        }
         String cacheKey = mainFhirPath + "|" + secondaryFhirPath;
-        int tokenNumber = tokenCounterMap.getOrDefault(cacheKey, 1); // Start at 1 if not present
+        int minNumberOfOccurrences = countOccurrences(cacheKey, "TOKEN");
+        if (minNumberOfOccurrences == 0) {
+            minNumberOfOccurrences = 1;
+        }
+        int tokenNumber = tokenCounterMap.getOrDefault(cacheKey, minNumberOfOccurrences); // Start at 1 if not present
         String token = "TOKEN" + tokenNumber;
         cache.put(cacheKey, result.replace("PLACEHOLDER", token));
         tokenCounterMap.put(cacheKey, tokenNumber + 1); // Increment the counter for this path
+    }
+
+    public static int countOccurrences(String text, String substring) {
+        Pattern pattern = Pattern.compile(Pattern.quote(substring));
+        Matcher matcher = pattern.matcher(text);
+        int count = 0;
+
+        while (matcher.find()) {
+            count++;
+        }
+
+        return count;
+    }
+
+    private static Optional<String> findPatternForFhirPath(String fhirPath) {
+        for (String pattern : cache.values()) {
+            if (matchesTextWithPattern(fhirPath, pattern)) {
+                return Optional.of(pattern);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static boolean matchesTextWithPattern(String text, String pattern) {
+        // Replace "TOKEN" with regex pattern to match any characters
+        String regexPattern = pattern.replaceAll("TOKEN\\d+", ".*?");
+        // Compile the regex pattern
+        Pattern compiledPattern = Pattern.compile(regexPattern);
+        // Match the text against the compiled pattern
+        return compiledPattern.matcher(text).matches();
     }
 
     private static int findFirstDifferentIndex(List<String> mainPathComponents, List<String> secondaryPathComponents) {
@@ -299,6 +338,8 @@ public class FhirPathMerger {
         // Match the current cache key pattern against stored patterns with placeholders (TOKEN) using regular expressions.
         return Pattern.compile(Pattern.quote(cachedPattern).replace("TOKEN", "\\E.*?\\Q")).matcher(pathPart).matches();
     }
+
+
 
     public static void main(String[] args) {
         // Example 1: Test Scenario 1
