@@ -1,14 +1,14 @@
 package de.samply.fhir;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FhirPathMerger {
 
-
-    private static final Map<String, String> cache = new HashMap<>();
-    private static final Map<String, Integer> tokenCounterMap = new HashMap<>();
 
     /**
      * First of all, it parses the fhir path, so that it gives back a List<String> where every element of the list is each element of the path (parts separated by '.'). The '.' within '(' and ')' must be ignored.
@@ -62,25 +62,67 @@ public class FhirPathMerger {
      * @return
      */
     public static String merge(String mainFhirPath, String newFhirPath, String valueAssociatedToNewFhirPath) {
-        String cacheKey = mainFhirPath + "|" + newFhirPath;
-
-        // Check if the merge result is already cached
-        String cachedResult = cache.get(cacheKey);
-        if (cachedResult != null) {
-            // Replace the token with the actual value and return the result
-            return replaceTokenWithValue(cachedResult, valueAssociatedToNewFhirPath);
-        } else {
-            // Handle cache miss and try to find a matching pattern in the cache
-            Optional<String> resultOptional = handleCacheMiss(mainFhirPath, newFhirPath, valueAssociatedToNewFhirPath);
-            if (resultOptional.isPresent()) {
-                return resultOptional.get();
+        FhirPath mainPath = createFhirPath(mainFhirPath);
+        FhirPath newPath = createFhirPath(newFhirPath);
+        FhirPath mergedPath = new FhirPath();
+        AtomicInteger index = new AtomicInteger(0);
+        AtomicBoolean newPathConditionAlreadySet = new AtomicBoolean(false);
+        mainPath.getElements().forEach(element -> {
+            if (newPath.getElements().size() > index.get() && !newPathConditionAlreadySet.get() && !areEqualNodes(mainPath, newPath, index.get())) {
+                newPath.createConditionForFhirPathAfterIndexElement(index.get(), valueAssociatedToNewFhirPath).ifPresent(condition -> mergedPath.addConditions(Set.of(condition)));
+                newPathConditionAlreadySet.set(true);
             }
-            // If no matching pattern is found, perform the merge normally
-            return mergeWithoutCache(mainFhirPath, newFhirPath, valueAssociatedToNewFhirPath);
+            mergedPath.addElement(element);
+            mainPath.getWhereClauseConditions(index.get()).ifPresent(mergedPath::addConditions);
+            if (!newPathConditionAlreadySet.get()) {
+                // Add also new Path conditions if they are not set
+                newPath.getWhereClauseConditions(index.get()).ifPresent(mergedPath::addConditions);
+            }
+            index.getAndIncrement();
+        });
+        return mergedPath.flatten();
+    }
+
+    private static boolean areEqualNodes(FhirPath mainPath, FhirPath secondaryPath, int index) {
+        if (index < 0 || index >= mainPath.getElements().size() || index >= secondaryPath.getElements().size() ||
+                !mainPath.getElements().get(index).equals(secondaryPath.getElements().get(index))
+        ) {
+            return false;
+        } else {
+            return areCompatibleConditions(mainPath, secondaryPath, index);
         }
     }
 
-    public static List<String> parseFhirPath(String fhirPath) {
+    private static boolean areCompatibleConditions(FhirPath mainPath, FhirPath secondaryPath, int index) {
+        Optional<Set<Condition>> mainPathConditions = mainPath.getWhereClauseConditions(index);
+        Optional<Set<Condition>> secondaryPathConditions = secondaryPath.getWhereClauseConditions(index);
+        return (mainPathConditions.isEmpty() && secondaryPathConditions.isEmpty() || // If there are no conditions
+                mainPathConditions.isPresent() && secondaryPathConditions.isEmpty() || // If only the main has conditions
+                mainPathConditions.isEmpty() && secondaryPathConditions.isPresent() || // If only the secondary has conditions
+                mainPathConditions.isPresent() && secondaryPathConditions.isPresent() &&
+                        areCompatibleConditions(mainPathConditions.get(), secondaryPathConditions.get())
+        );
+    }
+
+    private static boolean areCompatibleConditions(Set<Condition> conditions1, Set<Condition> conditions2) {
+        for (Condition condition1 : conditions1) {
+            for (Condition condition2 : conditions2) {
+                if (condition1.element().equals(condition2.element()) && !condition1.equals(condition2)) {
+                    // TODO: Limitation: We don't consider merging ">".
+                    //  For example, if an element > 1 and element > 2 should be compatible, but it is not our case.
+                    // If a condition has the same element but different operator or value, the conditions are not compatible
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static FhirPath createFhirPath(String fhirPath) {
+        return new FhirPath(parseFhirPath(fhirPath));
+    }
+
+    private static List<String> parseFhirPath(String fhirPath) {
         List<String> components = new ArrayList<>();
         StringBuilder currentComponent = new StringBuilder();
         int parenthesesDepth = 0;
@@ -109,198 +151,6 @@ public class FhirPathMerger {
         return components;
     }
 
-    private static Optional<String> handleCacheMiss(String mainFhirPath, String secondaryFhirPath, String value) {
-        String cacheKey = mainFhirPath + "|" + secondaryFhirPath;
-
-        // Check for pattern matches in the cache
-        for (Map.Entry<String, String> entry : cache.entrySet()) {
-            String cachedKey = entry.getKey();
-            String cachedResult = entry.getValue();
-
-            // Check if the cachedKey matches the pattern of the current key
-            if (matchesPattern(cachedKey, cacheKey)) {
-                // Replace the TOKEN with the value in the cached result
-                String resultWithToken = cachedResult.replace("PLACEHOLDER", "'" + value + "'");
-                return Optional.of(resultWithToken);
-            }
-        }
-
-        // No match found
-        return Optional.empty();
-    }
-
-    private static String mergeWithoutCache(String mainFhirPath, String secondaryFhirPath, String value) {
-
-        List<String> mainPathComponents = parseFhirPath(mainFhirPath);
-        List<String> secondaryPathComponents = parseFhirPath(secondaryFhirPath);
-
-        int firstDifferentIndex = findFirstDifferentIndex(mainPathComponents, secondaryPathComponents);
-
-        if (firstDifferentIndex == -1) {
-            return "Paths are identical or not mergable.";
-        }
-
-        String result;
-
-        if (isWhereClause(mainPathComponents.get(firstDifferentIndex))) {
-            result = handleScenario3(mainPathComponents, secondaryPathComponents, firstDifferentIndex, "PLACEHOLDER");
-        } else if (firstDifferentIndex > 0 && isWhereClause(mainPathComponents.get(firstDifferentIndex - 1))) {
-            result = handleScenario2(mainPathComponents, secondaryPathComponents, firstDifferentIndex, "PLACEHOLDER");
-        } else {
-            result = handleScenario1(mainPathComponents, secondaryPathComponents, firstDifferentIndex, "PLACEHOLDER");
-        }
-
-        // Generate a new token and cache the result
-        cacheMainAndSecondaryPathsAndResult(mainFhirPath, secondaryFhirPath, result);
-
-        // Return the result with the actual value
-        return result.replace("PLACEHOLDER", "'" + value + "'");
-    }
-
-    private static void cacheMainAndSecondaryPathsAndResult(String mainFhirPath, String secondaryFhirPath, String result) {
-        String cacheKey = mainFhirPath + "|" + secondaryFhirPath;
-        int tokenNumber = tokenCounterMap.getOrDefault(cacheKey, 1); // Start at 1 if not present
-        String token = "TOKEN" + tokenNumber;
-        cache.put(cacheKey, result.replace("PLACEHOLDER", token));
-        tokenCounterMap.put(cacheKey, tokenNumber + 1); // Increment the counter for this path
-    }
-
-    private static int findFirstDifferentIndex(List<String> mainPathComponents, List<String> secondaryPathComponents) {
-        int length = Math.min(mainPathComponents.size(), secondaryPathComponents.size());
-        for (int i = 1; i < length; i++) { // Skip the first element
-            if (!mainPathComponents.get(i).equals(secondaryPathComponents.get(i))) {
-                return i;
-            }
-        }
-        return -1; // No different element found
-    }
-
-    private static boolean isWhereClause(String element) {
-        return element.startsWith("where(") && element.endsWith(")");
-    }
-
-    private static String handleScenario1(List<String> mainPathComponents, List<String> secondaryPathComponents, int firstDifferentIndex, String placeholder) {
-        StringBuilder mergedPath = new StringBuilder();
-        for (int i = 0; i < firstDifferentIndex; i++) {
-            mergedPath.append(mainPathComponents.get(i)).append(".");
-        }
-
-        mergedPath.append("where(");
-        for (int i = firstDifferentIndex; i < secondaryPathComponents.size(); i++) {
-            mergedPath.append(secondaryPathComponents.get(i));
-            if (i < secondaryPathComponents.size() - 1) {
-                mergedPath.append(".");
-            }
-        }
-        mergedPath.append(" = ").append(placeholder).append(").");
-
-        for (int i = firstDifferentIndex; i < mainPathComponents.size(); i++) {
-            mergedPath.append(mainPathComponents.get(i));
-            if (i < mainPathComponents.size() - 1) {
-                mergedPath.append(".");
-            }
-        }
-
-        return mergedPath.toString();
-    }
-
-    private static String handleScenario2(List<String> mainPathComponents, List<String> secondaryPathComponents, int firstDifferentIndex, String placeholder) {
-        StringBuilder mergedPath = new StringBuilder();
-        for (int i = 0; i < firstDifferentIndex; i++) {
-            mergedPath.append(mainPathComponents.get(i)).append(".");
-        }
-
-        if (mergedPath.length() > 1 && mergedPath.charAt(mergedPath.length() - 2) == ')') {
-            mergedPath.deleteCharAt(mergedPath.length() - 1);
-            mergedPath.deleteCharAt(mergedPath.length() - 1);
-        }
-        mergedPath.append(" and ");
-        for (int i = firstDifferentIndex; i < secondaryPathComponents.size(); i++) {
-            mergedPath.append(secondaryPathComponents.get(i));
-            if (i < secondaryPathComponents.size() - 1) {
-                mergedPath.append(".");
-            }
-        }
-        mergedPath.append(" = ").append(placeholder).append(").");
-
-        for (int i = firstDifferentIndex; i < mainPathComponents.size(); i++) {
-            mergedPath.append(mainPathComponents.get(i));
-            if (i < mainPathComponents.size() - 1) {
-                mergedPath.append(".");
-            }
-        }
-
-        return mergedPath.toString();
-    }
-
-    private static String handleScenario3(List<String> mainPathComponents, List<String> secondaryPathComponents, int firstDifferentIndex, String placeholder) {
-        StringBuilder mergedPath = new StringBuilder();
-
-        // Add all components up to the point of divergence (exclusive)
-        for (int i = 0; i < firstDifferentIndex - 1; i++) { // -1 to stop before the last common element (e.g., coding)
-            mergedPath.append(mainPathComponents.get(i)).append(".");
-        }
-
-        // Determine if we should append 'and' or 'where'
-        // Check if the last common element before the split is a 'where' clause
-        if (firstDifferentIndex > 1 && mainPathComponents.get(firstDifferentIndex - 2).startsWith("where")) {
-            if (mergedPath.charAt(mergedPath.length() - 2) == ')') { //remove ")."
-                mergedPath.deleteCharAt(mergedPath.length() - 1);
-                mergedPath.deleteCharAt(mergedPath.length() - 1);
-            }
-            mergedPath.append(" and ");
-        } else {
-            mergedPath.append("where(");
-        }
-
-        // Add the where clause from the secondary path starting from the last common element (e.g., coding)
-        mergedPath.append(mainPathComponents.get(firstDifferentIndex - 1)).append(".") // Add the last common element (e.g., coding)
-                .append(secondaryPathComponents.get(firstDifferentIndex)) // Insert secondary path's specific component (e.g., comparator)
-                .append(" = ")
-                .append(placeholder)
-                .append(").");
-
-        // Continue with the rest of the main path components
-        for (int i = firstDifferentIndex - 1; i < mainPathComponents.size(); i++) {
-            mergedPath.append(mainPathComponents.get(i));
-            if (i < mainPathComponents.size() - 1) {
-                mergedPath.append(".");
-            }
-        }
-
-        return mergedPath.toString();
-    }
-
-    private static String replaceTokenWithValue(String mergedPath, String value) {
-        // Replace tokens with the actual value
-        Pattern tokenPattern = Pattern.compile("TOKEN\\d+");
-        Matcher matcher = tokenPattern.matcher(mergedPath);
-        String result = mergedPath;
-
-        while (matcher.find()) {
-            String token = matcher.group();
-            result = result.replace(token, "'" + value + "'");
-        }
-
-        return result;
-    }
-
-    private static boolean matchesPattern(String cachedKey, String cacheKey) {
-        // Extract the patterns from cacheKey and cachedKey
-        String[] cacheKeyParts = cacheKey.split("\\|");
-        String[] cachedKeyParts = cachedKey.split("\\|");
-
-        if (cachedKeyParts.length != 2) {
-            return false;
-        }
-
-        String pathPart = cacheKeyParts[1];
-        String cachedPattern = cachedKeyParts[1];
-
-        // Check if the cached pattern matches the current key
-        // Match the current cache key pattern against stored patterns with placeholders (TOKEN) using regular expressions.
-        return Pattern.compile(Pattern.quote(cachedPattern).replace("TOKEN", "\\E.*?\\Q")).matcher(pathPart).matches();
-    }
 
     public static void main(String[] args) {
         // Example 1: Test Scenario 1
@@ -327,39 +177,17 @@ public class FhirPathMerger {
         String result3 = merge(mainFhirPath3, secondaryFhirPath3, "XXX");
         System.out.println("Result 3: " + result3);
 
-        // New Test 1: Simple Merge with Cache Check
-        String mainFhirPath4 = "Observation.where(code.coding.code = 'BP').valueQuantity.value";
-        String secondaryFhirPath4 = "Observation.where(code.coding.code = 'BP').valueQuantity.unit";
-        String result4 = merge(mainFhirPath4, secondaryFhirPath4, "mmHg");
-        System.out.println("Result 4 (First Merge): " + result4);
+        String mainFhirPath4 = "MedicationStatement.medication.coding.version.value";
+        String secondaryFhirPath4 = "MedicationStatement.medication.text.value";
+        String result4 = merge(mainFhirPath4, secondaryFhirPath4, "Carboplatin-Text Gemcitabin-Text");
+        System.out.println("Result 4: " + result4);
 
-        // Repeating the same merge to check if cache is used
-        String result4_cached = merge(mainFhirPath4, secondaryFhirPath4, "mmHg");
-        System.out.println("Result 4 (Cached Merge): " + result4_cached);
-
-        // New Test 2: Chained Merges with Cache Check
-        String mainFhirPath5 = "Observation.where(code.coding.code = 'BP').valueQuantity.value";
-        String secondaryFhirPath5 = "Observation.where(code.coding.code = 'BP').valueQuantity.unit";
-        String result5 = merge(mainFhirPath5, secondaryFhirPath5, "mmHg");
+        String mainFhirPath5 = "MedicationStatement.medication.where(text.value = 'Carboplatin-Text Gemcitabin-Text' ).coding.version.value";
+        String secondaryFhirPath5 = "MedicationStatement.medication.coding.code.value";
+        String result5 = merge(mainFhirPath5, secondaryFhirPath5, "L01BC05");
         System.out.println("Result 5: " + result5);
 
-        // Perform another merge with the previous result as part of the next merges
-        String secondaryFhirPath6 = "Observation.where(code.coding.code = 'BP').valueQuantity.comparator";
-        String result6 = merge(result5, secondaryFhirPath6, "<");
-        System.out.println("Result 6 (Chained Merge): " + result6);
-
-        // Check cache usage for chained merges
-        String result6_cached = merge(result5, secondaryFhirPath6, "<");
-        System.out.println("Result 6 (Cached Chained Merge): " + result6_cached);
     }
-
-    /*
-    public static void main(String[] args) {
-        List<String> fhirPath1 = parseFhirPath("Procedure.where(category.coding.code = 'OP').outcome.coding.where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/LokaleBeurteilungResidualstatusCS').code.value");
-        List<String> fhirPath2 = parseFhirPath("Procedure.where(category.coding.code = 'OP').outcome.coding.where(system = 'http://dktk.dkfz.de/fhir/onco/core/CodeSystem/GesamtbeurteilungResidualstatusCS').code.value");
-        System.out.println("Hello");
-    }
-    */
 
 
 }

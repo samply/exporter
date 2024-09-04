@@ -2,12 +2,14 @@ package de.samply.container;
 
 import de.samply.fhir.BasicContainerAttributesComparator;
 import de.samply.fhir.ContainerAttributesComparator;
+import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class Containers {
@@ -70,50 +72,29 @@ public class Containers {
 
     private List<Container> filterContainersToAddAttribute(List<Container> containers, Attribute attribute) {
         List<Container> result = new ArrayList<>();
-        containers.stream().filter(container -> containerAttributesComparator.belongsAttributeToContainer(attribute, container)).forEach(container ->
-                // If the container already has the value, it is created a duplicate of the container
-                result.add(container.containsAttributeTemplate(attribute.attributeTemplate()) ? container.clone() : container)
-        );
-        return result;
-    }
-
-    /*
-    private boolean isContainerCompatibleWithAttribute(
-            Container container, Attribute attribute, List<AttributeTemplate> attributeDependencies) {
-        if (attributeDependencies == null || attributeDependencies.size() == 0) {
-            return true;
-        }
-
-        //TODO
-        return true;
-    }
-
-    private List<AttributeTemplate> fetchAttributeTemplateDependencies(List<Container> containers, Attribute attribute) {
-        if (containers.size() > 0) {
-            ContainerAttributesFhirDependencies containerAttributesFhirDependencies =
-                    templatIdFhirDependencies.get(containers.get(0).getContainerTemplate());
-            return containerAttributesFhirDependencies.getFhirDependencies(attribute.attributeTemplate());
-        }
-        return new ArrayList<>();
-    }
-     */
-
-    /**
-     * This method is called for a list of containers with at least one container with one attribute
-     * (@see {@link Containers#addAttribute(ContainerTemplate, String, Attribute)})
-     *
-     * @param containers
-     * @param attribute
-     */
-    /*
-    private void addAttribute(List<Container> containers, Attribute attribute) {
-        //TODO: Add fhir dependencies logic here
-        if (!containsAttributeTemplate(containers, attribute.attributeTemplate())) {
-            containers.forEach(container -> container.addAttribute(attribute));
-        } else if (!containsAttribute(containers, attribute)) {
-            List.copyOf(containers).forEach(container -> containers.add(container.cloneAndReplaceAttribute(attribute)));
+        AtomicBoolean isContainerCloned = new AtomicBoolean(false);
+        containers.stream().forEach(container -> {
+            List<List<AttributeTemplate>> attributeTemplates = containerAttributesComparator.fetchIncompatibleCurrentAttributesOfContainerWithNewAttributes(attribute, container);
+            if (attributeTemplates.size() > 0) {
+                attributeTemplates.forEach(tempAttributeTemplates -> {
+                    Container clonedContainer = container.clone();
+                    tempAttributeTemplates.forEach(clonedContainer::removeAttribute);
+                    result.add(clonedContainer);
+                    isContainerCloned.set(true);
+                });
+            } else {
+                if (container.containsAttributeTemplate(attribute.attributeTemplate())) {
+                    isContainerCloned.set(true);
+                    result.add(container.clone());
+                } else {
+                    result.add(container);
+                }
+            }
+        });
+        if (isContainerCloned.get()) {
             removeDuplicates(containers);
         }
+        return result;
     }
 
     private void removeDuplicates(List<Container> containers) {
@@ -126,23 +107,4 @@ public class Containers {
         }
     }
 
-    private boolean containsAttributeTemplate(List<Container> containers,
-                                              AttributeTemplate attributeTemplate) {
-        for (Container container : containers) {
-            if (container.containsAttributeTemplate(attributeTemplate)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean containsAttribute(List<Container> containers, Attribute attribute) {
-        for (Container container : containers) {
-            if (container.containsAttribute(attribute)) {
-                return true;
-            }
-        }
-        return false;
-    }
-*/
 }

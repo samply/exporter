@@ -8,10 +8,7 @@ import org.hl7.fhir.r4.model.Base;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class FhirContainerAttributesComparator implements ContainerAttributesComparator {
 
@@ -23,9 +20,19 @@ public class FhirContainerAttributesComparator implements ContainerAttributesCom
     }
 
     @Override
-    public boolean belongsAttributeToContainer(Attribute attribute, Container container) {
+    public List<List<AttributeTemplate>> fetchIncompatibleCurrentAttributesOfContainerWithNewAttributes(Attribute attribute, Container container) {
+        List<List<AttributeTemplate>> result = new ArrayList<>();
         List<AttributeTemplate> attributeDependencies = fetchContainerAttributesFhirDependencies(container)
                 .getFhirDependencies(attribute.attributeTemplate());
+        if (!areCompatibles(attribute, container, attributeDependencies)) {
+            // TODO: Current simplification: If it is not compatible, we assume that the new attribute is not compatible with any of the dependencies.
+            // This is not accurate, as it can be compatible with smaller combinations of dependencies.
+            result.add(List.copyOf(attributeDependencies));
+        }
+        return result;
+    }
+
+    private boolean areCompatibles(Attribute attribute, Container container, List<AttributeTemplate> attributeDependencies) {
         String mergedFhirPath = attribute.attributeTemplate().getValFhirPath();
         for (AttributeTemplate attributeDependency : attributeDependencies) {
             Optional<Attribute> tempAttribute = container.getAttribute(attributeDependency);
@@ -35,11 +42,11 @@ public class FhirContainerAttributesComparator implements ContainerAttributesCom
                 // Please make the appropiate changes for that.
                 if (tempAttribute.get().idResource() != attribute.idResource() || tempAttribute.get().valueResource() != attribute.valueResource()) {
                     return false;
+                } else {
+                    mergedFhirPath = FhirPathMerger.merge(mergedFhirPath, tempAttribute.get().attributeTemplate().getValFhirPath(), tempAttribute.get().value());
                 }
-                mergedFhirPath = FhirPathMerger.merge(mergedFhirPath, tempAttribute.get().attributeTemplate().getValFhirPath(), tempAttribute.get().value());
             }
         }
-        // If there are no dependencies, it is included
         return (attributeDependencies.size() > 0) ? isValueIncludedInTheResultsOfFhirPathExecution(attribute.value(), mergedFhirPath, attribute.valueResource()) : true;
     }
 

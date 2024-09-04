@@ -1,6 +1,5 @@
 package de.samply.fhir;
 
-import de.samply.exporter.ExporterConst;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 
@@ -24,10 +23,10 @@ public class ContainerAttributesFhirDependencies {
     private static Map<AttributeTemplate, List<AttributeTemplate>> findSharedPaths(Map<AttributeTemplate, List<String>> attributeTemplatePathMap) {
         Map<AttributeTemplate, List<AttributeTemplate>> sharedPaths = new HashMap<>();
         attributeTemplatePathMap.keySet().forEach(attributeTemplate -> {
-            List<String> path1 = attributeTemplatePathMap.get(attributeTemplate).subList(1, attributeTemplatePathMap.get(attributeTemplate).size()); // Exclude root
+            List<String> path1 = attributeTemplatePathMap.get(attributeTemplate);
             List<AttributeTemplate> sharedWith = new ArrayList<>();
             attributeTemplatePathMap.keySet().stream().filter(attributeTemplate2 -> attributeTemplate2 != attributeTemplate).forEach(attributeTemplate2 -> {
-                List<String> path2 = attributeTemplatePathMap.get(attributeTemplate2).subList(1, attributeTemplatePathMap.get(attributeTemplate2).size()); // Exclude root
+                List<String> path2 = attributeTemplatePathMap.get(attributeTemplate2);
                 if (hasCommonPart(path1, path2)) {
                     sharedWith.add(attributeTemplate2);
                 }
@@ -37,8 +36,9 @@ public class ContainerAttributesFhirDependencies {
         return sharedPaths;
     }
 
+    // Two paths are the same if the first two elements are the same
     private static boolean hasCommonPart(List<String> path1, List<String> path2) {
-        return (path1.size() > 0 && path2.size() > 0 && path1.get(0).equals(path2.get(0)));
+        return path1.size() > 1 && path2.size() > 1 && path1.get(0).equals(path2.get(0)) && path1.get(1).equals(path2.get(1));
     }
 
     /**
@@ -67,27 +67,7 @@ public class ContainerAttributesFhirDependencies {
      * @return List of Strings with the nodes of the fhir search path.
      */
     private static List<String> fetchFhirSearchPathNodes(AttributeTemplate attributeTemplate) {
-        List<String> result = new ArrayList<>();
-        result.add(ExporterConst.FHIR_SEARCH_PATH_ROOT);
-        String joinFhirPath = attributeTemplate.getJoinFhirPath();
-        if (joinFhirPath != null) {
-            // TODO: Extend it for join fhir path of combination of direct and indirect links
-            if (joinFhirPath.startsWith("/")) { // indirect link
-                result.addAll(splitByDotIgnoringParentheses(attributeTemplate.getValFhirPath()));
-            } else { // direct link
-                result.addAll(splitByDotIgnoringParentheses(joinFhirPath));
-                if (result.size() > 1) {
-                    result.remove(1);
-                }
-                result.addAll(splitByDotIgnoringParentheses(attributeTemplate.getValFhirPath()));
-            }
-        } else { // value in main resource of the container
-            result.addAll(splitByDotIgnoringParentheses(attributeTemplate.getValFhirPath()));
-            if (result.size() > 1) {
-                result.remove(1);
-            }
-        }
-        return mergeWhereElements(result);
+        return mergeWhereElements(splitByDotIgnoringParentheses(attributeTemplate.getValFhirPath()));
     }
 
     private static List<String> mergeWhereElements(List<String> list) {
@@ -97,7 +77,7 @@ public class ContainerAttributesFhirDependencies {
             String current = list.get(i);
 
             if (current.startsWith("where")) {
-                if (i > 1) {
+                if (i > 0) {
                     String previous = mergedList.remove(mergedList.size() - 1);
                     mergedList.add(previous + "." + current);
                 }

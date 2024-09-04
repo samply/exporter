@@ -36,6 +36,10 @@ public class Container {
         return attributeTemplateAttributeMap.keySet().contains(attributeTemplate);
     }
 
+    public void removeAttribute(AttributeTemplate attributeTemplate){
+        attributeTemplateAttributeMap.remove(attributeTemplate);
+    }
+
     public boolean containsAttribute(Attribute attribute) {
         String attributeValue = getAttributeValue(attribute.attributeTemplate());
         return (attributeValue != null) ? attributeValue.equals(attribute.value()) : false;
