@@ -1,5 +1,6 @@
 package de.samply.fhir.cql;
 
+import de.samply.converter.ConverterException;
 import de.samply.converter.Format;
 import de.samply.exporter.ExporterConst;
 import de.samply.template.ConverterTemplate;
@@ -7,8 +8,12 @@ import org.hl7.fhir.r4.model.MeasureReport;
 
 public class CqlToFhirSearchConverter extends CqlRelatedConverter<String> {
 
-    public CqlToFhirSearchConverter(String fhirStoreUrl, String sourceId) {
+    public CqlToFhirSearchConverter(String fhirStoreUrl, String sourceId) throws ConverterException {
         super(fhirStoreUrl, sourceId);
+    }
+
+    public CqlToFhirSearchConverter(String fhirStoreUrl, String sourceId, String httpProxy, String noProxy) throws ConverterException {
+        super(fhirStoreUrl, sourceId, httpProxy, noProxy);
     }
 
     @Override

@@ -3,6 +3,7 @@ package de.samply.fhir;
 import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.rest.client.exceptions.FhirClientConnectionException;
 import ca.uhn.fhir.rest.gclient.IQuery;
+import de.samply.converter.ConverterException;
 import de.samply.converter.EmptySession;
 import de.samply.converter.Format;
 import de.samply.exporter.ExporterConst;
@@ -26,8 +27,12 @@ public class FhirSearchQueryConverter extends FhirRelatedConverter<Bundle> {
     private final static Logger logger = BufferedLoggerFactory.getLogger(FhirSearchQueryConverter.class);
     private int pageSize = ExporterConst.DEFAULT_FHIR_PAGE_SIZE;
 
-    public FhirSearchQueryConverter(String fhirStoreUrl, String sourceId) {
+    public FhirSearchQueryConverter(String fhirStoreUrl, String sourceId) throws ConverterException {
         super(fhirStoreUrl, sourceId);
+    }
+
+    public FhirSearchQueryConverter(String fhirStoreUrl, String sourceId, String httpProxy, String noProxy) throws ConverterException {
+        super(fhirStoreUrl, sourceId, httpProxy, noProxy);
     }
 
 

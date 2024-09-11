@@ -2,6 +2,7 @@ package de.samply.fhir.cql;
 
 import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import de.samply.converter.ConverterException;
 import de.samply.converter.EmptySession;
 import de.samply.fhir.FhirRelatedConverter;
 import de.samply.logger.BufferedLoggerFactory;
@@ -21,8 +22,12 @@ public abstract class CqlRelatedConverter<O> extends FhirRelatedConverter<O> {
 
     protected abstract O convert(ConverterTemplate template, MeasureReport measureReport);
 
-    public CqlRelatedConverter(String fhirStoreUrl, String sourceId) {
+    public CqlRelatedConverter(String fhirStoreUrl, String sourceId) throws ConverterException {
         super(fhirStoreUrl, sourceId);
+    }
+
+    public CqlRelatedConverter(String fhirStoreUrl, String sourceId, String httpProxy, String noProxy) throws ConverterException {
+        super(fhirStoreUrl, sourceId, httpProxy, noProxy);
     }
 
     @Override
