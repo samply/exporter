@@ -5,24 +5,23 @@ import java.util.Base64;
 public class Base64Utils {
 
     public static String decode (String element){
-        return new String(Base64.getDecoder().decode(element));
+        return (element != null) ? new String(Base64.getDecoder().decode(element)) : null;
     }
 
     public static String decodeIfNecessary(String element) {
         try {
-            return Base64Utils.decode(element);
+            return (element != null) ? Base64Utils.decode(element) : null;
         } catch (IllegalArgumentException e) {
             return element;
         }
     }
 
-
     public static String decode(byte[] element){
-        return new String(Base64.getDecoder().decode(element));
+        return (element != null) ? new String(Base64.getDecoder().decode(element)) : null;
     }
 
     public static byte[] encode(String element){
-        return Base64.getEncoder().encode(element.getBytes());
+        return (element != null) ? Base64.getEncoder().encode(element.getBytes()) : new byte[0];
     }
 
 }
