@@ -153,6 +153,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - CQL to Bundle Converter
 - Archive expired queries
 - Blaze Page Size environment variable
+- Proxy in Fhir Related Converter
 
 
 ### Changed

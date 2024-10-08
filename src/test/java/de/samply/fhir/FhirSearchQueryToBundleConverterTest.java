@@ -2,6 +2,7 @@ package de.samply.fhir;
 
 import de.samply.EnvironmentTestUtils;
 import de.samply.container.Containers;
+import de.samply.converter.ConverterException;
 import de.samply.csv.ContainersToCsvConverter;
 import de.samply.csv.Session;
 import de.samply.exporter.ExporterConst;
@@ -37,7 +38,7 @@ class FhirSearchQueryToBundleConverterTest {
     private TokenContext tokenContext = new TokenContext(null);
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws ConverterException {
         this.fhirSearchQueryToBundleConverter = new FhirSearchQueryConverter(blazeStoreUrl, sourceId);
         EnvironmentUtils environmentUtils = new EnvironmentUtils(
                 EnvironmentTestUtils.getEmptyMockEnvironment());
