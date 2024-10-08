@@ -32,6 +32,7 @@ public class BundleToContainersConverter extends
     private final FHIRPathEngine fhirPathEngine;
     private final String fhirPackagesDirectory;
     private final Boolean logFhirValidation;
+    private final ContainerAttributesComparator containerAttributesComparator;
 
     public BundleToContainersConverter(
             @Value(ExporterConst.FHIR_PACKAGES_DIRECTORY_SV) String fhirPackagesDirectory,
@@ -40,6 +41,7 @@ public class BundleToContainersConverter extends
         this.fhirPathEngine = createFhirPathEngine(fhirContext);
         this.fhirPackagesDirectory = fhirPackagesDirectory;
         this.logFhirValidation = logFhirValidation;
+        this.containerAttributesComparator = new FhirContainerAttributesComparator(fhirPathEngine);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class BundleToContainersConverter extends
 
     public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate,
                                           BundleToContainersConverterSession session) {
-        Containers containers = new Containers();
+        Containers containers = new Containers(containerAttributesComparator);
         BundleContext context = createBundleContext(bundle, converterTemplate, session);
         if (converterTemplate != null) {
             converterTemplate.getContainerTemplates()
@@ -141,7 +143,7 @@ public class BundleToContainersConverter extends
             } else if (isToBeEvaluated(evalResource, idResource, attributeTemplate)) {
                 fhirPathEngine.evaluate(evalResource, expressionNode)
                         .forEach(base -> resourceAttributes.add(
-                                new ResourceAttribute(idResource,
+                                new ResourceAttribute(idResource, evalResource,
                                         fetchAttributeValue(evalResource, attributeTemplate, base, context),
                                         containerTemplate, attributeTemplate)));
             }
@@ -201,7 +203,7 @@ public class BundleToContainersConverter extends
         containers.addAttribute(resourceAttribute.containerTemplate(),
                 resourceAttribute.fetchContainerId(),
                 new Attribute(resourceAttribute.attributeTemplate(),
-                        fetchResourceAttributeValue(resourceAttribute, context)));
+                        fetchResourceAttributeValue(resourceAttribute, context), resourceAttribute.idResource(), resourceAttribute.valueResource()));
     }
 
     private String fetchResourceAttributeValue(ResourceAttribute resourceAttribute,

@@ -97,12 +97,14 @@ jobs:
           labels: ${{ steps.docker-meta.outputs.labels }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.25.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: samply/exporter:sha-${{ github.sha }}
           format: sarif
           output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'
+        env:
+          TRIVY_UPDATE_DB: false
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@codeql-bundle-20220401

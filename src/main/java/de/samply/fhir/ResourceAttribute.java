@@ -5,13 +5,14 @@ import de.samply.template.ContainerTemplate;
 import org.hl7.fhir.r4.model.Resource;
 
 public record ResourceAttribute (
-    Resource resource,
+    Resource idResource,
+    Resource valueResource,
     String attributeValue,
     ContainerTemplate containerTemplate,
     AttributeTemplate attributeTemplate
 ) {
 
   public String fetchContainerId(){
-    return resource.getIdPart();
+    return idResource.getIdPart();
   }
 }
