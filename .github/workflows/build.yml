@@ -97,7 +97,7 @@ jobs:
           labels: ${{ steps.docker-meta.outputs.labels }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.25.0
         with:
           image-ref: samply/exporter:sha-${{ github.sha }}
           format: sarif
