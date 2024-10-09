@@ -14,7 +14,8 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-
+# Add pipx binary path to PATH environment variable
+ENV PATH="$PATH:/root/.local/bin"
 
 COPY target/exporter.jar /app/
 
