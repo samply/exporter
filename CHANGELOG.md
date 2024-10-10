@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Detect attribute dependencies in containers
 - Container Attributes Comparator (for FHIR)
 - Logger in FhirContainerAttributesComparator
+- Escape Characters in Fhir Path Merger
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

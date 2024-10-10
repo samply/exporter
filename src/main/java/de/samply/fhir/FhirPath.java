@@ -112,10 +112,26 @@ public class FhirPath {
             if (conditionElement.length() > 0) {
                 conditionElement.deleteCharAt(conditionElement.length() - 1); // Delete last '.'
                 // TODO: Limitation: Currently, we only support "=" as operator. Extend it to other operators
-                return Optional.of(new Condition(conditionElement.toString(), "=", "'" + value + "'"));
+                return Optional.of(new Condition(conditionElement.toString(), "=", "'" + escapeSpecialCharacters(value) + "'"));
             }
         }
         return Optional.empty();
+    }
+
+    // Based on escape characters of method 'processConstant' of org.hl7.fhir.r4.utils.FHIRLexer.java
+    private String escapeSpecialCharacters(String value) {
+        if (value != null) {
+            value = value
+                    .replace("\t", "\\\t")
+                    .replace("\r", "\\\r")
+                    .replace("\n", "\\\n")
+                    .replace("\f", "\\\f")
+                    .replace("'", "\\'")
+                    .replace("\"", "\\\"")
+                    .replace("`", "\\`")
+                    .replace("/", "\\/");
+        }
+        return value;
     }
 
     private Optional<String> mergeConditionsInWhereClause(int index) {
