@@ -2,6 +2,8 @@ package de.samply.fhir;
 
 import de.samply.container.Attribute;
 import de.samply.container.Container;
+import de.samply.logger.BufferedLoggerFactory;
+import de.samply.logger.Logger;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 import org.hl7.fhir.r4.model.Base;
@@ -15,6 +17,7 @@ import java.util.Optional;
 
 public class FhirContainerAttributesComparator implements ContainerAttributesComparator {
 
+    private final static Logger logger = BufferedLoggerFactory.getLogger(FhirContainerAttributesComparator.class);
     private Map<ContainerTemplate, ContainerAttributesFhirDependencies> templatIdFhirDependencies = new HashMap<>();
     private final FHIRPathEngine fhirPathEngine;
 
@@ -53,7 +56,12 @@ public class FhirContainerAttributesComparator implements ContainerAttributesCom
     }
 
     private boolean isValueIncludedInTheResultsOfFhirPathExecution(String value, String fhirPath, Resource resource) {
-        return fhirPathEngine.evaluate(resource, fhirPathEngine.parse(fhirPath)).stream().map(Base::toString).toList().contains(value);
+        try {
+            return fhirPathEngine.evaluate(resource, fhirPathEngine.parse(fhirPath)).stream().map(Base::toString).toList().contains(value);
+        } catch (Exception e) {
+            logger.error("Error evaluating fhir path " + fhirPath + " of resource " + resource.getId() + " for value " + value);
+            throw e;
+        }
     }
 
 }

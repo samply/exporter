@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2024-10-08]
+## [1.1.0 - 2024-10-10]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Check null in Decoder
 - Detect attribute dependencies in containers
 - Container Attributes Comparator (for FHIR)
+- Logger in FhirContainerAttributesComparator
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
