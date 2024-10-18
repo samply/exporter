@@ -129,7 +129,8 @@ public class FhirPath {
                     .replace("'", "\\'")
                     .replace("\"", "\\\"")
                     .replace("`", "\\`")
-                    .replace("/", "\\/");
+                    .replace("/", "\\/")
+                    .replace("\\", "\\\\");
         }
         return value;
     }
