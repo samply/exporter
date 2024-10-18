@@ -119,9 +119,44 @@ public class FhirPath {
     }
 
     // Based on escape characters of method 'processConstant' of org.hl7.fhir.r4.utils.FHIRLexer.java
+
+    /**
+     * Replaces all single backslashes in the input string with double backslashes,
+     * ensuring that backslashes which are already part of a pair (i.e., `\\`) are
+     * not affected. This method is useful for cases where lone backslashes need
+     * to be escaped, but double backslashes should remain unchanged.
+     * <p>
+     * The method works by using a regular expression to match single backslashes
+     * that are not immediately preceded or followed by another backslash, and then
+     * replaces them with two backslashes.
+     *
+     * <p><b>Pattern Explanation:</b></p>
+     * <ul>
+     *     <li><code>(?&lt;!\\\\)</code> - Negative lookbehind: Ensures that there is no backslash
+     *     before the current backslash.</li>
+     *     <li><code>\\\\</code> - Matches a literal backslash (`\`) in the string.</li>
+     *     <li><code>(?!\\\\)</code> - Negative lookahead: Ensures that there is no backslash
+     *     after the current backslash.</li>
+     * </ul>
+     * This pattern matches a single backslash that is not part of a pair.
+     * <p>
+     * The replacement string <code>"\\\\\\\\"</code> adds two backslashes in the place
+     * of the matched single backslash. In Java, backslashes must be escaped, so the
+     * replacement string consists of four pairs of backslashes, which the Java compiler
+     * interprets as two actual backslashes (`\\`) in the final result.
+     *
+     * <p><b>Example:</b></p>
+     * <pre>{@code
+     * String input = "This \\ is a test \\\\ string \\with \\\\multiple \\backslashes";
+     * String result = input.replaceAll("(?<!\\\\)\\\\(?!\\\\)", "\\\\\\\\");
+     * System.out.println(result);
+     * // Output: This \\ is a test \\ string \\with \\multiple \\backslashes
+     * }</pre>
+     */
     private String escapeSpecialCharacters(String value) {
         if (value != null) {
             value = value
+                    .replaceAll("(?<!\\\\)\\\\(?!\\\\)", "\\\\\\\\")
                     .replace("\t", "\\\t")
                     .replace("\r", "\\\r")
                     .replace("\n", "\\\n")
@@ -129,8 +164,7 @@ public class FhirPath {
                     .replace("'", "\\'")
                     .replace("\"", "\\\"")
                     .replace("`", "\\`")
-                    .replace("/", "\\/")
-                    .replace("\\", "\\\\");
+                    .replace("/", "\\/");
         }
         return value;
     }
