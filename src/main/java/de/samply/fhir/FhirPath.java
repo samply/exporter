@@ -153,18 +153,18 @@ public class FhirPath {
      * // Output: This \\ is a test \\ string \\with \\multiple \\backslashes
      * }</pre>
      */
-    private String escapeSpecialCharacters(String value) {
+    private static String escapeSpecialCharacters(String value) {
         if (value != null) {
             value = value
                     .replaceAll("(?<!\\\\)\\\\(?!\\\\)", "\\\\\\\\")
-                    .replace("\t", "\\\t")
-                    .replace("\r", "\\\r")
-                    .replace("\n", "\\\n")
-                    .replace("\f", "\\\f")
+                    //.replace("\t", "\\\t")
+                    //.replace("\r", "\\\r")
+                    //.replace("\n", "\\\n")
+                    //.replace("\f", "\\\f")
+                    //.replace("/", "\\/")
                     .replace("'", "\\'")
                     .replace("\"", "\\\"")
-                    .replace("`", "\\`")
-                    .replace("/", "\\/");
+                    .replace("`", "\\`");
         }
         return value;
     }
@@ -228,6 +228,8 @@ public class FhirPath {
         Set<Condition> result4 = parseWhereClause("where(e1.e2 = 'v1'  and    e3.e4 = 'v2'   )");
         Set<Condition> result5 = parseWhereClause("where(e1.e2 = 'v1'  and    e3.e4 = 'v2' and e5.where(e6.e7 = 'v8' and e9.where(e10.e11.e12 = 'v3').e13 = 'v4').e15 = 'v6'  )");
         Set<Condition> result6 = parseWhereClause("where(e1.e2.e3 = 'v1' and e1.where(e4.e5 = 'v4' and e6.where(e12.e13 = 'v17').e8 = 'v6').e9.e10 = 'v9')");
+
+        System.out.println(escapeSpecialCharacters("Multiples_Myelom,_Typ_IgA_Lambda,_ISS_St._II\\"));
     }
 
 }
