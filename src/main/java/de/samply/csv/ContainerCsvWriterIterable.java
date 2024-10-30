@@ -40,7 +40,7 @@ public class ContainerCsvWriterIterable extends ContainerFileWriterIterable {
     return stringBuilder.toString();
   }
 
-  private String fetchAttributeValue(Container container, ConverterTemplate converterTemplate, AttributeTemplate attributeTemplate){
+  protected String fetchAttributeValue(Container container, ConverterTemplate converterTemplate, AttributeTemplate attributeTemplate){
     String attributeValue = container.getAttributeValue(attributeTemplate);
     return (attributeValue == null) ? "" : replaceEndOfLines(attributeValue);
   }

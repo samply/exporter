@@ -31,7 +31,7 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
 
     @Override
     public Format getInputFormat() {
-        return Format.CSV;
+        return Format.OPAL_CSV;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
         return () -> session.getOpalPaths().forEach(path -> sendPathToOpal(path, session));
     }
 
-    private void sendPathToOpal(Path input, Session session){
+    private void sendPathToOpal(Path input, Session session) {
         try {
             opalEngine.sendPathToOpal(input, session);
         } catch (OpalEngineException e) {

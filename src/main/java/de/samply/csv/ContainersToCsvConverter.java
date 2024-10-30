@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ContainersToCsvConverter extends ContainersToFilesConverter<Session> {
 
-  private final String csvSeparatorReplacement;
+  protected final String csvSeparatorReplacement;
 
   public ContainersToCsvConverter(
       @Autowired ConverterTemplateUtils converterTemplateUtils,

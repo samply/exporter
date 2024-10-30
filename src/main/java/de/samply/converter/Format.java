@@ -17,6 +17,7 @@ public enum Format {
     BUNDLE(Bundle.class, false, false),
     CONTAINERS(Containers.class, false, false),
     CSV(Path.class, false, true),
+    OPAL_CSV(Path.class, false, true),
     EXCEL(Path.class, false, true),
     OPAL(Path.class, false, true),
     JSON(Path.class, false, true),
