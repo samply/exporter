@@ -148,130 +148,7 @@ public class OpalEngine {
         }
     }
 
-  /*
-  private void formatTable(Session session, ContainerTemplate containerTemplate) {
-    for (AttributeTemplate attributeTemplate : containerTemplate.getAttributeTemplates()) {
-      formatVariable(session, containerTemplate, attributeTemplate);
-    }
-  }
 
-  private void formatVariable(Session session, ContainerTemplate containerTemplate,
-      AttributeTemplate attributeTemplate) {
-    try {
-      formatVariableWithoutExceptionHandling(session, containerTemplate, attributeTemplate);
-    } catch (OpalEngineException | JsonProcessingException e) {
-      logger.error(ExceptionUtils.getFullStackTrace(e));
-    }
-  }
-
-  private void formatVariableWithoutExceptionHandling(Session session,
-      ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate)
-      throws OpalEngineException, JsonProcessingException {
-    if (attributeTemplate.getOpalValueType() != null && !attributeTemplate.getOpalValueType()
-        .equals(ExporterConst.OPAL_DEFAULT_VALUE_TYPE)) {
-      JsonNode variableInfo = fetchVariableInfo(session, containerTemplate, attributeTemplate);
-      ((ObjectNode) variableInfo).set(ExporterConst.OPAL_VALUE_TYPE,
-          new TextNode(attributeTemplate.getOpalValueType()));
-      String sVariableInfo = objectMapper.writerWithDefaultPrettyPrinter()
-          .writeValueAsString(variableInfo);
-      modifyVariable(session, containerTemplate, attributeTemplate, sVariableInfo);
-    }
-  }
-
-  private ProcessInfo modifyVariable(Session session,
-      ContainerTemplate containerTemplate,
-      AttributeTemplate attributeTemplate, String variableInfo) throws OpalEngineException {
-    String subOperation = createVariablePath(session.fetchProject(),
-        containerTemplate.getOpalTable(), attributeTemplate.getCsvColumnName());
-    String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_PUT,
-        ExporterConst.OPAL_REST_CONTENT_TYPE, ExporterConst.OPAL_REST_CONTENT_TYPE_JSON};
-    return executeOpalCommands(ExporterConst.OPAL_REST_OP, subOperation, arguments, variableInfo);
-  }
-
-  private JsonNode fetchVariableInfo(Session session, ContainerTemplate containerTemplate,
-      AttributeTemplate attributeTemplate) throws OpalEngineException, JsonProcessingException {
-    String subOperation = createVariablePath(session.fetchProject(),
-        containerTemplate.getOpalTable(), attributeTemplate.getCsvColumnName());
-    String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_GET};
-    ProcessInfo processInfo = executeOpalCommands(ExporterConst.OPAL_REST_OP, subOperation,
-        arguments);
-    return objectMapper.readTree(processInfo.output);
-  }
-
-  private String createVariablePath(String project, String table, String variable) {
-    return (ExporterConst.OPAL_PATH_PROJECT + '/' + project + ExporterConst.OPAL_PATH_TABLE + '/'
-        + table + ExporterConst.OPAL_PATH_VARIABLE + '/' + variable).replace(" ", "%20");
-  }
-
-  private ProcessInfo fetchViewWithinMaxNumberOfRetries(Session session,
-      ContainerTemplate containerTemplate)
-      throws OpalEngineException {
-    return fetchProcessInfoWithinMaxNumberOfRetries(session,
-        () -> fetchView(session, containerTemplate), processInfo -> processInfo.status == 0,
-        "View could not be created");
-  }
-   */
-
-    private ProcessInfo fetchProcessInfoWithinMaxNumberOfRetries(Session session,
-                                                                 ProcessInfoSupplier supplier, ProcessInfoCondition condition, String errorMessage)
-            throws OpalEngineException {
-        ProcessInfo result = null;
-        int numberOfRetries = session.getMaxNumberOfRetries();
-        boolean processInfoExecutedCorrectly = false;
-        while (!processInfoExecutedCorrectly && numberOfRetries > 0) {
-            result = supplier.get();
-            if (!condition.isFullfilled(result)) {
-                numberOfRetries--;
-                sleep(session.getTimeoutInSeconds());
-            } else {
-                processInfoExecutedCorrectly = true;
-            }
-        }
-        if (!processInfoExecutedCorrectly) {
-            throw new OpalEngineException(errorMessage);
-        }
-        return result;
-    }
-
-    private interface ProcessInfoSupplier {
-
-        ProcessInfo get() throws OpalEngineException;
-    }
-
-    private interface ProcessInfoCondition {
-
-        boolean isFullfilled(ProcessInfo processInfo) throws OpalEngineException;
-    }
-
-    private void sleep(int timeoutInSeconds) throws OpalEngineException {
-        try {
-            Thread.sleep(timeoutInSeconds * 1000);
-        } catch (InterruptedException e) {
-            throw new OpalEngineException(e);
-        }
-    }
-
-    /*
-    private ProcessInfo fetchTableWithinMaxNumberOfRetries(Session session,
-        ContainerTemplate containerTemplate)
-        throws OpalEngineException {
-      return fetchProcessInfoWithinMaxNumberOfRetries(session,
-          () -> fetchTable(session, containerTemplate), processInfo -> isTableReady(processInfo),
-          "Error reading table");
-    }
-  */
-    private boolean isTableReady(ProcessInfo processInfo) throws OpalEngineException {
-        boolean result = processInfo.status == 0 && processInfo.output != null;
-        if (result) {
-            String status = fetchStatus(processInfo);
-            result = status != null && status.equals(ExporterConst.OPAL_STATUS_READY);
-        }
-        return result;
-    }
-
-    private String fetchStatus(ProcessInfo processInfo) throws OpalEngineException {
-        return fetchVariable(processInfo, ExporterConst.OPAL_STATUS);
-    }
 
     private String fetchTaskId(ProcessInfo processInfo) throws OpalEngineException {
         return fetchVariable(processInfo, ExporterConst.OPAL_TASK_ID);
@@ -293,21 +170,6 @@ public class OpalEngine {
         return (jsonNode2 != null) ? jsonNode2.toString().replace("\"", "") : null;
     }
 
-    /*
-    private ProcessInfo fetchTable(Session session, ContainerTemplate containerTemplate)
-        throws OpalEngineException {
-      String suboperation = OpalUtils.createTablePath(session, containerTemplate);
-      String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_GET};
-      return executeOpalCommands(ExporterConst.OPAL_REST_OP, suboperation, arguments);
-    }
-
-    private ProcessInfo fetchView(Session session, ContainerTemplate containerTemplate)
-        throws OpalEngineException {
-      String suboperation = OpalUtils.createViewPath(session, containerTemplate);
-      String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_GET};
-      return executeOpalCommands(ExporterConst.OPAL_REST_OP, suboperation, arguments);
-    }
-  */
     private ProcessInfo createView(Session session, ContainerTemplate containerTemplate)
             throws OpalEngineException {
         try {
@@ -340,12 +202,6 @@ public class OpalEngine {
     private ProcessInfo executeOpalCommands(String operation, String[] arguments, String input)
             throws OpalEngineException {
         return executeOpalCommands(operation, null, arguments, input);
-    }
-
-    private ProcessInfo executeOpalCommands(String operation, String subOperation,
-                                            String[] arguments)
-            throws OpalEngineException {
-        return executeOpalCommands(operation, subOperation, arguments, null);
     }
 
     private ProcessInfo executeOpalCommands(String operation, String subOperation,
