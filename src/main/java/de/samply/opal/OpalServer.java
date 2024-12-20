@@ -4,12 +4,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 public class OpalServer {
 
-  private String url;
-  private String user;
-  private String password;
-  private String database;
-  private String filesDirectory;
-  private WebClientFactory webClientFactory;
+  private final String url;
+  private final String user;
+  private final String password;
+  private final String database;
+  private final String filesDirectory;
+  private final WebClientFactory webClientFactory;
 
   public OpalServer(String url, String user, String password, String database,
       String filesDirectory, WebClientFactory webClientFactory) {
