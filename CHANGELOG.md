@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - WebClientFactory class
 - WebClientFactory Attribute and Method in OpalServer
 - ExporterConst for WebClient request-url
+- Log OpalEngine
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
@@ -70,6 +71,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Retrieve-query
 - Unnecessary comments and methods in Opal Engine
+- Constants used for Python commands
 
 ### Fixed
 - JSON and XML filter
@@ -81,6 +83,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rest service: Get output formats
 - Extract parameters of HttpServletRequest
 - Opal Views
+- Warnings in OpalEngine
 
 ## [1.0.0 - 2023-07-20]
 ### Added

@@ -18,8 +18,8 @@ import java.util.Map;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -44,7 +44,7 @@ public class OpalEngine {
                 path.getFileName().toString());
         if (containerTemplate != null) {
             uploadPath(path, session);
-            String uid = importPath_transient(path, session, containerTemplate);
+            String uid = importPathTransient(path, session, containerTemplate);
             String tasklocation = importPath(session, containerTemplate, uid);
             if (waitUntilTaskIsFinished(tasklocation)){
             createView(session, containerTemplate);}
@@ -62,7 +62,7 @@ public class OpalEngine {
     private boolean existsProject(Session session) throws OpalEngineException {
         String url = ExporterConst.OPAL_PROJECT + session.fetchProject();
         try {
-            return webClient.get()
+            return Boolean.TRUE.equals(webClient.get()
                     .uri(url)
                     .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                     .exchangeToMono(response -> {
@@ -75,14 +75,14 @@ public class OpalEngine {
                                     return Mono.just(false);
                                 });
                     })
-                    .onErrorMap(e -> new OpalEngineException(e))
-                    .block();
+                    .onErrorMap(OpalEngineException::new)
+                    .block());
         } catch (Exception e) {
             throw new OpalEngineException(e);
         }
     }
 
-    private String createProject(Session session) throws OpalEngineException {
+    private void createProject(Session session) throws OpalEngineException {
         String url = ExporterConst.OPAL_PROJECT_WS + ExporterConst.PROJECTS_OPAL;
         String projectName = session.fetchProject();
         String database = opalServer.getDatabase();
@@ -95,14 +95,15 @@ public class OpalEngine {
                 "    \"vcfStoreService\": null,\n" +
                 "    \"exportFolder\": \"\"\n" +
                 "}";
+        logger.info("Create Project " + projectName);
         try{
-            return webClient.post()
+            webClient.post()
                     .uri(url)
                     .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
                     .bodyValue(requestBody)
                     .retrieve()
-                    .onStatus(status -> status.is4xxClientError(), this::handleError)
-                    .onStatus(status -> status.is5xxServerError(), this::handleError)
+                    .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                    .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception e) {
@@ -110,14 +111,15 @@ public class OpalEngine {
         }
     }
 
-    private List<String> createProjectPermissions(Session session) throws OpalEngineException {
+    private void createProjectPermissions(Session session) throws OpalEngineException {
         List<String> results = new ArrayList<>();
         String subjects = session.getConverterTemplate().getOpalPermissionSubjects();
-        if (subjects != null && subjects.length() > 0) {
+        if (subjects != null && !subjects.isEmpty()) {
             for (String subject : subjects.trim()
                     .split(ExporterConst.OPAL_PERMISSION_SUBJECT_SEPARATOR)) {
                 String baseUrl = ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_PERM;
 
+                logger.info("Create Project Permission");
                 try {
                     String responseBody = webClient.post()
                             .uri(uriBuilder -> uriBuilder
@@ -127,8 +129,8 @@ public class OpalEngine {
                                     .queryParam("principal", subject)
                                     .build())
                             .retrieve()
-                            .onStatus(status -> status.is4xxClientError(), this::handleError)
-                            .onStatus(status -> status.is5xxServerError(), this::handleError)
+                            .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                            .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                             .bodyToMono(String.class)
                             .defaultIfEmpty("")
                             .block();
@@ -139,47 +141,50 @@ public class OpalEngine {
                 }
             }
         }
-        return results;
     }
 
-    private String uploadPath(Path path, Session session) throws OpalEngineException {
+    private void uploadPath(Path path, Session session) throws OpalEngineException {
         String url = ExporterConst.OPAL_PROJECT_WS + ExporterConst.OPAL_PROJECT_FILE + session.fetchProject();
+        logger.info("Starting file upload. File path: " +  path.toString());
         FileSystemResource fileResource = new FileSystemResource(path.toFile());
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", fileResource);
 
         try{
-            return webClient.post()
+            logger.info("Uploading file: " + path.getFileName());
+            webClient.post()
                     .uri(url)
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .bodyValue(body)
                     .retrieve()
-                    .onStatus(status -> status.is4xxClientError(), this::handleError)
-                    .onStatus(status -> status.is5xxServerError(), this::handleError)
+                    .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                    .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                     .bodyToMono(String.class)
                     .block();
+            logger.info("File uploaded successfully.");
         } catch (Exception e) {
             throw new OpalEngineException(e);
         }
     }
 
-    private ResponseEntity<Void> deletePath(Path path, Session session) throws OpalEngineException {
+    private void deletePath(Path path, Session session) throws OpalEngineException {
         String url = ExporterConst.OPAL_PROJECT_FILES + session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path);
-
+        logger.info("Attempting to delete file at path: " + path);
         try{
-            return webClient.delete()
+            webClient.delete()
                     .uri(url)
                     .retrieve()
-                    .onStatus(status -> status.is4xxClientError(), this::handleError)
-                    .onStatus(status -> status.is5xxServerError(), this::handleError)
+                    .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                    .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                     .toBodilessEntity()
                     .block();
+            logger.info("File successfully deleted.");
         } catch (Exception e) {
             throw new OpalEngineException(e);
         }
     }
 
-    private String importPath_transient(Path path, Session session, ContainerTemplate template)
+    private String importPathTransient(Path path, Session session, ContainerTemplate template)
             throws OpalEngineException {
         String url_transient_ds = ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_TRS;
         String characterSet = "ISO-8859-1";
@@ -203,7 +208,7 @@ public class OpalEngine {
                         }
                 )
         );
-
+        logger.info("Import started for: " + template.getOpalTable() + " in Project " + session.fetchProject());
         Map<String, Object> response = webClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path(url_transient_ds)
@@ -215,15 +220,19 @@ public class OpalEngine {
                 })
                 .bodyValue(requestBody)
                 .retrieve()
-                .onStatus(status -> status.is4xxClientError(), this::handleError)
-                .onStatus(status -> status.is5xxServerError(), this::handleError)
-                .bodyToMono(Map.class)
+                .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .block();
 
+        if (response == null) {
+            throw new IllegalArgumentException("Response must not be null");
+        }
         String transientUid = (String) response.get("name");
         if (transientUid == null) {
             throw new OpalEngineException("UID for the transient table could not be extracted");
         }
+        logger.info("Extracted transient UID: " + transientUid);
         return transientUid;
     }
 
@@ -241,17 +250,17 @@ public class OpalEngine {
                     .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
                     .bodyValue(requestBody)
                     .retrieve()
-                    .onStatus(status -> status.is4xxClientError(), this::handleError)
-                    .onStatus(status -> status.is5xxServerError(), this::handleError)
+                    .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                    .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                     .toBodilessEntity()
-                    .map(response -> {
-                        String location = response.getHeaders().getFirst(HttpHeaders.LOCATION);
-                        if (location == null) {
-                            return null;
-                            //throw new OpalEngineException("Location-Header fehlt in der Antwort");
+                    .mapNotNull(response -> {
+                        String locationHeader = response.getHeaders().getFirst(HttpHeaders.LOCATION);
+                        if (locationHeader != null) {
+                            logger.info("Received Location header: " + locationHeader);
                         }
-                        return location;
+                        return locationHeader;
                     })
+                    .onErrorMap(e -> new OpalEngineException("Error when processing the response", e))
                     .block();
         } catch (Exception e) {
             throw new OpalEngineException(e);
@@ -268,8 +277,8 @@ public class OpalEngine {
                         .uri(taskId)
                         .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                         .retrieve()
-                        .onStatus(status -> status.is4xxClientError(), this::handleError)
-                        .onStatus(status -> status.is5xxServerError(), this::handleError)
+                        .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                        .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                         .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                         .onErrorResume(e -> {
                             System.err.println("Error when retrieving the task status: " + e.getMessage());
@@ -304,7 +313,7 @@ public class OpalEngine {
 
             throw new OpalEngineException("Task " + taskId + " was not completed within the expected time.");
         } else {
-            throw new OpalEngineException("Task " + taskId + " not found");
+            throw new OpalEngineException("Task ID not found");
         }
     }
 
@@ -315,24 +324,25 @@ public class OpalEngine {
                 .orElse("No specific message found");
     }
 
-    private String createView(Session session, ContainerTemplate containerTemplate)
+    private void createView(Session session, ContainerTemplate containerTemplate)
             throws OpalEngineException {
         try {
-            return createViewWithoutExceptionHandling(session, containerTemplate);
+            createViewWithoutExceptionHandling(session, containerTemplate);
         } catch (JsonProcessingException e) {
             throw new OpalEngineException(e);
         }
     }
 
-    private String createViewWithoutExceptionHandling(Session session,
-                                                      ContainerTemplate containerTemplate)
+    private void createViewWithoutExceptionHandling(Session session,
+                                                    ContainerTemplate containerTemplate)
             throws JsonProcessingException, OpalEngineException {
         View view = ViewFactory.createView(session, containerTemplate);
         String sView = objectMapper.writeValueAsString(view);
         String suboperation = ExporterConst.OPAL_PROJECT_WS + OpalUtils.createViewsPath(session);
-
+        logger.info("Create View");
+        logger.info("Request body: " + sView);
         try{
-            return webClient.post()
+            webClient.post()
                     .uri(suboperation)
                     .headers(headers -> {
                         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -340,8 +350,8 @@ public class OpalEngine {
                     })
                     .bodyValue(sView)
                     .retrieve()
-                    .onStatus(status -> status.is4xxClientError(), this::handleError)
-                    .onStatus(status -> status.is5xxServerError(), this::handleError)
+                    .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                    .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception e) {
