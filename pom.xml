@@ -88,11 +88,11 @@
             <artifactId>springdoc-openapi-common</artifactId>
             <version>1.7.0</version>
         </dependency>
-        <!-- TODO: Uncomment with webclient in FhirPackage Loader -->
-        <!--    <dependency>-->
-        <!--      <groupId>org.springframework.boot</groupId>-->
-        <!--      <artifactId>spring-boot-starter-webflux</artifactId>-->
-        <!--    </dependency>-->
+        <!-- TODO: Uncomment with webclient in FhirPackage Loader oder OpalEngine -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
 
         <!-- FHIR dependencies -->
         <dependency>

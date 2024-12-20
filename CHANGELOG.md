@@ -50,6 +50,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Container Attributes Comparator (for FHIR)
 - Logger in FhirContainerAttributesComparator
 - Escape Characters in Fhir Path Merger
+- WebClientFactory class
+- WebClientFactory Attribute and Method in OpalServer
+- ExporterConst for WebClient request-url
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
@@ -65,6 +68,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Zip filename with SITE and TIMESTAMP
 - Refactoring Dockerfile
 - OPAL CSV (replacement of quotes with escape charachters)
+- Replaced Python commands in OpalEngine with WebClient request
 
 ### Removed
 - Remove retrieve-query

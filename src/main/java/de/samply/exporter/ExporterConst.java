@@ -173,6 +173,14 @@ public class ExporterConst {
     public static final String TEMPLATE_GRAPH = "/template-graph";
     public static final String RUNNING_QUERIES = "/running-queries";
     public static final String API_DOCS = "/api-docs";
+    public final static String OPAL_PROJECT = "/ws/project/";
+    public final static String OPAL_PROJECT_PERM = "/permissions/project";
+    public final static String OPAL_PROJECT_FILE = "/files/projects/";
+    public final static String OPAL_PROJECT_TRS = "/transient-datasources";
+    public final static String OPAL_PROJECT_IMPORT = "/commands/_import";
+    public final static String OPAL_PROJECT_FILES = "/ws/files";
+    public final static String OPAL_PROJECT_WS = "/ws";
+    public final static String PROJECTS_OPAL = "/projects";
 
     public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, FETCH_QUERIES,
             FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
