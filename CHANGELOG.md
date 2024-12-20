@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2024-12-05]
+## [1.1.0 - 2024-12-20]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Container Attributes Comparator (for FHIR)
 - Logger in FhirContainerAttributesComparator
 - Escape Characters in Fhir Path Merger
+- WebClientFactory class
+- WebClientFactory Attribute and Method in OpalServer
+- ExporterConst for WebClient request-url
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
@@ -61,6 +64,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Zip filename with SITE and TIMESTAMP
 - Refactoring Dockerfile
 - OPAL CSV (replacement of quotes with escape charachters)
+- Replaced Python commands in OpalEngine with WebClient request
 
 
 ### Removed
