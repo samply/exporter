@@ -1,10 +1,15 @@
 package de.samply.opal.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.samply.exporter.ExporterConst;
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Variable {
 
   @JsonProperty(value = "entityType")
@@ -30,93 +35,5 @@ public class Variable {
   @JsonProperty(value = "categories")
   private List<Category> categories = new ArrayList<>();
 
-
-  public String getEntityType() {
-    return entityType;
-  }
-
-  public void setEntityType(String entityType) {
-    this.entityType = entityType;
-  }
-
-  public Integer getIndex() {
-    return index;
-  }
-
-  public void setIndex(Integer index) {
-    this.index = index;
-  }
-
-  public boolean getIsRepeatable() {
-    return isRepeatable;
-  }
-
-  public void setIsRepeatable(boolean repeatable) {
-    isRepeatable = repeatable;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getValueType() {
-    return valueType;
-  }
-
-  public void setValueType(String valueType) {
-    this.valueType = valueType;
-  }
-
-  public String getMimeType() {
-    return mimeType;
-  }
-
-  public void setMimeType(String mimeType) {
-    this.mimeType = mimeType;
-  }
-
-  public String getOcurrenceGroup() {
-    return ocurrenceGroup;
-  }
-
-  public void setOcurrenceGroup(String ocurrenceGroup) {
-    this.ocurrenceGroup = ocurrenceGroup;
-  }
-
-  public String getReferencedEntityType() {
-    return referencedEntityType;
-  }
-
-  public void setReferencedEntityType(String referencedEntityType) {
-    this.referencedEntityType = referencedEntityType;
-  }
-
-  public String getUnit() {
-    return unit;
-  }
-
-  public void setUnit(String unit) {
-    this.unit = unit;
-  }
-
-  public List<Attribute> getAttributes() {
-    return attributes;
-  }
-
-  public void setAttributes(List<Attribute> attributes) {
-    this.attributes = attributes;
-  }
-
-  public List<Category> getCategories() {
-    return categories;
-  }
-
-  public void setCategories(List<Category> categories) {
-    this.categories = categories;
-  }
 
 }

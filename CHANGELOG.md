@@ -55,6 +55,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - ExporterConst for WebClient request-url
 - Log OpalEngine
 - RequestBody Class
+- Lombok in Opal View objects
 
 ### Changed
 - Move FHIR Packages to dktk-exporter

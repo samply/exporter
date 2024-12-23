@@ -52,6 +52,7 @@
         <postgresql.version>42.6.0</postgresql.version>
         <commons-csv.version>1.10.0</commons-csv.version>
         <jgrapht-core.version>1.5.2</jgrapht-core.version>
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <dependencies>
@@ -156,6 +157,12 @@
         </dependency>
 
         <!-- Other dependencies -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>

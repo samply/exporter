@@ -1,5 +1,9 @@
 package de.samply.opal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.exporter.ExporterConst;
 import de.samply.opal.model.Attribute;
 import de.samply.opal.model.MagmaView;
@@ -15,6 +19,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ViewFactory {
 
+    private final static ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+            .registerModule(new JavaTimeModule());
+
+
+    public static String createViewAndSerializeAsJson(Session session, ContainerTemplate containerTemplate) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(ViewFactory.createView(session, containerTemplate));
+    }
 
     public static View createView(Session session, ContainerTemplate containerTemplate) {
         View view = new View();
