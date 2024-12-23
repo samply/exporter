@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2024-12-20]
+## [1.1.0 - 2024-12-23]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - WebClientFactory Attribute and Method in OpalServer
 - ExporterConst for WebClient request-url
 - Log OpalEngine
+- RequestBody Class
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
