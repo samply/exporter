@@ -1,9 +1,6 @@
 package de.samply.opal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.exporter.ExporterConst;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
@@ -28,8 +25,6 @@ public class OpalEngine {
     private final WebClient webClient;
     private final OpalServer opalServer;
     private final static Logger logger = BufferedLoggerFactory.getLogger(OpalEngine.class);
-    private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-            .registerModule(new JavaTimeModule());
 
     public OpalEngine(OpalServer opalServer) {
         this.opalServer = opalServer;
@@ -158,18 +153,18 @@ public class OpalEngine {
                     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
                 })
                 .bodyValue(new RequestBody(
-                                "UTF-8",
-                                1,
-                                "\"",
-                                normalizeSepartor(session.getConverterTemplate().getCsvSeparator()),
-                                "text",
-                                List.of(RequestBody.createTable(
-                                        template.getOpalTable(),
-                                        session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
-                                        template.getOpalEntityType(),
-                                        session.fetchProject() + "." + template.getOpalTable()
-                                ))
-                        ).getRequestMap())
+                        "UTF-8",
+                        1,
+                        "\"",
+                        normalizeSepartor(session.getConverterTemplate().getCsvSeparator()),
+                        "text",
+                        List.of(RequestBody.createTable(
+                                template.getOpalTable(),
+                                session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
+                                template.getOpalEntityType(),
+                                session.fetchProject() + "." + template.getOpalTable()
+                        ))
+                ).getRequestMap())
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
                 .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
@@ -211,7 +206,7 @@ public class OpalEngine {
                 .block();
     }
 
-    public void waitUntilTaskIsFinished(String taskId) throws OpalEngineException{
+    public void waitUntilTaskIsFinished(String taskId) throws OpalEngineException {
         if (taskId != null) {
 
             int maxRetries = 10;
@@ -253,7 +248,7 @@ public class OpalEngine {
                     })
                     .switchIfEmpty(Mono.error(new RuntimeException("Task was not completed within the expected time")))
                     .block();
-        } else{
+        } else {
             throw new OpalEngineException("Task ID not found");
         }
     }
@@ -275,7 +270,7 @@ public class OpalEngine {
     }
 
     private void createViewWithoutExceptionHandling(Session session, ContainerTemplate containerTemplate) throws JsonProcessingException {
-        String view = objectMapper.writeValueAsString(ViewFactory.createView(session, containerTemplate));
+        String view = ViewFactory.createViewAndSerializeAsJson(session, containerTemplate);
         logger.info("Create View");
         logger.info("Request body: " + view);
         webClient.post()
