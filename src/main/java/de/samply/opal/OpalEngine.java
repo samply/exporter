@@ -160,23 +160,19 @@ public class OpalEngine {
                     headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
                     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
                 })
-                .bodyValue(Map.of(
-                        "Magma.CsvDatasourceFactoryDto.params", Map.of(
-                                "characterSet", "UTF-8",
-                                "firstRow", 1,
-                                "quote", "\"",
-                                "separator", normalizeSepartor(session.getConverterTemplate().getCsvSeparator()),
-                                "defaultValueType", "text",
-                                "tables", new Object[]{
-                                        Map.of(
-                                                "name", template.getOpalTable(),
-                                                "data", session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
-                                                "entityType", template.getOpalEntityType(),
-                                                "refTable", session.fetchProject() + "." + template.getOpalTable()
-                                        )
-                                }
-                        )
-                ))
+                .bodyValue(new RequestBody(
+                                "UTF-8",
+                                1,
+                                "\"",
+                                normalizeSepartor(session.getConverterTemplate().getCsvSeparator()),
+                                "text",
+                                List.of(RequestBody.createTable(
+                                        template.getOpalTable(),
+                                        session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
+                                        template.getOpalEntityType(),
+                                        session.fetchProject() + "." + template.getOpalTable()
+                                ))
+                        ).getRequestMap())
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
                 .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
@@ -218,7 +214,7 @@ public class OpalEngine {
                 .block();
     }
 
-    private Boolean waitUntilTaskIsFinished(String taskId) throws OpalEngineException {
+private Boolean waitUntilTaskIsFinished(String taskId) throws OpalEngineException {
         if (taskId != null) {
             int maxRetries = 10;
             int retryDelayMs = 2000;

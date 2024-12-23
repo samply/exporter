@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - WebClientFactory Attribute and Method in OpalServer
 - ExporterConst for WebClient request-url
 - Log OpalEngine
+- RequestBody Class
 
 ### Changed
 - Move FHIR Packages to dktk-exporter
