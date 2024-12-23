@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.exporter.ExporterConst;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
-import de.samply.opal.model.View;
 import de.samply.template.ContainerTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
@@ -17,13 +16,12 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.util.*;
 
 public class OpalEngine {
 
@@ -45,9 +43,8 @@ public class OpalEngine {
             uploadPath(path, session);
             String uid = importPathTransient(path, session, containerTemplate);
             String tasklocation = importPath(session, containerTemplate, uid);
-            if (waitUntilTaskIsFinished(tasklocation)) {
-                createView(session, containerTemplate);
-            }
+            waitUntilTaskIsFinished(tasklocation);
+            createView(session, containerTemplate);
             deletePath(path, session);
         }
     }
@@ -214,52 +211,49 @@ public class OpalEngine {
                 .block();
     }
 
-private Boolean waitUntilTaskIsFinished(String taskId) throws OpalEngineException {
+    public void waitUntilTaskIsFinished(String taskId) throws OpalEngineException{
         if (taskId != null) {
+
             int maxRetries = 10;
-            int retryDelayMs = 2000;
+            Duration retryDelay = Duration.ofSeconds(2);
 
-            for (int i = 0; i < maxRetries; i++) {
-                Map<String, Object> taskResponse = webClient.get()
-                        .uri(taskId)
-                        .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                        .retrieve()
-                        .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
-                        .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
-                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
-                        })
-                        .onErrorResume(e -> {
-                            logger.error("Error when retrieving the task status: " + e.getMessage());
-                            return Mono.empty();
-                        })
-                        .block();
-
-                if (taskResponse != null) {
-                    String status = (String) taskResponse.get("status");
-
-                    if ("SUCCEEDED".equalsIgnoreCase(status)) {
-                        return true;
-                    } else if ("FAILED".equalsIgnoreCase(status)) {
-                        List<Map<String, Object>> messages = (List<Map<String, Object>>) taskResponse.get("messages");
-                        String errorMessage = messages != null ? extractErrorMessage(messages) : "Unknown error";
-                        throw new OpalEngineException("Task failed: " + errorMessage);
-                    }
-
-                    List<Map<String, Object>> messages = (List<Map<String, Object>>) taskResponse.get("messages");
-                    if (messages != null) {
-                        messages.forEach(msg -> logger.info("Task message: " + msg.get("msg")));
-                    }
-                }
-
-                try {
-                    Thread.sleep(retryDelayMs);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new OpalEngineException("Task polling interrupted", e);
-                }
-            }
-            throw new OpalEngineException("Task " + taskId + " was not completed within the expected time.");
-        } else {
+            Flux.interval(retryDelay)
+                    .take(maxRetries)
+                    .flatMap(attempt -> webClient.get()
+                            .uri(taskId)
+                            .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+                            .retrieve()
+                            .bodyToMono(Map.class)
+                            .onErrorResume(e -> {
+                                System.err.println("Error when retrieving the task status: " + e.getMessage());
+                                return Mono.empty();
+                            })
+                    )
+                    .filter(Objects::nonNull)
+                    .takeUntil(response -> {
+                        String status = (String) response.get("status");
+                        return "SUCCEEDED".equalsIgnoreCase(status) || "FAILED".equalsIgnoreCase(status);
+                    })
+                    .last()
+                    .flatMap(response -> {
+                        String status = (String) response.get("status");
+                        if ("SUCCEEDED".equalsIgnoreCase(status)) {
+                            return Mono.just(true);
+                        } else if ("FAILED".equalsIgnoreCase(status)) {
+                            List<Map<String, Object>> messages = (List<Map<String, Object>>) response.get("messages");
+                            String errorMessage = messages != null
+                                    ? messages.stream()
+                                    .map(msg -> (String) msg.get("msg"))
+                                    .reduce((a, b) -> a + "; " + b)
+                                    .orElse("Unknown error")
+                                    : "Unknown error";
+                            return Mono.error(new RuntimeException("Task failed: " + errorMessage));
+                        }
+                        return Mono.error(new RuntimeException("Unexpected task status"));
+                    })
+                    .switchIfEmpty(Mono.error(new RuntimeException("Task was not completed within the expected time")))
+                    .block();
+        } else{
             throw new OpalEngineException("Task ID not found");
         }
     }

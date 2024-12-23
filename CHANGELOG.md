@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Refactoring Dockerfile
 - OPAL CSV (replacement of quotes with escape charachters)
 - Replaced Python commands in OpalEngine with WebClient request
+- waitUntilTaskIsFinished Method in OpalEngine
 
 ### Removed
 - Retrieve-query
