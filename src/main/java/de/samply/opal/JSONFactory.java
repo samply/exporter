@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.exporter.ExporterConst;
-import de.samply.opal.model.Attribute;
-import de.samply.opal.model.MagmaView;
-import de.samply.opal.model.Variable;
-import de.samply.opal.model.View;
+import de.samply.opal.model.*;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 
@@ -17,14 +14,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ViewFactory {
-
+public class JSONFactory {
     private final static ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule());
 
 
     public static String createViewAndSerializeAsJson(Session session, ContainerTemplate containerTemplate) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(ViewFactory.createView(session, containerTemplate));
+        return objectMapper.writeValueAsString(JSONFactory.createView(session, containerTemplate));
+    }
+
+    public static String createBodyAndSerializeAsJson(Session session, ContainerTemplate containerTemplate, String data, String separator) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(JSONFactory.createCSVDatasourceBody(session, containerTemplate, data, separator));
+    }
+
+    public static String createBodyAndSerializeAsJson(String projectName, String database) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(JSONFactory.createProjectBody(projectName, database));
+    }
+
+    public static String createBodyAndSerializeAsJson(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(JSONFactory.createPathBody(session, template, transientUid));
     }
 
     public static View createView(Session session, ContainerTemplate containerTemplate) {
@@ -33,6 +41,46 @@ public class ViewFactory {
         view.setFrom(fetchViewFrom(session, containerTemplate));
         view.setMagmaView(createMagmaView(session, containerTemplate));
         return view;
+    }
+
+    public static CsvDatasource createCSVDatasourceBody(Session session, ContainerTemplate containerTemplate, String data, String separator) {
+        CsvDatasource body = new CsvDatasource();
+        CsvDatasource.Params params = new CsvDatasource.Params();
+        params.setCharacterSet("UTF-8");
+        params.setFirstRow(1);
+        params.setQuote("\"");
+        params.setSeparator(separator);
+        params.setDefaultValueType("text");
+        params.setTables(List.of(createCSVDatasourceTable(session, containerTemplate, data)));
+        body.setParams(params);
+        return body;
+    }
+
+    public static CreateProjectBody createProjectBody(String projectName, String database) {
+        CreateProjectBody body = new CreateProjectBody();
+        body.setName(projectName);
+        body.setTitle(projectName);
+        body.setDescription("");
+        body.setDatabase(database);
+        body.setVcfStoreService(null);
+        body.setExportFolder("");
+        return body;
+    }
+
+    public static ImportPathBody createPathBody(Session session, ContainerTemplate containerTemplate, String transientUid) {
+        ImportPathBody body = new ImportPathBody();
+        body.setDestination(session.fetchProject());
+        body.setTables(new String[]{transientUid + "." + containerTemplate.getOpalTable()});
+        return body;
+    }
+
+    public static CsvDatasourceTable createCSVDatasourceTable(Session session, ContainerTemplate containerTemplate, String data) {
+        CsvDatasourceTable table = new CsvDatasourceTable();
+        table.setName(containerTemplate.getOpalTable());
+        table.setData(data);
+        table.setEntityType(containerTemplate.getOpalEntityType());
+        table.setRefTable(session.fetchProject() + "." + containerTemplate.getOpalTable());
+        return table;
     }
 
     private static List<String> fetchViewFrom(Session session, ContainerTemplate containerTemplate) {
