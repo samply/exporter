@@ -73,6 +73,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - OPAL CSV (replacement of quotes with escape charachters)
 - Replaced Python commands in OpalEngine with WebClient request
 - waitUntilTaskIsFinished Method in OpalEngine
+- Replace RequestBody Class with ImportPathBody, CreateProjectBody, CsvDatasource, Csv DatasourceTable
+- Changed ViewFactory to JSONFactory
 
 ### Removed
 - Retrieve-query

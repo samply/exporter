@@ -31,7 +31,7 @@ public class OpalEngine {
         this.webClient = opalServer.createWebClient();
     }
 
-    public void sendPathToOpal(Path path, Session session) throws OpalEngineException {
+    public void sendPathToOpal(Path path, Session session) throws OpalEngineException, JsonProcessingException {
         ContainerTemplate containerTemplate = session.getContainerTemplate(
                 path.getFileName().toString());
         if (containerTemplate != null) {
@@ -44,7 +44,7 @@ public class OpalEngine {
         }
     }
 
-    public void createProjectIfNotExists(Session session) throws OpalEngineException {
+    public void createProjectIfNotExists(Session session) throws OpalEngineException, JsonProcessingException {
         if (!existsProject(session)) {
             createProject(session);
             createProjectPermissions(session);
@@ -69,20 +69,13 @@ public class OpalEngine {
                 .block());
     }
 
-    private void createProject(Session session) {
+    private void createProject(Session session) throws JsonProcessingException {
         String projectName = session.fetchProject();
         logger.info("Create Project " + projectName);
         webClient.post()
                 .uri(ExporterConst.OPAL_PROJECT_WS + ExporterConst.PROJECTS_OPAL)
                 .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
-                .bodyValue("{\n" +
-                        "    \"name\": \"" + projectName + "\",\n" +
-                        "    \"title\": \"" + projectName + "\",\n" +
-                        "    \"description\": \"\",\n" +
-                        "    \"database\": \"" + opalServer.getDatabase() + "\",\n" +
-                        "    \"vcfStoreService\": null,\n" +
-                        "    \"exportFolder\": \"\"\n" +
-                        "}")
+                .bodyValue(JSONFactory.createBodyAndSerializeAsJson(projectName, opalServer.getDatabase()))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
                 .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
@@ -141,7 +134,7 @@ public class OpalEngine {
         logger.info("File successfully deleted.");
     }
 
-    private String importPathTransient(Path path, Session session, ContainerTemplate template) throws OpalEngineException {
+    private String importPathTransient(Path path, Session session, ContainerTemplate template) throws OpalEngineException, JsonProcessingException {
         logger.info("Import started for: " + template.getOpalTable() + " in Project " + session.fetchProject());
         Map<String, Object> response = webClient.post()
                 .uri(uriBuilder -> uriBuilder
@@ -152,19 +145,9 @@ public class OpalEngine {
                     headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
                     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
                 })
-                .bodyValue(new RequestBody(
-                        "UTF-8",
-                        1,
-                        "\"",
-                        normalizeSepartor(session.getConverterTemplate().getCsvSeparator()),
-                        "text",
-                        List.of(RequestBody.createTable(
-                                template.getOpalTable(),
-                                session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
-                                template.getOpalEntityType(),
-                                session.fetchProject() + "." + template.getOpalTable()
-                        ))
-                ).getRequestMap())
+                .bodyValue(JSONFactory.createBodyAndSerializeAsJson(session, template,
+                        session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
+                        normalizeSepartor(session.getConverterTemplate().getCsvSeparator())))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
                 .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
@@ -183,14 +166,11 @@ public class OpalEngine {
         return transientUid;
     }
 
-    private String importPath(Session session, ContainerTemplate template, String transientUid) {
+    private String importPath(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
         return webClient.post()
                 .uri(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_IMPORT)
                 .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
-                .bodyValue(Map.of(
-                        "destination", session.fetchProject(),
-                        "tables", new String[]{transientUid + "." + template.getOpalTable()}
-                ))
+                .bodyValue(JSONFactory.createBodyAndSerializeAsJson(session, template, transientUid))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
                 .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
@@ -253,13 +233,6 @@ public class OpalEngine {
         }
     }
 
-    private String extractErrorMessage(List<Map<String, Object>> messages) {
-        return messages.stream()
-                .map(msg -> (String) msg.get("msg"))
-                .reduce((first, second) -> first + "; " + second)
-                .orElse("No specific message found");
-    }
-
     private void createView(Session session, ContainerTemplate containerTemplate)
             throws OpalEngineException {
         try {
@@ -270,7 +243,7 @@ public class OpalEngine {
     }
 
     private void createViewWithoutExceptionHandling(Session session, ContainerTemplate containerTemplate) throws JsonProcessingException {
-        String view = ViewFactory.createViewAndSerializeAsJson(session, containerTemplate);
+        String view = JSONFactory.createViewAndSerializeAsJson(session, containerTemplate);
         logger.info("Create View");
         logger.info("Request body: " + view);
         webClient.post()
@@ -285,7 +258,6 @@ public class OpalEngine {
                 .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                 .bodyToMono(String.class)
                 .block();
-
     }
 
     private String normalizeSepartor(String separator) {

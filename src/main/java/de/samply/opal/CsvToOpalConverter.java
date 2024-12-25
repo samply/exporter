@@ -1,5 +1,6 @@
 package de.samply.opal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import de.samply.converter.Format;
 import de.samply.converter.TargetConverterImpl;
 import de.samply.exporter.ExporterConst;
@@ -55,6 +56,8 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
             opalEngine.sendPathToOpal(input, session);
         } catch (OpalEngineException e) {
             logger.error(ExceptionUtils.getStackTrace(e));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -69,6 +72,8 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
         try {
             opalEngine.createProjectIfNotExists(session);
         } catch (OpalEngineException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
