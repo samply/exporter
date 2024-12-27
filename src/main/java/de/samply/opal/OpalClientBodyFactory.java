@@ -14,25 +14,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class JSONFactory {
+public class OpalClientBodyFactory {
     private final static ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule());
 
 
     public static String createViewAndSerializeAsJson(Session session, ContainerTemplate containerTemplate) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(JSONFactory.createView(session, containerTemplate));
+        return objectMapper.writeValueAsString(OpalClientBodyFactory.createView(session, containerTemplate));
     }
 
-    public static String createBodyAndSerializeAsJson(Session session, ContainerTemplate containerTemplate, String data, String separator) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(JSONFactory.createCSVDatasourceBody(session, containerTemplate, data, separator));
+    public static String createCsvDatasourceBodyAndSerializeAsJson(Session session, ContainerTemplate containerTemplate, String data) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(OpalClientBodyFactory.createCSVDatasourceBody(session, containerTemplate, data));
     }
 
-    public static String createBodyAndSerializeAsJson(String projectName, String database) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(JSONFactory.createProjectBody(projectName, database));
+    public static String createProjectBodyAndSerializeAsJson(String projectName, String database) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(OpalClientBodyFactory.createProjectBody(projectName, database));
     }
 
-    public static String createBodyAndSerializeAsJson(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(JSONFactory.createPathBody(session, template, transientUid));
+    public static String createPathBodyAndSerializeAsJson(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(OpalClientBodyFactory.createPathBody(session, template, transientUid));
     }
 
     public static View createView(Session session, ContainerTemplate containerTemplate) {
@@ -43,13 +43,13 @@ public class JSONFactory {
         return view;
     }
 
-    public static CsvDatasource createCSVDatasourceBody(Session session, ContainerTemplate containerTemplate, String data, String separator) {
+    public static CsvDatasource createCSVDatasourceBody(Session session, ContainerTemplate containerTemplate, String data) {
         CsvDatasource body = new CsvDatasource();
         CsvDatasource.Params params = new CsvDatasource.Params();
         params.setCharacterSet("UTF-8");
         params.setFirstRow(1);
         params.setQuote("\"");
-        params.setSeparator(separator);
+        params.setSeparator(normalizeSeparator(session.getConverterTemplate().getCsvSeparator()));
         params.setDefaultValueType("text");
         params.setTables(List.of(createCSVDatasourceTable(session, containerTemplate, data)));
         body.setParams(params);
@@ -136,4 +136,7 @@ public class JSONFactory {
         return "$('" + attributeTemplate.getCsvColumnName() + "')";
     }
 
+    private static String normalizeSeparator(String separator) {
+        return separator.replace("\t", "\\t");
+    }
 }
