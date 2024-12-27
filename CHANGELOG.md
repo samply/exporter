@@ -75,6 +75,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - waitUntilTaskIsFinished Method in OpalEngine
 - Replace RequestBody Class with ImportPathBody, CreateProjectBody, CsvDatasource, Csv DatasourceTable
 - Changed ViewFactory to JSONFactory
+- Changed JSONFactory to OpalClientBodyFactory
 
 ### Removed
 - Retrieve-query
