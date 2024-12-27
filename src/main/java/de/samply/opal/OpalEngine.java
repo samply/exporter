@@ -125,13 +125,17 @@ public class OpalEngine {
     private void deletePath(Path path, Session session) {
         logger.info("Attempting to delete file at path: " + path);
         webClient.delete()
-                .uri(ExporterConst.OPAL_PROJECT_FILES + session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path))
+                .uri(ExporterConst.OPAL_PROJECT_FILES + fetchOpalProjectDirectoryPath(session, path))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
                 .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
                 .toBodilessEntity()
                 .block();
         logger.info("File successfully deleted.");
+    }
+
+    private String fetchOpalProjectDirectoryPath(Session session, Path path){
+        return session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path);
     }
 
     private String importPathTransient(Path path, Session session, ContainerTemplate template) throws OpalEngineException, JsonProcessingException {
@@ -146,7 +150,7 @@ public class OpalEngine {
                     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
                 })
                 .bodyValue(JSONFactory.createBodyAndSerializeAsJson(session, template,
-                        session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
+                        fetchOpalProjectDirectoryPath(session, path),
                         normalizeSepartor(session.getConverterTemplate().getCsvSeparator())))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
