@@ -1,9 +1,14 @@
 package de.samply.opal.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Category {
 
   @JsonProperty(value = "attributes")
@@ -12,29 +17,5 @@ public class Category {
   private boolean isMissing = false;
   @JsonProperty(value = "name")
   private String name;
-
-  public List<Attribute> getAttributes() {
-    return attributes;
-  }
-
-  public void setAttributes(List<Attribute> attributes) {
-    this.attributes = attributes;
-  }
-
-  public boolean isMissing() {
-    return isMissing;
-  }
-
-  public void setMissing(boolean missing) {
-    isMissing = missing;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
 
 }

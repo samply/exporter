@@ -1,9 +1,14 @@
 package de.samply.opal.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Table {
 
   @JsonProperty(value = "name")
@@ -13,29 +18,5 @@ public class Table {
 
   @JsonProperty(value = "variables")
   private List<Variable> variables = new ArrayList<>();
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getEntityType() {
-    return entityType;
-  }
-
-  public void setEntityType(String entityType) {
-    this.entityType = entityType;
-  }
-
-  public List<Variable> getVariables() {
-    return variables;
-  }
-
-  public void setVariables(List<Variable> variables) {
-    this.variables = variables;
-  }
 
 }

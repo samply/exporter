@@ -19,34 +19,7 @@ public class ExporterConst {
     public final static String FHIR_STORE_NEXT_BUNDLE = "next";
 
     // Opal Constants
-    public final static String OPAL_CMD = "opal";
-    public final static String OPAL_URL = "--opal";
-    public final static String OPAL_PROJECT_NAME = "--name";
-    public final static String OPAL_USER = "--user";
-    public final static String OPAL_PASSWORD = "--password";
-    public final static String OPAL_PROJECT_OP = "project";
-    public final static String OPAL_PROJECT_ADD = "--add";
-    public final static String OPAL_PROJECT_DATABASE = "--database";
-    public final static String OPAL_FILE_OP = "file";
-    public final static String OPAL_FILE_UPLOAD = "-up";
-    public final static String OPAL_FILE_DELETE = "-dt";
-    public final static String OPAL_FILE_FORCE = "--force";
-    public final static String OPAL_IMPORT_CSV_OP = "import-csv";
-    public final static String OPAL_IMPORT_CSV_PATH = "--path";
-    public final static String OPAL_IMPORT_CSV_DESTINATION = "--destination";
-    public final static String OPAL_IMPORT_CSV_TABLES = "--tables";
-    public final static String OPAL_IMPORT_CSV_SEPARATOR = "--separator";
-    public final static String OPAL_IMPORT_CSV_TYPE = "--type";
-    public final static String OPAL_IMPORT_CSV_IDENTIFIERS = "--identifiers";
     public final static String OPAL_DEFAULT_VALUE_TYPE = "text";
-    public final static String OPAL_VALUE_TYPE = "valueType";
-    public final static String OPAL_REST_OP = "rest";
-    public final static String OPAL_REST_METHOD = "--method";
-    public final static String OPAL_REST_METHOD_GET = "GET";
-    public final static String OPAL_REST_METHOD_PUT = "PUT";
-    public final static String OPAL_REST_METHOD_POST = "POST";
-    public final static String OPAL_REST_CONTENT_TYPE = "--content-type";
-    public final static String OPAL_REST_CONTENT_TYPE_JSON = "application/json";
     public final static String OPAL_PATH_PROJECT = "/datasource";
     public final static String OPAL_PATH_TABLE = "/table";
     public final static String OPAL_PATH_VARIABLE = "/variable";
@@ -55,21 +28,8 @@ public class ExporterConst {
     public final static String OPAL_DEFAULT_NAMESPACE = "opal";
     public final static String OPAL_ATTRIBUTE_DERIVED_FROM = "derivedFrom";
     public final static String OPAL_ATTRIBUTE_SCRIPT = "script";
-    public final static String OPAL_ATTRIBUTE_SCRIPT_ID = "$id()";
     public final static String OPAL_VIEW_SUFFIX = "-view";
-    public final static String OPAL_STATUS = "status";
-    public final static String OPAL_STATUS_READY = "READY";
-    public final static String OPAL_TASK_ID = "id";
-    public final static String OPAL_TASK_OP = "task";
-    public final static String OPAL_TASK_OP_ID = "--id";
-    public final static String OPAL_TASK_OP_WAIT = "--wait";
-    public final static String OPAL_PERMISSION_OP = "perm-project";
-    public final static String OPAL_PERMISSION_USER_TYPE = "--type";
-    public final static String OPAL_PERMISSION = "--permission";
-    public final static String OPAL_PERMISSION_PROJECT = "--project";
-    public final static String OPAL_PERMISSION_SUBJECT = "--subject";
     public final static String OPAL_PERMISSION_SUBJECT_SEPARATOR = ",";
-    public final static String OPAL_PERMISSION_ADD = "--add";
 
 
     // Environment Variables
@@ -173,6 +133,14 @@ public class ExporterConst {
     public static final String TEMPLATE_GRAPH = "/template-graph";
     public static final String RUNNING_QUERIES = "/running-queries";
     public static final String API_DOCS = "/api-docs";
+    public final static String OPAL_PROJECT = "/ws/project/";
+    public final static String OPAL_PROJECT_PERM = "/permissions/project";
+    public final static String OPAL_PROJECT_FILE = "/files/projects/";
+    public final static String OPAL_PROJECT_TRS = "/transient-datasources";
+    public final static String OPAL_PROJECT_IMPORT = "/commands/_import";
+    public final static String OPAL_PROJECT_FILES = "/ws/files";
+    public final static String OPAL_PROJECT_WS = "/ws";
+    public final static String PROJECTS_OPAL = "/projects";
 
     public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, FETCH_QUERIES,
             FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,

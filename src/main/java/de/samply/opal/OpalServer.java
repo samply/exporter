@@ -1,20 +1,24 @@
 package de.samply.opal;
 
+import org.springframework.web.reactive.function.client.WebClient;
+
 public class OpalServer {
 
-  private String url;
-  private String user;
-  private String password;
-  private String database;
-  private String filesDirectory;
+  private final String url;
+  private final String user;
+  private final String password;
+  private final String database;
+  private final String filesDirectory;
+  private final WebClientFactory webClientFactory;
 
   public OpalServer(String url, String user, String password, String database,
-      String filesDirectory) {
+      String filesDirectory, WebClientFactory webClientFactory) {
     this.url = url;
     this.user = user;
     this.password = password;
     this.database = database;
     this.filesDirectory = filesDirectory;
+    this.webClientFactory = webClientFactory;
   }
 
   public String getUrl() {
@@ -35,6 +39,10 @@ public class OpalServer {
 
   public String getFilesDirectory() {
     return filesDirectory;
+  }
+
+  public WebClient createWebClient() {
+    return webClientFactory.createWebClient(this.url.trim(), this.user, this.password);
   }
 
 }

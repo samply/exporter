@@ -1,9 +1,14 @@
 package de.samply.opal.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class View {
 
   @JsonProperty(value = "from")
@@ -15,29 +20,5 @@ public class View {
   @JsonProperty(value = "name")
   private String name;
 
-
-  public List<String> getFrom() {
-    return from;
-  }
-
-  public void setFrom(List<String> from) {
-    this.from = from;
-  }
-
-  public MagmaView getMagmaView() {
-    return magmaView;
-  }
-
-  public void setMagmaView(MagmaView magmaView) {
-    this.magmaView = magmaView;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
 
 }
