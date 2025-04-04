@@ -5,7 +5,7 @@ public class ExporterConst {
     public final static boolean LOG_FHIR_VALIDATION_DEFAULT = false;
 
     // HTTP Headers
-    public final static String API_KEY_HEADER = "x-api-key";
+    public final static String API_KEY_HEADER = "Authorization";
 
     // Token variables
     public final static String TOKEN_HEAD = "${";

@@ -80,8 +80,7 @@ public class ApiKeySecurityConfiguration {
         configuration.setAllowedOrigins(Arrays.asList(crossOrigins));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT"));
         configuration.setAllowedHeaders(
-                Arrays.asList("Authorization", "Cache-Control", "Content-Type", "Origin",
-                        ExporterConst.API_KEY_HEADER));
+                Arrays.asList("Authorization", "Cache-Control", "Content-Type", "Origin"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
