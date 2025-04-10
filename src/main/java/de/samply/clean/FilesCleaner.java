@@ -2,6 +2,7 @@ package de.samply.clean;
 
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
+import jakarta.annotation.PostConstruct;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,6 +22,7 @@ public class FilesCleaner {
         this.filesLifetimeInDays = Duration.ofDays(filesLifetimeInDays);
     }
 
+    @PostConstruct // Execute also on start up
     public void clean() throws FilesCleanerException {
         try {
             cleanWithoutExceptionHandling();

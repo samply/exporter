@@ -1,4 +1,4 @@
-<template id="test-template1" excel-filename="my-test-${TIMESTAMP}.xlsx" source-id="blaze-store">
+<converter id="test-template1" excel-filename="my-test-${TIMESTAMP}.xlsx" source-id="blaze-store">
   <container csv-filename="patient-${TIMESTAMP}.csv" excel-sheet="Patient">
     <attribute csv-column="Pat-ID" excel-column="Pat-ID" val-fhir-path="Patient.id"/>
     <attribute csv-column="Pseudonym" excel-column="Pseudonym" val-fhir-path="Patient.identifier.value"/>
@@ -24,4 +24,4 @@
     <fhir-rev-include>Procedure:patient</fhir-rev-include>
     <fhir-rev-include>MedicationStatement:patient</fhir-rev-include>
     <fhir-rev-include>ClinicalImpression:patient</fhir-rev-include> -->
-</template>
+</converter>

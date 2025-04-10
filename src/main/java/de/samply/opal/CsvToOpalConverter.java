@@ -7,6 +7,7 @@ import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
 import de.samply.template.ConverterTemplate;
 import de.samply.template.ConverterTemplateUtils;
+import de.samply.template.token.TokenContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -30,7 +31,7 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
 
     @Override
     public Format getInputFormat() {
-        return Format.CSV;
+        return Format.OPAL_CSV;
     }
 
     @Override
@@ -40,18 +41,26 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
 
     @Override
     protected Flux<Path> convert(Path input, ConverterTemplate template, Session session) {
+        session.addPath(input);
+        return Flux.just(input);
+    }
+
+    @Override
+    protected Runnable getSessionCompleter(ConverterTemplate template, Session session) {
+        return () -> session.getOpalPaths().forEach(path -> sendPathToOpal(path, session));
+    }
+
+    private void sendPathToOpal(Path input, Session session) {
         try {
             opalEngine.sendPathToOpal(input, session);
         } catch (OpalEngineException e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
-        return Flux.just(input);
     }
 
     @Override
-    protected Session initializeSession(ConverterTemplate template) {
-        Session session = new Session(template, fetchConverterTemplateUtils(), fetchTimeoutInSeconds(),
-                fetchMaxNumberOfRetries());
+    protected Session initializeSession(ConverterTemplate template, TokenContext tokenContext) {
+        Session session = new Session(template, fetchConverterTemplateUtils(), fetchTimeoutInSeconds(), fetchMaxNumberOfRetries(), tokenContext);
         createProjectIfNotExists(session);
         return session;
     }
