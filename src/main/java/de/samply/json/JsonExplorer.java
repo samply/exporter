@@ -22,8 +22,8 @@ public class JsonExplorer extends TaggedLinesExplorer {
     }
 
     @Override
-    protected String editLine(String line, int lineNumber, boolean isFirstElement) {
-        return (lineNumber > 2 && isFirstElement) ? line.substring(1) : line; // remove initial comma
+    protected String editLine(String line, int lineNumber, boolean isFirstElement, boolean isLastLine) {
+        return (lineNumber > 2 && isFirstElement && !isLastLine) ? line.substring(1) : line; // remove initial comma
     }
 
     @Override

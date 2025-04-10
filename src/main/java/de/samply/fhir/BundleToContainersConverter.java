@@ -12,6 +12,7 @@ import de.samply.logger.Logger;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
+import de.samply.template.token.TokenContext;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
 import org.hl7.fhir.r4.model.*;
 import org.hl7.fhir.r4.utils.FHIRPathEngine;
@@ -31,6 +32,7 @@ public class BundleToContainersConverter extends
     private final FHIRPathEngine fhirPathEngine;
     private final String fhirPackagesDirectory;
     private final Boolean logFhirValidation;
+    private final ContainerAttributesComparator containerAttributesComparator;
 
     public BundleToContainersConverter(
             @Value(ExporterConst.FHIR_PACKAGES_DIRECTORY_SV) String fhirPackagesDirectory,
@@ -39,6 +41,7 @@ public class BundleToContainersConverter extends
         this.fhirPathEngine = createFhirPathEngine(fhirContext);
         this.fhirPackagesDirectory = fhirPackagesDirectory;
         this.logFhirValidation = logFhirValidation;
+        this.containerAttributesComparator = new FhirContainerAttributesComparator(fhirPathEngine);
     }
 
     @Override
@@ -53,13 +56,13 @@ public class BundleToContainersConverter extends
     }
 
     @Override
-    protected BundleToContainersConverterSession initializeSession(ConverterTemplate template) {
+    protected BundleToContainersConverterSession initializeSession(ConverterTemplate template, TokenContext tokenContext) {
         return new BundleToContainersConverterSession();
     }
 
     public Containers convertToContainers(Bundle bundle, ConverterTemplate converterTemplate,
                                           BundleToContainersConverterSession session) {
-        Containers containers = new Containers();
+        Containers containers = new Containers(containerAttributesComparator);
         BundleContext context = createBundleContext(bundle, converterTemplate, session);
         if (converterTemplate != null) {
             converterTemplate.getContainerTemplates()
@@ -115,14 +118,14 @@ public class BundleToContainersConverter extends
     }
 
     private boolean isSameResourceType(Resource resource, String fhirPath) {
-        String resourceType = resource.getMeta().getProfile().get(0).getValue();
-        if (resourceType.contains("/")) {
-            resourceType = resourceType.substring(resourceType.lastIndexOf('/') + 1);
+        try {
+            if (fhirPath.contains(".")) {
+                fhirPath = fhirPath.substring(0, fhirPath.indexOf("."));
+            }
+            return Class.forName(resource.getClass().getPackageName() + '.' + fhirPath).isInstance(resource);
+        } catch (ClassNotFoundException e) {
+            return false;
         }
-        if (fhirPath.contains(".")) {
-            fhirPath = fhirPath.substring(0, fhirPath.indexOf("."));
-        }
-        return resourceType.toLowerCase().contains(fhirPath.toLowerCase());
     }
 
     private List<ResourceAttribute> fetchResourceAttribute(Resource resource,
@@ -140,7 +143,7 @@ public class BundleToContainersConverter extends
             } else if (isToBeEvaluated(evalResource, idResource, attributeTemplate)) {
                 fhirPathEngine.evaluate(evalResource, expressionNode)
                         .forEach(base -> resourceAttributes.add(
-                                new ResourceAttribute(idResource,
+                                new ResourceAttribute(idResource, evalResource,
                                         fetchAttributeValue(evalResource, attributeTemplate, base, context),
                                         containerTemplate, attributeTemplate)));
             }
@@ -200,7 +203,7 @@ public class BundleToContainersConverter extends
         containers.addAttribute(resourceAttribute.containerTemplate(),
                 resourceAttribute.fetchContainerId(),
                 new Attribute(resourceAttribute.attributeTemplate(),
-                        fetchResourceAttributeValue(resourceAttribute, context)));
+                        fetchResourceAttributeValue(resourceAttribute, context), resourceAttribute.idResource(), resourceAttribute.valueResource()));
     }
 
     private String fetchResourceAttributeValue(ResourceAttribute resourceAttribute,

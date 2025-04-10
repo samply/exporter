@@ -36,6 +36,10 @@ public class QueryExecution {
   @Column(name = "executed_at")
   private Instant executedAt;
 
+  @Column(name = "contact_id")
+  private String contactId;
+
+
   public Long getId() {
     return id;
   }
@@ -82,6 +86,14 @@ public class QueryExecution {
 
   public void setExecutedAt(Instant executedAt) {
     this.executedAt = executedAt;
+  }
+
+  public String getContactId() {
+    return contactId;
+  }
+
+  public void setContactId(String contactId) {
+    this.contactId = contactId;
   }
 
 }

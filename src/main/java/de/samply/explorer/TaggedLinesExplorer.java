@@ -20,7 +20,7 @@ public abstract class TaggedLinesExplorer extends ExplorerImpl {
 
     protected abstract Optional<String> fetchPivotValueFromLine(String pivotAttribute, String line);
 
-    protected String editLine(String line, int lineNumber, boolean isFirstElement) {
+    protected String editLine(String line, int lineNumber, boolean isFirstElement, boolean isLastLine) {
         return line;
     }
 
@@ -35,11 +35,12 @@ public abstract class TaggedLinesExplorer extends ExplorerImpl {
 
     private List<String> fetchLinesWithoutExceptionHandling(Path source, Pivot[] pivots) throws IOException {
         try (Stream<String> lines = Files.lines(source, csvConfig.charset())) {
+            long numberOfLines = Files.lines(source).count();
             List<String> resultLines = new ArrayList<>();
             AtomicInteger lineNumber = new AtomicInteger(1);
             AtomicBoolean isFirstElement = new AtomicBoolean(true);
             lines.filter(line -> isLineToBeIncluded(line, lineNumber.getAndIncrement(), pivots)).forEach(line -> {
-                line = editLine(line, lineNumber.get(), isFirstElement.get());
+                line = editLine(line, lineNumber.get(), isFirstElement.get(), lineNumber.get() == numberOfLines + 1);
                 if (lineNumber.get() > 2 && isFirstElement.get()) {
                     isFirstElement.set(false);
                 }
@@ -79,7 +80,7 @@ public abstract class TaggedLinesExplorer extends ExplorerImpl {
             List<Pivot> results = new ArrayList<>();
             lines.filter(line -> {
                 int counter = tempCounter.getAndIncrement();
-                return counter >= pageCounter && counter < pageCounter + pageSize;
+                return counter > pageCounter * pageSize && counter < (pageCounter + 1) * pageSize + 1;
             }).forEach(pivotLine -> {
                 Optional<String> pivotValue = fetchPivotValueFromLine(pivotAttribute, pivotLine);
                 if (pivotValue.isPresent()) {

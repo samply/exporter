@@ -1,17 +1,19 @@
 package de.samply.explorer;
 
+import de.samply.template.token.TokenContext;
+
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
 public interface Explorer {
 
-    Path filter(Path source, Pivot[] pivots) throws ExplorerException;
+    Path filter(Path source, Pivot[] pivots, TokenContext tokenContext) throws ExplorerException;
 
     Optional<Pivot[]> fetchPivot(Path source, String pivotAttribute, int pageCounter, int pageSize) throws ExplorerException;
 
     Set<String> getCompatibleFileExtensions();
 
-    int fetchTotalNumberOfElements (Path source) throws ExplorerException;
+    int fetchTotalNumberOfElements(Path source) throws ExplorerException;
 
 }

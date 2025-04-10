@@ -3,6 +3,8 @@ package de.samply.explorer;
 import de.samply.csv.CsvConfig;
 import de.samply.exporter.ExporterConst;
 import de.samply.template.ConverterTemplateUtils;
+import de.samply.template.token.TokenContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,19 +27,19 @@ public abstract class ExplorerImpl implements Explorer {
     protected abstract List<String> fetchLines(Path source, Pivot[] pivots) throws ExplorerException;
 
     @Override
-    public Path filter(Path source, Pivot[] pivots) throws ExplorerException {
-        Path result = createFilteredVersionOfSourcePath(source);
+    public Path filter(Path source, Pivot[] pivots, TokenContext tokenContext) throws ExplorerException {
+        Path result = createFilteredVersionOfSourcePath(source, tokenContext);
         writeLinesInPath(fetchLines(source, pivots), result);
         return result;
     }
 
-    private Path createFilteredVersionOfSourcePath(Path source) {
+    private Path createFilteredVersionOfSourcePath(Path source, TokenContext tokenContext) {
         String filename = source.getFileName().toString();
         int index = filename.lastIndexOf(".");
         String extension = filename.substring(index);
         filename = filename.substring(0, index);
         return directory.resolve(
-                converterTemplateUtils.replaceTokens(filename + "-filtered-at-${TIMESTAMP}" + extension));
+                converterTemplateUtils.replaceTokens(filename + "-filtered-at-${TIMESTAMP}" + extension, tokenContext));
     }
 
     private void writeLinesInPath(List<String> lines, Path path) throws ExplorerException {

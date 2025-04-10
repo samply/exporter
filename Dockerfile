@@ -1,12 +1,24 @@
-FROM eclipse-temurin:20-jre
+# For development. Image with Java, Python and the Opal Client:
+#FROM docker.verbis.dkfz.de/ccp/exporter-base:latest
+FROM eclipse-temurin:21-jre
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        python3-venv \
+        pipx \
+        libcurl4-openssl-dev \
+        libssl-dev && \
+    pipx ensurepath && \
+    pipx install obiba-opal && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add pipx binary path to PATH environment variable
+ENV PATH="$PATH:/root/.local/bin"
 
 COPY target/exporter.jar /app/
 
 WORKDIR /app
 
-RUN apt-get update && apt-get upgrade -y && apt-get install python3-pip -y &&  \
-    apt-get install libcurl4-openssl-dev libssl-dev -y && \
-    python3 -m pip install obiba-opal
-
-
-CMD ["java", "-jar", "exporter.jar"]
+CMD ["sh", "-c", "java $JAVA_OPTS -jar exporter.jar"]

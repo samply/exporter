@@ -11,7 +11,8 @@ public class ExporterConst {
     public final static String TOKEN_HEAD = "${";
     public final static String TOKEN_END = "}";
     public final static String TOKEN_EXTENSION_DELIMITER = ":";
-    public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyyMMdd-HH_mm";
+    public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyyMMdd-HH_mm_ss";
+    public final static String DEFAULT_SITE = "local";
     public final static String RELATED_FHIR_PATH_DELIMITER = ",";
 
     // Blaze Store Constants
@@ -79,9 +80,11 @@ public class ExporterConst {
     public final static String CONVERTER_XML_APPLICATION_CONTEXT_PATH = "CONVERTER_XML_APPLICATION_CONTEXT_PATH";
     public final static String EXPORTER_API_KEY = "EXPORTER_API_KEY";
     public final static String ZIP_FILENAME = "ZIP_FILENAME";
+    public final static String MERGE_FILENAME = "MERGE_FILENAME";
     public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION = "CLEAN_TEMP_FILES_CRON_EXPRESSION";
     public final static String TEMP_FILES_LIFETIME_IN_DAYS = "TEMP_FILES_LIFETIME_IN_DAYS";
     public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION = "CLEAN_WRITE_FILES_CRON_EXPRESSION";
+    public final static String ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION = "ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION";
     public final static String WRITE_FILES_LIFETIME_IN_DAYS = "WRITE_FILES_LIFETIME_IN_DAYS";
     public final static String CROSS_ORIGINS = "CROSS_ORIGINS";
     public final static String TIMEOUT_IN_SECONDS = "TIMEOUT";
@@ -91,6 +94,10 @@ public class ExporterConst {
     public final static String TIMESTAMP_FORMAT = "TIMESTAMP_FORMAT";
     public final static String FHIR_PACKAGES_DIRECTORY = "FHIR_PACKAGES_DIRECTORY";
     public final static String LOG_FHIR_VALIDATION = "LOG_FHIR_VALIDATION";
+    public final static String MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET = "MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET";
+    public final static String XML_FILE_MERGER_ROOT_ELEMENT = "XML_FILE_MERGER_ROOT_ELEMENT";
+    public final static String CSV_SEPARATOR_REPLACEMENT = "CSV_SEPARATOR_REPLACEMENT";
+    public final static String SITE = "SITE";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -109,13 +116,15 @@ public class ExporterConst {
                     + BOTTOM_SV;
     public final static String EXPORTER_API_KEY_SV = HEAD_SV + EXPORTER_API_KEY + BOTTOM_SV;
     public final static String ZIP_FILENAME_SV =
-            HEAD_SV + ZIP_FILENAME + ":#{'exporter-files-${TIMESTAMP}.zip'}" + BOTTOM_SV;
+            HEAD_SV + ZIP_FILENAME + ":#{'exporter-files-${SITE}-${TIMESTAMP}.zip'}" + BOTTOM_SV;
     public final static String CLEAN_TEMP_FILES_CRON_EXPRESSION_SV =
             HEAD_SV + CLEAN_TEMP_FILES_CRON_EXPRESSION + ":#{'0 0 1 * * *'}" + BOTTOM_SV;
     public final static String TEMP_FILES_LIFETIME_IN_DAYS_SV =
             HEAD_SV + TEMP_FILES_LIFETIME_IN_DAYS + ":#{1}" + BOTTOM_SV;
     public final static String CLEAN_WRITE_FILES_CRON_EXPRESSION_SV =
             HEAD_SV + CLEAN_WRITE_FILES_CRON_EXPRESSION + ":#{'0 0 2 * * *'}" + BOTTOM_SV;
+    public final static String ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION_SV =
+            HEAD_SV + ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION + ":#{'0 0 2 * * *'}" + BOTTOM_SV;
     public final static String WRITE_FILES_LIFETIME_IN_DAYS_SV =
             HEAD_SV + WRITE_FILES_LIFETIME_IN_DAYS + ":#{30}" + BOTTOM_SV;
     public final static String CROSS_ORIGINS_SV =
@@ -130,15 +139,26 @@ public class ExporterConst {
             HEAD_SV + FHIR_PACKAGES_DIRECTORY + ":#{'./fhir-packages'}" + BOTTOM_SV;
     public final static String LOG_FHIR_VALIDATION_SV =
             HEAD_SV + LOG_FHIR_VALIDATION + ":" + LOG_FHIR_VALIDATION_DEFAULT + BOTTOM_SV;
+    public final static String MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET_SV =
+            HEAD_SV + MAX_NUMBER_OF_EXCEL_ROWS_IN_A_SHEET + ":100000" + BOTTOM_SV;
+    public final static String MERGE_FILENAME_SV =
+            HEAD_SV + MERGE_FILENAME + ":#{'exporter-files-${TIMESTAMP}'}" + BOTTOM_SV;
+    public final static String XML_FILE_MERGER_ROOT_ELEMENT_SV =
+            HEAD_SV + XML_FILE_MERGER_ROOT_ELEMENT + ":Containers" + BOTTOM_SV;
+    public final static String CSV_SEPARATOR_REPLACEMENT_SV =
+            HEAD_SV + CSV_SEPARATOR_REPLACEMENT + ": " + BOTTOM_SV;
+    public final static String SITE_SV = HEAD_SV + SITE + ":" + DEFAULT_SITE + BOTTOM_SV;
 
 
     // REST Paths
     public static final String INFO = "/info";
     public static final String CREATE_QUERY = "/create-query";
-    public static final String QUERIES = "/queries";
+    public static final String UPDATE_QUERY = "/update-query";
+    public static final String FETCH_QUERIES = "/queries";
+    public static final String FETCH_QUERY_EXECUTIONS = "/query-executions";
+    public static final String FETCH_QUERY_EXECUTION_ERRORS = "/query-execution-errors";
     public static final String REQUEST = "/request";
     public static final String RESPONSE = "/response";
-    public static final String RETRIEVE_QUERY = "/retrieve-query";
     public static final String INQUIRY = "/inquiry";
     public static final String STATUS = "/status";
     public static final String ARCHIVE_QUERY = "/archive-query";
@@ -146,10 +166,17 @@ public class ExporterConst {
     public static final String ARCHIVED_INQUIRIES = "/archived-inquiries";
     public static final String ERROR_INQUIRIES = "/error-inquiries";
     public static final String LOGS = "/logs";
+    public static final String TEMPLATE_IDS = "/template-ids";
+    public static final String TEMPLATE = "/template";
+    public static final String INPUT_FORMATS = "/input-formats";
+    public static final String OUTPUT_FORMATS = "/output-formats";
+    public static final String TEMPLATE_GRAPH = "/template-graph";
+    public static final String RUNNING_QUERIES = "/running-queries";
+    public static final String API_DOCS = "/api-docs";
 
-    public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, RETRIEVE_QUERY,
-            QUERIES, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES, ERROR_INQUIRIES, INQUIRY,
-            ARCHIVE_QUERY, STATUS, LOGS};
+    public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, FETCH_QUERIES,
+            FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
+            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS, RUNNING_QUERIES, UPDATE_QUERY, API_DOCS};
     // TODO: RESPONSE ??? Only with UUID enough?
 
     // REST Headers
@@ -164,18 +191,24 @@ public class ExporterConst {
     public static final String QUERY_LABEL = "query-label";
     public static final String QUERY_DESCRIPTION = "query-description";
     public static final String QUERY_CONTACT_ID = "query-contact-id";
+    public static final String QUERY_EXECUTION_CONTACT_ID = "query-execution-contact-id";
     public static final String QUERY_EXPIRATION_DATE = "query-expiration-date";
+    public static final String QUERY_DEFAULT_OUTPUT_FORMAT = "query-default-output-format";
+    public static final String QUERY_DEFAULT_TEMPLATE_ID = "query-default-template-id";
     public static final String TEMPLATE_ID = "template-id";
+    public static final String REQUEST_TEMPLATE = "template";
+    public static final String QUERY_CONTEXT = "query-context";
     public static final String QUERY_FORMAT = "query-format";
     public static final String OUTPUT_FORMAT = "output-format";
     public static final String QUERY_EXECUTION_ID = "query-execution-id";
     public static final String FILE_FILTER = "file-filter";
     public static final String FILE_COLUMN_PIVOT = "pivot";
     public static final String PIVOT_VALUE = "pivot-value";
-    public static final String PAGE_COUNTER = "page-counter";
     public static final String LOGS_SIZE = "logs-size";
     public static final String LOGS_LAST_LINE = "logs-last-line";
     public final static String IS_INTERNAL_REQUEST = "internal-request";
+    public final static String MERGE_FILES = "merge-files";
+    public final static String FILE_AS_PLAIN_TEXT_IN_BODY = "in-body";
 
 
     /*
@@ -197,6 +230,9 @@ public class ExporterConst {
     public static final String INQUIRY_NULL_DESCRIPTION = "No description provided";
     public static final String CROSS_ORIGINS_SEPARATOR = ",";
     public static final int DEFAULT_TIMEOUT_IN_SECONDS = 5;
+    public static final int DEFAULT_CONNECTION_TIMEOUT_IN_SECONDS = 10;
+    public static final int DEFAULT_CONNECTION_REQUEST_TIMEOUT_IN_SECONDS = 20;
+    public static final int DEFAULT_SOCKET_TIMEOUT_IN_SECONDS = 30;
     public static final int DEFAULT_MAX_NUMBER_OF_RETRIES = 10;
     public static final String[] PASSWORD_BLACKLIST = {"password", "secret", "apikey"};
     public static final String PASSWORD_REPLACEMENT = "XXXXX";
@@ -208,5 +244,14 @@ public class ExporterConst {
     public static final String BLAZE_URL_QUERY_PARAMETER_PAGE_SIZE = "_count=";
     public static final int DEFAULT_FHIR_PAGE_SIZE = 50;
     public final static int BUFFERED_LOGGER_SIZE = 1000;
+    public final static String JSON_FILE_EXTENSION = "json";
+    public final static String XML_FILE_EXTENSION = "xml";
+    public final static String MEASURE_REPORT_GROUP_POPULATION_SUBJECT_RESULTS_REFERENCE_PREFIX = "List/";
+    public final static String FHIR_SEARCH_LIST_PARAMETER = "_list";
+    public final static String DEFAULT_GRAPH_FORMAT = "JSON";
+    public final static String ERROR_MESSAGE_INTERRUPTED_QUERY_EXECUTION = "Query execution interrupted abruptly";
+    public final static String QUERY_CONTEXT_SEPARATOR = ";";
+    public final static String QUERY_CONTEXT_EQUAL = "=";
+    public final static String FHIR_SEARCH_PATH_ROOT = "ROOT";
 
 }

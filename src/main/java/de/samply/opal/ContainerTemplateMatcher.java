@@ -1,9 +1,8 @@
 package de.samply.opal;
 
-import de.samply.exporter.ExporterConst;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
-import de.samply.template.TokenReplacer;
+import de.samply.template.token.TokenReplacer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

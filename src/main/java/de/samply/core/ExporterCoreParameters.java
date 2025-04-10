@@ -7,6 +7,7 @@ import de.samply.template.ConverterTemplate;
 public record ExporterCoreParameters(
     Query query,
     ConverterTemplate template,
-    Converter converter
+    Converter converter,
+    String queryExecutionContactId
 ) {
 }
