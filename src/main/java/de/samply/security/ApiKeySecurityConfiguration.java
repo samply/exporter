@@ -1,9 +1,7 @@
 package de.samply.security;
 
-
 import de.samply.exporter.ExporterConst;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -13,10 +11,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import java.util.Arrays;
 
 
@@ -29,7 +23,6 @@ import java.util.Arrays;
 public class ApiKeySecurityConfiguration {
 
     private ApiKeyAuthenticationManager apiKeyAuthenticationManager;
-
 
     /**
      * Add API key filter to Spring http security.
@@ -53,7 +46,6 @@ public class ApiKeySecurityConfiguration {
                             authorize.anyRequest().authenticated();
                         }
                 );
-
         return httpSecurity.build();
     }
 
@@ -65,26 +57,8 @@ public class ApiKeySecurityConfiguration {
 
     @Bean
     public ApiKeyFilter createApiKeyFilter() {
-
         ApiKeyFilter apiKeyFilter = new ApiKeyFilter();
         apiKeyFilter.setAuthenticationManager(apiKeyAuthenticationManager);
         return apiKeyFilter;
-
     }
-
-    @Bean
-    CorsConfigurationSource corsConfigurationSource(
-            @Value(ExporterConst.CROSS_ORIGINS_SV) String[] crossOrigins) {
-        CorsConfiguration configuration = new CorsConfiguration();
-        //configuration.setAllowedOrigins(fetchCrossOrigins(crossOrigins));
-        configuration.setAllowedOrigins(Arrays.asList(crossOrigins));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT"));
-        configuration.setAllowedHeaders(
-                Arrays.asList("Authorization", "Cache-Control", "Content-Type", "Origin"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
-
 }

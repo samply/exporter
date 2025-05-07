@@ -15,34 +15,35 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class ApiKeyAuthenticationManager implements AuthenticationManager {
 
-  /*
-   * Security: This class provides API key support to REST for connecting different server
-   */
+    /*
+     * Security: This class provides API key support to REST for connecting different server
+     */
 
-  @Value(ExporterConst.EXPORTER_API_KEY_SV)
-  private String apiKey;
+    @Value(ExporterConst.EXPORTER_API_KEY_SV)
+    private String apiKey;
 
-  /**
-   * Authenticates request based on an API key.
-   *
-   * @param authentication REST API Client authentication.
-   * @return Authentication with setAuthenticated set to true or false.
-   * @throws AuthenticationException Authentication exception.
-   */
-  @Override
-  public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-
-    String apiKey = (String) authentication.getPrincipal();
-
-    if (!ObjectUtils.isEmpty(this.apiKey) && (ObjectUtils.isEmpty(apiKey) || !apiKey.equals(
-        this.apiKey))) {
-      throw new BadCredentialsException("Incorrect API Key");
-    } else {
-      authentication.setAuthenticated(true);
+    /**
+     * Authenticates request based on an API key.
+     *
+     * @param authentication REST API Client authentication.
+     * @return Authentication with setAuthenticated set to true or false.
+     * @throws AuthenticationException Authentication exception.
+     */
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        String apiKey = (String) authentication.getPrincipal();
+        // new Authorization header with prefix ApiKey
+        if (apiKey != null && apiKey.startsWith(ExporterConst.API_KEY_PREFIX)) {
+            apiKey = apiKey.substring(ExporterConst.API_KEY_PREFIX.length()).trim();
+        } else {
+            throw new BadCredentialsException("header does not contain expected prefix");
+        }
+        if (!ObjectUtils.isEmpty(this.apiKey) && !apiKey.equals(
+                this.apiKey)) {
+            throw new BadCredentialsException("Incorrect API Key");
+        } else {
+            authentication.setAuthenticated(true);
+        }
+        return authentication;
     }
-
-    return authentication;
-
-  }
-
 }

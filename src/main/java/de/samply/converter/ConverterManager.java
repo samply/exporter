@@ -20,6 +20,8 @@ public class ConverterManager {
             @Autowired ApplicationContext applicationContext,
             @Value(ExporterConst.CONVERTER_XML_APPLICATION_CONTEXT_PATH_SV) String converterXmlApplicationContextPath
     ) {
+        System.out.println("Context path: " + converterXmlApplicationContextPath);
+        System.out.println("Converter XML application context: " + applicationContext);
         List<Converter> converters = new ArrayList<>();
         converters.addAll(applicationContext.getBeansOfType(Converter.class).values());
         converters.addAll(fetchConvertersFromApplicationContextInFile(converterXmlApplicationContextPath,
