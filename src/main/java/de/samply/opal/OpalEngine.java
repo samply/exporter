@@ -5,6 +5,10 @@ import de.samply.exporter.ExporterConst;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
 import de.samply.template.ContainerTemplate;
+import de.samply.utils.WebClientFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
@@ -20,15 +24,15 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 
-public class OpalEngine {
+public class OpalEngine implements ApplicationContextAware {
 
-    private final WebClient webClient;
+    private WebClient webClient;
+    private ApplicationContext applicationContext;
     private final OpalServer opalServer;
     private final static Logger logger = BufferedLoggerFactory.getLogger(OpalEngine.class);
 
     public OpalEngine(OpalServer opalServer) {
         this.opalServer = opalServer;
-        this.webClient = opalServer.createWebClient();
     }
 
     public void sendPathToOpal(Path path, Session session) throws OpalEngineException, JsonProcessingException {
@@ -52,7 +56,7 @@ public class OpalEngine {
     }
 
     private boolean existsProject(Session session) {
-        return Boolean.TRUE.equals(webClient.get()
+        return Boolean.TRUE.equals(fetchWebClient().get()
                 .uri(ExporterConst.OPAL_PROJECT + session.fetchProject())
                 .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .exchangeToMono(response -> {
@@ -72,7 +76,7 @@ public class OpalEngine {
     private void createProject(Session session) throws JsonProcessingException {
         String projectName = session.fetchProject();
         logger.info("Create Project " + projectName);
-        webClient.post()
+        fetchWebClient().post()
                 .uri(ExporterConst.OPAL_PROJECT_WS + ExporterConst.PROJECTS_OPAL)
                 .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
                 .bodyValue(OpalClientBodyFactory.createProjectBodyAndSerializeAsJson(projectName, opalServer.getDatabase()))
@@ -89,7 +93,7 @@ public class OpalEngine {
         if (subjects != null && !subjects.isEmpty()) {
             Arrays.stream(subjects.trim().split(ExporterConst.OPAL_PERMISSION_SUBJECT_SEPARATOR)).forEach(subject -> {
                 logger.info("Create Project Permission");
-                results.add(webClient.post()
+                results.add(fetchWebClient().post()
                         .uri(uriBuilder -> uriBuilder
                                 .path(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_PERM)
                                 .queryParam("type", session.getConverterTemplate().getOpalPermissionType().toString())
@@ -108,7 +112,7 @@ public class OpalEngine {
 
     private void uploadPath(Path path, Session session) {
         logger.info("Uploading file: " + path.getFileName());
-        webClient.post()
+        fetchWebClient().post()
                 .uri(ExporterConst.OPAL_PROJECT_WS + ExporterConst.OPAL_PROJECT_FILE + session.fetchProject())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .bodyValue(new LinkedMultiValueMap<>() {{
@@ -124,7 +128,7 @@ public class OpalEngine {
 
     private void deletePath(Path path, Session session) {
         logger.info("Attempting to delete file at path: " + path);
-        webClient.delete()
+        fetchWebClient().delete()
                 .uri(ExporterConst.OPAL_PROJECT_FILES + fetchOpalProjectDirectoryPath(session, path))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
@@ -134,13 +138,13 @@ public class OpalEngine {
         logger.info("File successfully deleted.");
     }
 
-    private String fetchOpalProjectDirectoryPath(Session session, Path path){
+    private String fetchOpalProjectDirectoryPath(Session session, Path path) {
         return session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path);
     }
 
     private String importPathTransient(Path path, Session session, ContainerTemplate template) throws OpalEngineException, JsonProcessingException {
         logger.info("Import started for: " + template.getOpalTable() + " in Project " + session.fetchProject());
-        Map<String, Object> response = webClient.post()
+        Map<String, Object> response = fetchWebClient().post()
                 .uri(uriBuilder -> uriBuilder
                         .path(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_TRS)
                         .queryParam("merge", false)
@@ -170,7 +174,7 @@ public class OpalEngine {
     }
 
     private String importPath(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
-        return webClient.post()
+        return fetchWebClient().post()
                 .uri(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_IMPORT)
                 .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
                 .bodyValue(OpalClientBodyFactory.createPathBodyAndSerializeAsJson(session, template, transientUid))
@@ -197,7 +201,7 @@ public class OpalEngine {
 
             Flux.interval(retryDelay)
                     .take(maxRetries)
-                    .flatMap(attempt -> webClient.get()
+                    .flatMap(attempt -> fetchWebClient().get()
                             .uri(taskId)
                             .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                             .retrieve()
@@ -249,7 +253,7 @@ public class OpalEngine {
         String view = OpalClientBodyFactory.createViewAndSerializeAsJson(session, containerTemplate);
         logger.info("Create View");
         logger.info("Request body: " + view);
-        webClient.post()
+        fetchWebClient().post()
                 .uri(ExporterConst.OPAL_PROJECT_WS + OpalUtils.createViewsPath(session))
                 .headers(headers -> {
                     headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -269,6 +273,23 @@ public class OpalEngine {
                     logger.error(body);
                     return Mono.error(new OpalEngineException(body));
                 });
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    private WebClient fetchWebClient() throws OpalEngineException {
+        if (webClient == null) {
+            WebClientFactory webClientFactory = applicationContext.getBean(WebClientFactory.class);
+            if (webClientFactory != null) {
+                webClient = this.opalServer.createWebClient(webClientFactory);
+            } else {
+                throw new OpalEngineException("Web Client not defined");
+            }
+        }
+        return webClient;
     }
 
 }

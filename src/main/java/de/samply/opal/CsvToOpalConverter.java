@@ -109,6 +109,7 @@ public class CsvToOpalConverter extends TargetConverterImpl<Path, Path, Session>
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        this.opalEngine.setApplicationContext(applicationContext);
     }
 
 }

@@ -38,9 +38,10 @@ public class ConverterManager {
                     if (context.getBean(beanName) instanceof Converter) {
                         Converter converter = (Converter) context.getBean(beanName);
                         converters.add(converter);
-                        if (converter instanceof ApplicationContextAware) {
-                            ((ApplicationContextAware) converter).setApplicationContext(applicationContext);
-                        }
+                    }
+                    if (context.getBean(beanName) instanceof ApplicationContextAware) {
+                        ApplicationContextAware contextAware = (ApplicationContextAware) context.getBean(beanName);
+                        contextAware.setApplicationContext(applicationContext);
                     }
                 });
         return converters;

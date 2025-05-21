@@ -1,6 +1,6 @@
 package de.samply.opal;
 
-public class OpalEngineException extends Exception {
+public class OpalEngineException extends RuntimeException {
 
   public OpalEngineException(String message) {
     super(message);

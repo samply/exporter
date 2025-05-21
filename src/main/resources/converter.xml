@@ -48,18 +48,6 @@
         <constructor-arg name="user" value="#{systemEnvironment['OPAL_USER']}"/>
         <constructor-arg name="password" value="#{systemEnvironment['OPAL_PASSWORD']}"/>
         <constructor-arg name="filesDirectory" value="/projects"/>
-        <constructor-arg name="webClientFactory" ref="webClientFactory"/>
-    </bean>
-
-    <bean id="webClientFactory" class="de.samply.opal.WebClientFactory">
-        <constructor-arg name="webClientRequestTimeoutInSeconds" value="#{systemEnvironment['WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS']}"/>
-        <constructor-arg name="webClientConnectionTimeoutInSeconds" value="#{systemEnvironment['WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS']}"/>
-        <constructor-arg name="webClientTcpKeepIdleInSeconds" value="#{systemEnvironment['WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS']}"/>
-        <constructor-arg name="webClientTcpKeepIntervalInSeconds" value="#{systemEnvironment['WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS']}"/>
-        <constructor-arg name="webClientTcpKeepConnectionNumberOfTries" value="#{systemEnvironment['WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES']}"/>
-        <constructor-arg name="webClientMaxNumberOfRetries" value="#{systemEnvironment['WEBCLIENT_MAX_NUMBER_OF_RETRIES']}"/>
-        <constructor-arg name="webClientTimeInSecondsAfterRetryWithFailure" value="#{systemEnvironment['WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE']}"/>
-        <constructor-arg name="webClientBufferSizeInBytes" value="#{systemEnvironment['WEBCLIENT_BUFFER_SIZE_IN_BYTES']}"/>
     </bean>
 
 </beans>
