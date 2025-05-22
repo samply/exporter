@@ -30,6 +30,11 @@ public class ExporterConst {
     public final static String OPAL_ATTRIBUTE_SCRIPT = "script";
     public final static String OPAL_VIEW_SUFFIX = "-view";
     public final static String OPAL_PERMISSION_SUBJECT_SEPARATOR = ",";
+    public final static String OPAL_STATUS_SUCCEEDED = "SUCCEEDED";
+    public final static String OPAL_STATUS_FAILED = "FAILED";
+    public final static String OPAL_STATUS_FIELD = "status";
+    public final static String OPAL_MESSAGES_FIELD = "messages";
+    public final static String OPAL_MESSAGE_FIELD = "msg";
 
 
     // Environment Variables
@@ -127,7 +132,7 @@ public class ExporterConst {
     public static final String WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV =
             HEAD_SV + WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES + ":3" + BOTTOM_SV; // default 3 tries
     public static final String WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV =
-            HEAD_SV + WEBCLIENT_MAX_NUMBER_OF_RETRIES + ":2" + BOTTOM_SV; // default 2 retries
+            HEAD_SV + WEBCLIENT_MAX_NUMBER_OF_RETRIES + ":10" + BOTTOM_SV; // default 2 retries
     public static final String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV =
             HEAD_SV + WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE + ":1" + BOTTOM_SV; // default 1 second
     public static final String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =

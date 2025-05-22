@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - WebClient Factory
 
+### Changed
+- Refactoring OpalEngine
+- Refactoring Opal Waiting
+
 ## [1.1.0 - 2025-04-10]
 ### Added
 - Java Opts

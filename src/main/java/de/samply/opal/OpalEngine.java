@@ -17,12 +17,15 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class OpalEngine implements ApplicationContextAware {
 
@@ -30,6 +33,8 @@ public class OpalEngine implements ApplicationContextAware {
     private ApplicationContext applicationContext;
     private final OpalServer opalServer;
     private final static Logger logger = BufferedLoggerFactory.getLogger(OpalEngine.class);
+    private long maxRetries = 10;
+    private Duration retryDelay = Duration.ofSeconds(10);
 
     public OpalEngine(OpalServer opalServer) {
         this.opalServer = opalServer;
@@ -43,7 +48,7 @@ public class OpalEngine implements ApplicationContextAware {
             String uid = importPathTransient(path, session, containerTemplate);
             String tasklocation = importPath(session, containerTemplate, uid);
             waitUntilTaskIsFinished(tasklocation);
-            createView(session, containerTemplate);
+            //createView(session, containerTemplate); // Currently, views seems not to be necessary. TODO: Remove is that is the case.
             deletePath(path, session);
         }
     }
@@ -195,46 +200,40 @@ public class OpalEngine implements ApplicationContextAware {
 
     public void waitUntilTaskIsFinished(String taskId) throws OpalEngineException {
         if (taskId != null) {
-
-            int maxRetries = 10;
-            Duration retryDelay = Duration.ofSeconds(2);
-
-            Flux.interval(retryDelay)
-                    .take(maxRetries)
-                    .flatMap(attempt -> fetchWebClient().get()
-                            .uri(taskId)
-                            .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                            .retrieve()
-                            .bodyToMono(Map.class)
-                            .onErrorResume(e -> {
-                                System.err.println("Error when retrieving the task status: " + e.getMessage());
-                                return Mono.empty();
-                            })
-                    )
-                    .filter(Objects::nonNull)
-                    .takeUntil(response -> {
-                        String status = (String) response.get("status");
-                        return "SUCCEEDED".equalsIgnoreCase(status) || "FAILED".equalsIgnoreCase(status);
-                    })
-                    .last()
+            fetchWebClient().get()
+                    .uri(taskId)
+                    .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+                    .retrieve()
+                    .bodyToMono(Map.class)
                     .flatMap(response -> {
-                        String status = (String) response.get("status");
-                        if ("SUCCEEDED".equalsIgnoreCase(status)) {
+                        if (response == null) {
+                            return Mono.error(new TaskNotReadyException());
+                        }
+
+                        String status = (String) response.get(ExporterConst.OPAL_STATUS_FIELD);
+
+                        if (ExporterConst.OPAL_STATUS_SUCCEEDED.equalsIgnoreCase(status)) {
                             return Mono.just(true);
-                        } else if ("FAILED".equalsIgnoreCase(status)) {
-                            List<Map<String, Object>> messages = (List<Map<String, Object>>) response.get("messages");
+                        } else if (ExporterConst.OPAL_STATUS_FAILED.equalsIgnoreCase(status)) {
+                            List<Map<String, Object>> messages = (List<Map<String, Object>>) response.get(ExporterConst.OPAL_MESSAGES_FIELD);
                             String errorMessage = messages != null
                                     ? messages.stream()
-                                    .map(msg -> (String) msg.get("msg"))
+                                    .map(msg -> (String) msg.get(ExporterConst.OPAL_MESSAGE_FIELD))
                                     .reduce((a, b) -> a + "; " + b)
                                     .orElse("Unknown error")
                                     : "Unknown error";
-                            return Mono.error(new RuntimeException("Task failed: " + errorMessage));
+                            return Mono.error(new OpalEngineException("Task failed: " + errorMessage));
+                        } else {
+                            logger.info("Task is not finished yet. Status: " + status);
+                            return Mono.error(new TaskNotReadyException());
                         }
-                        return Mono.error(new RuntimeException("Unexpected task status"));
                     })
-                    .switchIfEmpty(Mono.error(new RuntimeException("Task was not completed within the expected time")))
-                    .block();
+                    .retryWhen(
+                            Retry.fixedDelay(maxRetries, retryDelay)
+                                    .filter(throwable -> throwable instanceof TaskNotReadyException)
+                                    .onRetryExhaustedThrow((spec, signal) ->
+                                            new OpalEngineException("Task was not completed within the expected time"))
+                    ).block();
         } else {
             throw new OpalEngineException("Task ID not found");
         }
@@ -285,6 +284,8 @@ public class OpalEngine implements ApplicationContextAware {
             WebClientFactory webClientFactory = applicationContext.getBean(WebClientFactory.class);
             if (webClientFactory != null) {
                 webClient = this.opalServer.createWebClient(webClientFactory);
+                maxRetries = webClientFactory.getWebClientMaxNumberOfRetries();
+                retryDelay = Duration.ofSeconds(webClientFactory.getWebClientTimeInSecondsAfterRetryWithFailure());
             } else {
                 throw new OpalEngineException("Web Client not defined");
             }

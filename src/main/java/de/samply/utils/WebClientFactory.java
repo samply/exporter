@@ -62,4 +62,12 @@ public class WebClientFactory {
         return webClientBuilder.build();
     }
 
+    public int getWebClientMaxNumberOfRetries() {
+        return webClientMaxNumberOfRetries;
+    }
+
+    public int getWebClientTimeInSecondsAfterRetryWithFailure() {
+        return webClientTimeInSecondsAfterRetryWithFailure;
+    }
+    
 }
