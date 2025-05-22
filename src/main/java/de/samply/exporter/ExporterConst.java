@@ -19,34 +19,7 @@ public class ExporterConst {
     public final static String FHIR_STORE_NEXT_BUNDLE = "next";
 
     // Opal Constants
-    public final static String OPAL_CMD = "opal";
-    public final static String OPAL_URL = "--opal";
-    public final static String OPAL_PROJECT_NAME = "--name";
-    public final static String OPAL_USER = "--user";
-    public final static String OPAL_PASSWORD = "--password";
-    public final static String OPAL_PROJECT_OP = "project";
-    public final static String OPAL_PROJECT_ADD = "--add";
-    public final static String OPAL_PROJECT_DATABASE = "--database";
-    public final static String OPAL_FILE_OP = "file";
-    public final static String OPAL_FILE_UPLOAD = "-up";
-    public final static String OPAL_FILE_DELETE = "-dt";
-    public final static String OPAL_FILE_FORCE = "--force";
-    public final static String OPAL_IMPORT_CSV_OP = "import-csv";
-    public final static String OPAL_IMPORT_CSV_PATH = "--path";
-    public final static String OPAL_IMPORT_CSV_DESTINATION = "--destination";
-    public final static String OPAL_IMPORT_CSV_TABLES = "--tables";
-    public final static String OPAL_IMPORT_CSV_SEPARATOR = "--separator";
-    public final static String OPAL_IMPORT_CSV_TYPE = "--type";
-    public final static String OPAL_IMPORT_CSV_IDENTIFIERS = "--identifiers";
     public final static String OPAL_DEFAULT_VALUE_TYPE = "text";
-    public final static String OPAL_VALUE_TYPE = "valueType";
-    public final static String OPAL_REST_OP = "rest";
-    public final static String OPAL_REST_METHOD = "--method";
-    public final static String OPAL_REST_METHOD_GET = "GET";
-    public final static String OPAL_REST_METHOD_PUT = "PUT";
-    public final static String OPAL_REST_METHOD_POST = "POST";
-    public final static String OPAL_REST_CONTENT_TYPE = "--content-type";
-    public final static String OPAL_REST_CONTENT_TYPE_JSON = "application/json";
     public final static String OPAL_PATH_PROJECT = "/datasource";
     public final static String OPAL_PATH_TABLE = "/table";
     public final static String OPAL_PATH_VARIABLE = "/variable";
@@ -55,21 +28,13 @@ public class ExporterConst {
     public final static String OPAL_DEFAULT_NAMESPACE = "opal";
     public final static String OPAL_ATTRIBUTE_DERIVED_FROM = "derivedFrom";
     public final static String OPAL_ATTRIBUTE_SCRIPT = "script";
-    public final static String OPAL_ATTRIBUTE_SCRIPT_ID = "$id()";
     public final static String OPAL_VIEW_SUFFIX = "-view";
-    public final static String OPAL_STATUS = "status";
-    public final static String OPAL_STATUS_READY = "READY";
-    public final static String OPAL_TASK_ID = "id";
-    public final static String OPAL_TASK_OP = "task";
-    public final static String OPAL_TASK_OP_ID = "--id";
-    public final static String OPAL_TASK_OP_WAIT = "--wait";
-    public final static String OPAL_PERMISSION_OP = "perm-project";
-    public final static String OPAL_PERMISSION_USER_TYPE = "--type";
-    public final static String OPAL_PERMISSION = "--permission";
-    public final static String OPAL_PERMISSION_PROJECT = "--project";
-    public final static String OPAL_PERMISSION_SUBJECT = "--subject";
     public final static String OPAL_PERMISSION_SUBJECT_SEPARATOR = ",";
-    public final static String OPAL_PERMISSION_ADD = "--add";
+    public final static String OPAL_STATUS_SUCCEEDED = "SUCCEEDED";
+    public final static String OPAL_STATUS_FAILED = "FAILED";
+    public final static String OPAL_STATUS_FIELD = "status";
+    public final static String OPAL_MESSAGES_FIELD = "messages";
+    public final static String OPAL_MESSAGE_FIELD = "msg";
 
 
     // Environment Variables
@@ -98,6 +63,14 @@ public class ExporterConst {
     public final static String XML_FILE_MERGER_ROOT_ELEMENT = "XML_FILE_MERGER_ROOT_ELEMENT";
     public final static String CSV_SEPARATOR_REPLACEMENT = "CSV_SEPARATOR_REPLACEMENT";
     public final static String SITE = "SITE";
+    public static final String WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS = "WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS";
+    public static final String WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS = "WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS";
+    public static final String WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS = "WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS";
+    public static final String WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS = "WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS";
+    public static final String WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES = "WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES";
+    public static final String WEBCLIENT_MAX_NUMBER_OF_RETRIES = "WEBCLIENT_MAX_NUMBER_OF_RETRIES";
+    public static final String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE = "WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE";
+    public static final String WEBCLIENT_BUFFER_SIZE_IN_BYTES = "WEBCLIENT_BUFFER_SIZE_IN_BYTES";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -148,7 +121,22 @@ public class ExporterConst {
     public final static String CSV_SEPARATOR_REPLACEMENT_SV =
             HEAD_SV + CSV_SEPARATOR_REPLACEMENT + ": " + BOTTOM_SV;
     public final static String SITE_SV = HEAD_SV + SITE + ":" + DEFAULT_SITE + BOTTOM_SV;
-
+    public static final String WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS_SV =
+            HEAD_SV + WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS + ":10" + BOTTOM_SV; // default 10 seconds
+    public static final String WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS_SV =
+            HEAD_SV + WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS + ":5" + BOTTOM_SV; // default 5 seconds
+    public static final String WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS_SV =
+            HEAD_SV + WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS + ":30" + BOTTOM_SV; // default 30 seconds
+    public static final String WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS_SV =
+            HEAD_SV + WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS + ":10" + BOTTOM_SV; // default 10 seconds
+    public static final String WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV =
+            HEAD_SV + WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES + ":3" + BOTTOM_SV; // default 3 tries
+    public static final String WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV =
+            HEAD_SV + WEBCLIENT_MAX_NUMBER_OF_RETRIES + ":10" + BOTTOM_SV; // default 2 retries
+    public static final String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV =
+            HEAD_SV + WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE + ":1" + BOTTOM_SV; // default 1 second
+    public static final String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =
+            HEAD_SV + WEBCLIENT_BUFFER_SIZE_IN_BYTES + ":8192" + BOTTOM_SV; // default 8 KB buffer
 
     // REST Paths
     public static final String INFO = "/info";
@@ -173,6 +161,14 @@ public class ExporterConst {
     public static final String TEMPLATE_GRAPH = "/template-graph";
     public static final String RUNNING_QUERIES = "/running-queries";
     public static final String API_DOCS = "/api-docs";
+    public final static String OPAL_PROJECT = "/ws/project/";
+    public final static String OPAL_PROJECT_PERM = "/permissions/project";
+    public final static String OPAL_PROJECT_FILE = "/files/projects/";
+    public final static String OPAL_PROJECT_TRS = "/transient-datasources";
+    public final static String OPAL_PROJECT_IMPORT = "/commands/_import";
+    public final static String OPAL_PROJECT_FILES = "/ws/files";
+    public final static String OPAL_PROJECT_WS = "/ws";
+    public final static String PROJECTS_OPAL = "/projects";
 
     public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, FETCH_QUERIES,
             FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,

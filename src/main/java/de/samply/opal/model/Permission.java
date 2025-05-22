@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum Permission {
   @JsonProperty("administrate")
-  ADMINISTRATE,
+  PROJECT_ALL,
   @JsonProperty("use")
   USE;
 
   @Override
   public String toString() {
-    return super.toString().toLowerCase();
+    return super.toString();
   }
 }

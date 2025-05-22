@@ -1,448 +1,296 @@
 package de.samply.opal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.exporter.ExporterConst;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
-import de.samply.opal.model.View;
 import de.samply.template.ContainerTemplate;
-import org.apache.commons.collections4.CollectionUtils;
+import de.samply.utils.WebClientFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
+import java.util.Map;
 
-public class OpalEngine {
+public class OpalEngine implements ApplicationContextAware {
 
+    private WebClient webClient;
+    private ApplicationContext applicationContext;
+    private final OpalServer opalServer;
     private final static Logger logger = BufferedLoggerFactory.getLogger(OpalEngine.class);
-    private OpalServer opalServer;
-    private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-            .registerModule(new JavaTimeModule());
+    private long maxRetries = 10;
+    private Duration retryDelay = Duration.ofSeconds(10);
 
     public OpalEngine(OpalServer opalServer) {
         this.opalServer = opalServer;
     }
 
-    public void sendPathToOpal(Path path, Session session) throws OpalEngineException {
+    public void sendPathToOpal(Path path, Session session) throws OpalEngineException, JsonProcessingException {
         ContainerTemplate containerTemplate = session.getContainerTemplate(
                 path.getFileName().toString());
         if (containerTemplate != null) {
-            //TODO: Check status
             uploadPath(path, session);
-            ProcessInfo importProcessInfo = importPath(path, session, containerTemplate);
-            waitUntilTaskIsFinished(fetchTaskId(importProcessInfo));
-            createView(session, containerTemplate);
+            String uid = importPathTransient(path, session, containerTemplate);
+            String tasklocation = importPath(session, containerTemplate, uid);
+            waitUntilTaskIsFinished(tasklocation);
+            //createView(session, containerTemplate); // Currently, views seems not to be necessary. TODO: Remove is that is the case.
             deletePath(path, session);
         }
     }
 
-    public void createProjectIfNotExists(Session session) throws OpalEngineException {
+    public void createProjectIfNotExists(Session session) throws OpalEngineException, JsonProcessingException {
         if (!existsProject(session)) {
             createProject(session);
             createProjectPermissions(session);
         }
     }
 
-    private boolean existsProject(Session session) throws OpalEngineException {
-        String[] arguments = {ExporterConst.OPAL_PROJECT_NAME, session.fetchProject()};
-        return executeOpalCommands(ExporterConst.OPAL_PROJECT_OP, arguments).status == 0;
+    private boolean existsProject(Session session) {
+        return Boolean.TRUE.equals(fetchWebClient().get()
+                .uri(ExporterConst.OPAL_PROJECT + session.fetchProject())
+                .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+                .exchangeToMono(response -> {
+                    if (response.statusCode().is2xxSuccessful()) {
+                        return Mono.just(true);
+                    }
+                    return response.bodyToMono(String.class)
+                            .flatMap(body -> {
+                                logger.info(body);
+                                return Mono.just(false);
+                            });
+                })
+                .onErrorMap(OpalEngineException::new)
+                .block());
     }
 
-    private List<String> addOpalCredentials(List<String> commands) {
-        String[] tempCommands = {ExporterConst.OPAL_URL, opalServer.getUrl(), ExporterConst.OPAL_USER,
-                opalServer.getUser(), ExporterConst.OPAL_PASSWORD, opalServer.getPassword()};
-        CollectionUtils.addAll(commands, tempCommands);
-        return commands;
+    private void createProject(Session session) throws JsonProcessingException {
+        String projectName = session.fetchProject();
+        logger.info("Create Project " + projectName);
+        fetchWebClient().post()
+                .uri(ExporterConst.OPAL_PROJECT_WS + ExporterConst.PROJECTS_OPAL)
+                .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
+                .bodyValue(OpalClientBodyFactory.createProjectBodyAndSerializeAsJson(projectName, opalServer.getDatabase()))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
+                .bodyToMono(String.class)
+                .block();
     }
 
-
-    private ProcessInfo createProject(Session session) throws OpalEngineException {
-        String[] arguments = {ExporterConst.OPAL_PROJECT_ADD, ExporterConst.OPAL_PROJECT_NAME,
-                session.fetchProject(), ExporterConst.OPAL_PROJECT_DATABASE, opalServer.getDatabase()};
-        return executeOpalCommands(ExporterConst.OPAL_PROJECT_OP, arguments);
-    }
-
-    private List<ProcessInfo> createProjectPermissions(Session session) throws OpalEngineException {
-        List<ProcessInfo> results = new ArrayList<>();
+    private void createProjectPermissions(Session session) {
+        List<String> results = new ArrayList<>();
         String subjects = session.getConverterTemplate().getOpalPermissionSubjects();
-        if (subjects != null && subjects.length() > 0) {
-            for (String subject : subjects.trim()
-                    .split(ExporterConst.OPAL_PERMISSION_SUBJECT_SEPARATOR)) {
-                String[] arguments = {
-                        ExporterConst.OPAL_PERMISSION_USER_TYPE,
-                        session.getConverterTemplate().getOpalPermissionType().toString(),
-                        ExporterConst.OPAL_PERMISSION_SUBJECT, subject,
-                        ExporterConst.OPAL_PERMISSION,
-                        session.getConverterTemplate().getOpalPermission().toString(),
-                        ExporterConst.OPAL_PERMISSION_PROJECT, session.fetchProject(),
-                        ExporterConst.OPAL_PERMISSION_ADD
-                };
-                results.add(executeOpalCommands(ExporterConst.OPAL_PERMISSION_OP, arguments));
-            }
+        if (subjects != null && !subjects.isEmpty()) {
+            Arrays.stream(subjects.trim().split(ExporterConst.OPAL_PERMISSION_SUBJECT_SEPARATOR)).forEach(subject -> {
+                logger.info("Create Project Permission");
+                results.add(fetchWebClient().post()
+                        .uri(uriBuilder -> uriBuilder
+                                .path(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_PERM)
+                                .queryParam("type", session.getConverterTemplate().getOpalPermissionType().toString())
+                                .queryParam("permission", session.getConverterTemplate().getOpalPermission().toString())
+                                .queryParam("principal", subject)
+                                .build())
+                        .retrieve()
+                        .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                        .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
+                        .bodyToMono(String.class)
+                        .defaultIfEmpty("")
+                        .block());
+            });
         }
-        return results;
     }
 
-    private ProcessInfo uploadPath(Path path, Session session) throws OpalEngineException {
-        String[] arguments = {ExporterConst.OPAL_FILE_UPLOAD, path.toString(),
-                session.fetchOpalProjectDirectory(opalServer.getFilesDirectory())};
-        return executeOpalCommands(ExporterConst.OPAL_FILE_OP, arguments);
+    private void uploadPath(Path path, Session session) {
+        logger.info("Uploading file: " + path.getFileName());
+        fetchWebClient().post()
+                .uri(ExporterConst.OPAL_PROJECT_WS + ExporterConst.OPAL_PROJECT_FILE + session.fetchProject())
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .bodyValue(new LinkedMultiValueMap<>() {{
+                    add("file", new FileSystemResource(path.toFile()));
+                }})
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
+                .bodyToMono(String.class)
+                .block();
+        logger.info("File uploaded successfully.");
     }
 
-    private ProcessInfo deletePath(Path path, Session session) throws OpalEngineException {
-        String[] arguments = {ExporterConst.OPAL_FILE_DELETE,
-                session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
-                ExporterConst.OPAL_FILE_FORCE};
-        return executeOpalCommands(ExporterConst.OPAL_FILE_OP, arguments);
+    private void deletePath(Path path, Session session) {
+        logger.info("Attempting to delete file at path: " + path);
+        fetchWebClient().delete()
+                .uri(ExporterConst.OPAL_PROJECT_FILES + fetchOpalProjectDirectoryPath(session, path))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
+                .toBodilessEntity()
+                .block();
+        logger.info("File successfully deleted.");
     }
 
-    private ProcessInfo importPath(Path path, Session session, ContainerTemplate template)
-            throws OpalEngineException {
-        String[] arguments = {ExporterConst.OPAL_IMPORT_CSV_DESTINATION,
-                session.fetchProject(), ExporterConst.OPAL_IMPORT_CSV_PATH,
-                session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path),
-                ExporterConst.OPAL_IMPORT_CSV_TABLES, template.getOpalTable(),
-                ExporterConst.OPAL_IMPORT_CSV_SEPARATOR,
-                normalizeSepartor(session.getConverterTemplate().getCsvSeparator()),
-                ExporterConst.OPAL_IMPORT_CSV_TYPE, template.getOpalEntityType()};
-        arguments = addIdentifiersToArguments(arguments, template);
-        return executeOpalCommands(ExporterConst.OPAL_IMPORT_CSV_OP, arguments);
+    private String fetchOpalProjectDirectoryPath(Session session, Path path) {
+        return session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path);
     }
 
-    private String[] addIdentifiersToArguments(String[] arguments,
-                                               ContainerTemplate containerTemplate) {
-        List<String> result = new ArrayList<>();
-        result.addAll(Arrays.asList(arguments));
-        result.addAll(fetchIdentifiers(containerTemplate));
-        return result.toArray(result.toArray(new String[0]));
-    }
+    private String importPathTransient(Path path, Session session, ContainerTemplate template) throws OpalEngineException, JsonProcessingException {
+        logger.info("Import started for: " + template.getOpalTable() + " in Project " + session.fetchProject());
+        Map<String, Object> response = fetchWebClient().post()
+                .uri(uriBuilder -> uriBuilder
+                        .path(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_TRS)
+                        .queryParam("merge", false)
+                        .build())
+                .headers(headers -> {
+                    headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+                    headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                })
+                .bodyValue(OpalClientBodyFactory.createCsvDatasourceBodyAndSerializeAsJson(session, template,
+                        fetchOpalProjectDirectoryPath(session, path)))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
+                })
+                .block();
 
-    private List<String> fetchIdentifiers(ContainerTemplate containerTemplate) {
-        List<String> identifiers = new ArrayList<>();
-        containerTemplate.getAttributeTemplates().forEach(attributeTemplate -> {
-            if (attributeTemplate.isPrimaryKey()) {
-                identifiers.add(attributeTemplate.getCsvColumnName());
-            }
-        });
-        if (identifiers.size() > 0) {
-            identifiers.add(0, ExporterConst.OPAL_IMPORT_CSV_IDENTIFIERS);
+        if (response == null) {
+            throw new IllegalArgumentException("Response must not be null");
         }
-        return identifiers;
+        String transientUid = (String) response.get("name");
+        if (transientUid == null) {
+            throw new OpalEngineException("UID for the transient table could not be extracted");
+        }
+        logger.info("Extracted transient UID: " + transientUid);
+        return transientUid;
     }
 
-    private ProcessInfo waitUntilTaskIsFinished(String taskId) throws OpalEngineException {
+    private String importPath(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
+        return fetchWebClient().post()
+                .uri(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_IMPORT)
+                .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
+                .bodyValue(OpalClientBodyFactory.createPathBodyAndSerializeAsJson(session, template, transientUid))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
+                .toBodilessEntity()
+                .mapNotNull(response -> {
+                    String locationHeader = response.getHeaders().getFirst(HttpHeaders.LOCATION);
+                    if (locationHeader != null) {
+                        logger.info("Received Location header: " + locationHeader);
+                    }
+                    return locationHeader;
+                })
+                .onErrorMap(e -> new OpalEngineException("Error when processing the response", e))
+                .block();
+    }
+
+    public void waitUntilTaskIsFinished(String taskId) throws OpalEngineException {
         if (taskId != null) {
-            String[] arguments = {ExporterConst.OPAL_TASK_OP_ID, taskId, ExporterConst.OPAL_TASK_OP_WAIT};
-            return executeOpalCommands(ExporterConst.OPAL_TASK_OP, arguments);
+            fetchWebClient().get()
+                    .uri(taskId)
+                    .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .flatMap(response -> {
+                        if (response == null) {
+                            return Mono.error(new TaskNotReadyException());
+                        }
+
+                        String status = (String) response.get(ExporterConst.OPAL_STATUS_FIELD);
+
+                        if (ExporterConst.OPAL_STATUS_SUCCEEDED.equalsIgnoreCase(status)) {
+                            return Mono.just(true);
+                        } else if (ExporterConst.OPAL_STATUS_FAILED.equalsIgnoreCase(status)) {
+                            List<Map<String, Object>> messages = (List<Map<String, Object>>) response.get(ExporterConst.OPAL_MESSAGES_FIELD);
+                            String errorMessage = messages != null
+                                    ? messages.stream()
+                                    .map(msg -> (String) msg.get(ExporterConst.OPAL_MESSAGE_FIELD))
+                                    .reduce((a, b) -> a + "; " + b)
+                                    .orElse("Unknown error")
+                                    : "Unknown error";
+                            return Mono.error(new OpalEngineException("Task failed: " + errorMessage));
+                        } else {
+                            logger.info("Task is not finished yet. Status: " + status);
+                            return Mono.error(new TaskNotReadyException());
+                        }
+                    })
+                    .retryWhen(
+                            Retry.fixedDelay(maxRetries, retryDelay)
+                                    .filter(throwable -> throwable instanceof TaskNotReadyException)
+                                    .onRetryExhaustedThrow((spec, signal) ->
+                                            new OpalEngineException("Task was not completed within the expected time"))
+                    ).block();
         } else {
-            throw new OpalEngineException("Task " + taskId + " not found");
+            throw new OpalEngineException("Task ID not found");
         }
     }
 
-  /*
-  private void formatTable(Session session, ContainerTemplate containerTemplate) {
-    for (AttributeTemplate attributeTemplate : containerTemplate.getAttributeTemplates()) {
-      formatVariable(session, containerTemplate, attributeTemplate);
-    }
-  }
-
-  private void formatVariable(Session session, ContainerTemplate containerTemplate,
-      AttributeTemplate attributeTemplate) {
-    try {
-      formatVariableWithoutExceptionHandling(session, containerTemplate, attributeTemplate);
-    } catch (OpalEngineException | JsonProcessingException e) {
-      logger.error(ExceptionUtils.getFullStackTrace(e));
-    }
-  }
-
-  private void formatVariableWithoutExceptionHandling(Session session,
-      ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate)
-      throws OpalEngineException, JsonProcessingException {
-    if (attributeTemplate.getOpalValueType() != null && !attributeTemplate.getOpalValueType()
-        .equals(ExporterConst.OPAL_DEFAULT_VALUE_TYPE)) {
-      JsonNode variableInfo = fetchVariableInfo(session, containerTemplate, attributeTemplate);
-      ((ObjectNode) variableInfo).set(ExporterConst.OPAL_VALUE_TYPE,
-          new TextNode(attributeTemplate.getOpalValueType()));
-      String sVariableInfo = objectMapper.writerWithDefaultPrettyPrinter()
-          .writeValueAsString(variableInfo);
-      modifyVariable(session, containerTemplate, attributeTemplate, sVariableInfo);
-    }
-  }
-
-  private ProcessInfo modifyVariable(Session session,
-      ContainerTemplate containerTemplate,
-      AttributeTemplate attributeTemplate, String variableInfo) throws OpalEngineException {
-    String subOperation = createVariablePath(session.fetchProject(),
-        containerTemplate.getOpalTable(), attributeTemplate.getCsvColumnName());
-    String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_PUT,
-        ExporterConst.OPAL_REST_CONTENT_TYPE, ExporterConst.OPAL_REST_CONTENT_TYPE_JSON};
-    return executeOpalCommands(ExporterConst.OPAL_REST_OP, subOperation, arguments, variableInfo);
-  }
-
-  private JsonNode fetchVariableInfo(Session session, ContainerTemplate containerTemplate,
-      AttributeTemplate attributeTemplate) throws OpalEngineException, JsonProcessingException {
-    String subOperation = createVariablePath(session.fetchProject(),
-        containerTemplate.getOpalTable(), attributeTemplate.getCsvColumnName());
-    String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_GET};
-    ProcessInfo processInfo = executeOpalCommands(ExporterConst.OPAL_REST_OP, subOperation,
-        arguments);
-    return objectMapper.readTree(processInfo.output);
-  }
-
-  private String createVariablePath(String project, String table, String variable) {
-    return (ExporterConst.OPAL_PATH_PROJECT + '/' + project + ExporterConst.OPAL_PATH_TABLE + '/'
-        + table + ExporterConst.OPAL_PATH_VARIABLE + '/' + variable).replace(" ", "%20");
-  }
-
-  private ProcessInfo fetchViewWithinMaxNumberOfRetries(Session session,
-      ContainerTemplate containerTemplate)
-      throws OpalEngineException {
-    return fetchProcessInfoWithinMaxNumberOfRetries(session,
-        () -> fetchView(session, containerTemplate), processInfo -> processInfo.status == 0,
-        "View could not be created");
-  }
-   */
-
-    private ProcessInfo fetchProcessInfoWithinMaxNumberOfRetries(Session session,
-                                                                 ProcessInfoSupplier supplier, ProcessInfoCondition condition, String errorMessage)
-            throws OpalEngineException {
-        ProcessInfo result = null;
-        int numberOfRetries = session.getMaxNumberOfRetries();
-        boolean processInfoExecutedCorrectly = false;
-        while (!processInfoExecutedCorrectly && numberOfRetries > 0) {
-            result = supplier.get();
-            if (!condition.isFullfilled(result)) {
-                numberOfRetries--;
-                sleep(session.getTimeoutInSeconds());
-            } else {
-                processInfoExecutedCorrectly = true;
-            }
-        }
-        if (!processInfoExecutedCorrectly) {
-            throw new OpalEngineException(errorMessage);
-        }
-        return result;
-    }
-
-    private interface ProcessInfoSupplier {
-
-        ProcessInfo get() throws OpalEngineException;
-    }
-
-    private interface ProcessInfoCondition {
-
-        boolean isFullfilled(ProcessInfo processInfo) throws OpalEngineException;
-    }
-
-    private void sleep(int timeoutInSeconds) throws OpalEngineException {
-        try {
-            Thread.sleep(timeoutInSeconds * 1000);
-        } catch (InterruptedException e) {
-            throw new OpalEngineException(e);
-        }
-    }
-
-    /*
-    private ProcessInfo fetchTableWithinMaxNumberOfRetries(Session session,
-        ContainerTemplate containerTemplate)
-        throws OpalEngineException {
-      return fetchProcessInfoWithinMaxNumberOfRetries(session,
-          () -> fetchTable(session, containerTemplate), processInfo -> isTableReady(processInfo),
-          "Error reading table");
-    }
-  */
-    private boolean isTableReady(ProcessInfo processInfo) throws OpalEngineException {
-        boolean result = processInfo.status == 0 && processInfo.output != null;
-        if (result) {
-            String status = fetchStatus(processInfo);
-            result = status != null && status.equals(ExporterConst.OPAL_STATUS_READY);
-        }
-        return result;
-    }
-
-    private String fetchStatus(ProcessInfo processInfo) throws OpalEngineException {
-        return fetchVariable(processInfo, ExporterConst.OPAL_STATUS);
-    }
-
-    private String fetchTaskId(ProcessInfo processInfo) throws OpalEngineException {
-        return fetchVariable(processInfo, ExporterConst.OPAL_TASK_ID);
-    }
-
-    private String fetchVariable(ProcessInfo processInfo, String variable)
+    private void createView(Session session, ContainerTemplate containerTemplate)
             throws OpalEngineException {
         try {
-            return fetchVariableWithoutExceptionHandling(processInfo, variable);
+            createViewWithoutExceptionHandling(session, containerTemplate);
         } catch (JsonProcessingException e) {
             throw new OpalEngineException(e);
         }
     }
 
-    private String fetchVariableWithoutExceptionHandling(ProcessInfo processInfo, String variable)
-            throws JsonProcessingException {
-        JsonNode jsonNode = objectMapper.readTree(processInfo.output);
-        JsonNode jsonNode2 = jsonNode.get(variable);
-        return (jsonNode2 != null) ? jsonNode2.toString().replace("\"", "") : null;
+    private void createViewWithoutExceptionHandling(Session session, ContainerTemplate containerTemplate) throws JsonProcessingException {
+        String view = OpalClientBodyFactory.createViewAndSerializeAsJson(session, containerTemplate);
+        logger.info("Create View");
+        logger.info("Request body: " + view);
+        fetchWebClient().post()
+                .uri(ExporterConst.OPAL_PROJECT_WS + OpalUtils.createViewsPath(session))
+                .headers(headers -> {
+                    headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+                    headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                })
+                .bodyValue(view)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+                .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
+                .bodyToMono(String.class)
+                .block();
     }
 
-    /*
-    private ProcessInfo fetchTable(Session session, ContainerTemplate containerTemplate)
-        throws OpalEngineException {
-      String suboperation = OpalUtils.createTablePath(session, containerTemplate);
-      String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_GET};
-      return executeOpalCommands(ExporterConst.OPAL_REST_OP, suboperation, arguments);
+    private Mono<? extends Throwable> handleError(ClientResponse clientResponse) {
+        return clientResponse.bodyToMono(String.class)
+                .flatMap(body -> {
+                    logger.error(body);
+                    return Mono.error(new OpalEngineException(body));
+                });
     }
 
-    private ProcessInfo fetchView(Session session, ContainerTemplate containerTemplate)
-        throws OpalEngineException {
-      String suboperation = OpalUtils.createViewPath(session, containerTemplate);
-      String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_GET};
-      return executeOpalCommands(ExporterConst.OPAL_REST_OP, suboperation, arguments);
-    }
-  */
-    private ProcessInfo createView(Session session, ContainerTemplate containerTemplate)
-            throws OpalEngineException {
-        try {
-            return createViewWithoutExceptionHandling(session, containerTemplate);
-        } catch (JsonProcessingException e) {
-            throw new OpalEngineException(e);
-        }
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
-    private ProcessInfo createViewWithoutExceptionHandling(Session session,
-                                                           ContainerTemplate containerTemplate)
-            throws JsonProcessingException, OpalEngineException {
-        View view = ViewFactory.createView(session, containerTemplate);
-        String sView = objectMapper.writeValueAsString(view);
-        String suboperation = OpalUtils.createViewsPath(session);
-        String[] arguments = {ExporterConst.OPAL_REST_METHOD, ExporterConst.OPAL_REST_METHOD_POST,
-                ExporterConst.OPAL_REST_CONTENT_TYPE, ExporterConst.OPAL_REST_CONTENT_TYPE_JSON};
-        return executeOpalCommands(ExporterConst.OPAL_REST_OP, suboperation, arguments, sView);
-    }
-
-    private String normalizeSepartor(String separator) {
-        return separator.replace("\t", "\\t");
-    }
-
-    private ProcessInfo executeOpalCommands(String operation, String[] arguments)
-            throws OpalEngineException {
-        return executeOpalCommands(operation, arguments, null);
-    }
-
-    private ProcessInfo executeOpalCommands(String operation, String[] arguments, String input)
-            throws OpalEngineException {
-        return executeOpalCommands(operation, null, arguments, input);
-    }
-
-    private ProcessInfo executeOpalCommands(String operation, String subOperation,
-                                            String[] arguments)
-            throws OpalEngineException {
-        return executeOpalCommands(operation, subOperation, arguments, null);
-    }
-
-    private ProcessInfo executeOpalCommands(String operation, String subOperation,
-                                            String[] arguments, String input)
-            throws OpalEngineException {
-        List<String> commands = new ArrayList<>();
-        commands.add(ExporterConst.OPAL_CMD);
-        commands.add(operation);
-        if (subOperation != null) {
-            commands.add(subOperation);
-        }
-        commands = addOpalCredentials(commands);
-        CollectionUtils.addAll(commands, arguments);
-        return executeCommands(commands, input);
-    }
-
-    private ProcessInfo executeCommands(List<String> commands, String input)
-            throws OpalEngineException {
-        try {
-            return executeCommandsWithoutExceptionHandling(commands, input);
-        } catch (IOException | InterruptedException e) {
-            throw new OpalEngineException(e);
-        }
-    }
-
-    private ProcessInfo executeCommandsWithoutExceptionHandling(List<String> commands, String input)
-            throws IOException, InterruptedException {
-        logger.info(fetchCommand(commands));
-        if (input != null) {
-            logger.info(input);
-        }
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command(commands);
-        Process process = processBuilder.start();
-        if (input != null) {
-            OutputStream stdin = process.getOutputStream();
-            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(stdin));
-            bufferedWriter.write(input);
-            bufferedWriter.flush();
-            bufferedWriter.close();
-        }
-        String output = logProcess(process);
-        int status = process.waitFor();
-        if (status > 0) {
-            logProcessError(process);
-        }
-        return new ProcessInfo(process, status, output);
-
-    }
-
-    private record ProcessInfo(Process process, int status, String output) {
-
-    }
-
-    private String logProcess(Process process) throws IOException {
-        return logProcess(process.getInputStream(), logger::info);
-    }
-
-    private String logProcessError(Process process) throws IOException {
-        return logProcess(process.getErrorStream(), logger::error);
-    }
-
-    private String logProcess(InputStream inputStream, Consumer<String> logger) throws IOException {
-        try (var reader = new BufferedReader(
-                new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-            StringBuilder stringBuilder = new StringBuilder();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                logger.accept(line);
-                stringBuilder.append(line);
-            }
-            return stringBuilder.toString();
-        }
-    }
-
-    private String fetchCommand(List<String> commands) {
-        StringBuilder stringBuilder = new StringBuilder();
-        AtomicBoolean printNext = new AtomicBoolean(true);
-        commands.forEach(command -> {
-            if (printNext.get()) {
-                stringBuilder.append(command);
+    private WebClient fetchWebClient() throws OpalEngineException {
+        if (webClient == null) {
+            WebClientFactory webClientFactory = applicationContext.getBean(WebClientFactory.class);
+            if (webClientFactory != null) {
+                webClient = this.opalServer.createWebClient(webClientFactory);
+                maxRetries = webClientFactory.getWebClientMaxNumberOfRetries();
+                retryDelay = Duration.ofSeconds(webClientFactory.getWebClientTimeInSecondsAfterRetryWithFailure());
             } else {
-                stringBuilder.append(ExporterConst.PASSWORD_REPLACEMENT);
+                throw new OpalEngineException("Web Client not defined");
             }
-            stringBuilder.append(' ');
-            printNext.set(!isPassword(command));
-        });
-        return stringBuilder.toString();
-    }
-
-    private boolean isPassword(String element) {
-        boolean result = element != null && element.length() > 0;
-        if (result) {
-            result = Arrays.stream(ExporterConst.PASSWORD_BLACKLIST)
-                    .anyMatch(element.toLowerCase()::contains);
         }
-        return result;
+        return webClient;
     }
 
 }
