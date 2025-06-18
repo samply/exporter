@@ -52,7 +52,7 @@ public class ExporterConst {
     public final static String ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION = "ARCHIVE_EXPIRED_QUERIES_CRON_EXPRESSION";
     public final static String WRITE_FILES_LIFETIME_IN_DAYS = "WRITE_FILES_LIFETIME_IN_DAYS";
     public final static String CROSS_ORIGINS = "CROSS_ORIGINS";
-    public final static String TIMEOUT_IN_SECONDS = "TIMEOUT";
+    public final static String TIMEOUT_IN_SECONDS = "TIMEOUT_IN_SECONDS";
     public final static String MAX_NUMBER_OF_RETRIES = "MAX_NUMBER_OF_RETRIES";
     public final static String HTTP_RELATIVE_PATH = "HTTP_RELATIVE_PATH";
     public final static String HTTP_SERVLET_REQUEST_SCHEME = "HTTP_SERVLET_REQUEST_SCHEME";
