@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class OpalEngine implements ApplicationContextAware {
 
@@ -35,9 +36,15 @@ public class OpalEngine implements ApplicationContextAware {
     private final static Logger logger = BufferedLoggerFactory.getLogger(OpalEngine.class);
     private long maxRetries = 10;
     private Duration retryDelay = Duration.ofSeconds(10);
+    private final Consumer<HttpHeaders> HEADERS;
 
     public OpalEngine(OpalServer opalServer) {
         this.opalServer = opalServer;
+        this.HEADERS = headers -> {
+            headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+            headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+            headers.set(HttpHeaders.REFERER, opalServer.getUrl());
+        };
     }
 
     public void sendPathToOpal(Path path, Session session) throws OpalEngineException, JsonProcessingException {
