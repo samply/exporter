@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.1 - 2025-07-07]
+## [1.1.1 - 2025-07-21]
 ### Added
 - WebClient Factory
 - Opal Referer
@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Refactoring OpalEngine
 - Refactoring Opal Waiting
+- Increase default number of max retries of webclient
 
 ## [1.1.0 - 2025-04-10]
 ### Added

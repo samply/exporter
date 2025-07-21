@@ -132,7 +132,7 @@ public class ExporterConst {
     public static final String WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV =
             HEAD_SV + WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES + ":3" + BOTTOM_SV; // default 3 tries
     public static final String WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV =
-            HEAD_SV + WEBCLIENT_MAX_NUMBER_OF_RETRIES + ":10" + BOTTOM_SV; // default 2 retries
+            HEAD_SV + WEBCLIENT_MAX_NUMBER_OF_RETRIES + ":30" + BOTTOM_SV; // default 2 retries
     public static final String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV =
             HEAD_SV + WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE + ":1" + BOTTOM_SV; // default 1 second
     public static final String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =
