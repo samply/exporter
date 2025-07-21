@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Refactoring OpalEngine
 - Refactoring Opal Waiting
 - Increase default number of max retries of webclient
+- Increase default webclient buffer
 
 ## [1.1.0 - 2025-04-10]
 ### Added

@@ -136,7 +136,7 @@ public class ExporterConst {
     public static final String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV =
             HEAD_SV + WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE + ":1" + BOTTOM_SV; // default 1 second
     public static final String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =
-            HEAD_SV + WEBCLIENT_BUFFER_SIZE_IN_BYTES + ":8192" + BOTTOM_SV; // default 8 KB buffer
+            HEAD_SV + WEBCLIENT_BUFFER_SIZE_IN_BYTES + ":65536" + BOTTOM_SV; // default 64 KB buffer
 
     // REST Paths
     public static final String INFO = "/info";
