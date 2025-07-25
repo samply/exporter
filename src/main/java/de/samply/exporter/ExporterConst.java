@@ -6,6 +6,7 @@ public class ExporterConst {
 
     // HTTP Headers
     public final static String API_KEY_HEADER = "x-api-key";
+    public final static String OPAL_USER_AGENT = "java";
 
     // Token variables
     public final static String TOKEN_HEAD = "${";

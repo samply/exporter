@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class OpalEngine implements ApplicationContextAware {
 
@@ -36,15 +35,9 @@ public class OpalEngine implements ApplicationContextAware {
     private final static Logger logger = BufferedLoggerFactory.getLogger(OpalEngine.class);
     private long maxRetries = 10;
     private Duration retryDelay = Duration.ofSeconds(10);
-    private final Consumer<HttpHeaders> HEADERS;
 
     public OpalEngine(OpalServer opalServer) {
         this.opalServer = opalServer;
-        this.HEADERS = headers -> {
-            headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-            headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-            headers.set(HttpHeaders.REFERER, opalServer.getUrl());
-        };
     }
 
     public void sendPathToOpal(Path path, Session session) throws OpalEngineException, JsonProcessingException {
@@ -70,7 +63,10 @@ public class OpalEngine implements ApplicationContextAware {
     private boolean existsProject(Session session) {
         return Boolean.TRUE.equals(fetchWebClient().get()
                 .uri(ExporterConst.OPAL_PROJECT + session.fetchProject())
-                .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+                .headers(headers -> {
+                    headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                    headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT);
+                })
                 .exchangeToMono(response -> {
                     if (response.statusCode().is2xxSuccessful()) {
                         return Mono.just(true);
@@ -90,7 +86,10 @@ public class OpalEngine implements ApplicationContextAware {
         logger.info("Create Project " + projectName);
         fetchWebClient().post()
                 .uri(ExporterConst.OPAL_PROJECT_WS + ExporterConst.PROJECTS_OPAL)
-                .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
+                .headers(headers -> {
+                    headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+                    headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT);
+                })
                 .bodyValue(OpalClientBodyFactory.createProjectBodyAndSerializeAsJson(projectName, opalServer.getDatabase()))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
@@ -112,6 +111,7 @@ public class OpalEngine implements ApplicationContextAware {
                                 .queryParam("permission", session.getConverterTemplate().getOpalPermission().toString())
                                 .queryParam("principal", subject)
                                 .build())
+                        .headers(headers -> headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT))
                         .retrieve()
                         .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
                         .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
@@ -126,7 +126,10 @@ public class OpalEngine implements ApplicationContextAware {
         logger.info("Uploading file: " + path.getFileName());
         fetchWebClient().post()
                 .uri(ExporterConst.OPAL_PROJECT_WS + ExporterConst.OPAL_PROJECT_FILE + session.fetchProject())
-                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .headers(headers -> {
+                    headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT);
+                    headers.set(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE);
+                })
                 .bodyValue(new LinkedMultiValueMap<>() {{
                     add("file", new FileSystemResource(path.toFile()));
                 }})
@@ -142,6 +145,7 @@ public class OpalEngine implements ApplicationContextAware {
         logger.info("Attempting to delete file at path: " + path);
         fetchWebClient().delete()
                 .uri(ExporterConst.OPAL_PROJECT_FILES + fetchOpalProjectDirectoryPath(session, path))
+                .headers(headers -> headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
                 .onStatus(HttpStatusCode::is5xxServerError, this::handleError)
@@ -164,6 +168,7 @@ public class OpalEngine implements ApplicationContextAware {
                 .headers(headers -> {
                     headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
                     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                    headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT);
                 })
                 .bodyValue(OpalClientBodyFactory.createCsvDatasourceBodyAndSerializeAsJson(session, template,
                         fetchOpalProjectDirectoryPath(session, path)))
@@ -188,7 +193,10 @@ public class OpalEngine implements ApplicationContextAware {
     private String importPath(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
         return fetchWebClient().post()
                 .uri(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_IMPORT)
-                .headers(headers -> headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE))
+                .headers(headers -> {
+                    headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+                    headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT);
+                })
                 .bodyValue(OpalClientBodyFactory.createPathBodyAndSerializeAsJson(session, template, transientUid))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
@@ -209,7 +217,10 @@ public class OpalEngine implements ApplicationContextAware {
         if (taskId != null) {
             fetchWebClient().get()
                     .uri(taskId)
-                    .headers(headers -> headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+                    .headers(headers -> {
+                        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                        headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT);
+                    })
                     .retrieve()
                     .bodyToMono(Map.class)
                     .flatMap(response -> {
@@ -264,6 +275,7 @@ public class OpalEngine implements ApplicationContextAware {
                 .headers(headers -> {
                     headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
                     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                    headers.set(HttpHeaders.USER_AGENT, ExporterConst.OPAL_USER_AGENT);
                 })
                 .bodyValue(view)
                 .retrieve()
