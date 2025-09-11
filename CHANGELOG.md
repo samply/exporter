@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - WebClient Factory
 - Opal User Agent
 - Limit number of resource error messages in fhir
+- Limited Logger
 
 ### Changed
 - Refactoring OpalEngine
