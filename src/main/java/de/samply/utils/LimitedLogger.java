@@ -12,7 +12,7 @@ public class LimitedLogger {
     }
 
     public void error(String message) {
-        if (counter >= maxErrors) {
+        if (counter > maxErrors) {
             logger.debug(message);
         } else {
             logger.error(message);
