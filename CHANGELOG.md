@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.1 - 2025-07-25]
+## [1.1.1 - 2025-09-11]
 ### Added
 - WebClient Factory
 - Opal User Agent
@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Refactoring Opal Waiting
 - Increase default number of max retries of webclient
 - Increase default webclient buffer
+- Default values for webclient
 
 ## [1.1.0 - 2025-04-10]
 ### Added
