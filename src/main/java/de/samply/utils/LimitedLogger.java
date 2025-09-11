@@ -9,6 +9,7 @@ public class LimitedLogger {
 
     public LimitedLogger(Logger logger, int maxErrors) {
         this.logger = logger;
+        this.maxErrors = maxErrors;
     }
 
     public void error(String message) {
