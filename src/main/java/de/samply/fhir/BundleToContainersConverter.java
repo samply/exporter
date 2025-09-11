@@ -22,6 +22,8 @@ import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 @Component
 public class BundleToContainersConverter extends
@@ -132,6 +134,7 @@ public class BundleToContainersConverter extends
                                                            ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate,
                                                            BundleContext context) {
         List<ResourceAttribute> resourceAttributes = new ArrayList<>();
+        AtomicInteger counter = new AtomicInteger(0);
         context.fetchRelatedResources(resource, attributeTemplate).forEach(relatedResource -> {
             ExpressionNode expressionNode = fhirPathEngine.parse(attributeTemplate.getValFhirPath());
             Resource evalResource =
@@ -139,7 +142,8 @@ public class BundleToContainersConverter extends
             Resource idResource =
                     (attributeTemplate.isDirectChildFhirPath()) ? relatedResource : resource;
             if (evalResource == null || idResource == null) {
-                logErrorByFetchingResourceAttribute(resource, relatedResource, evalResource, idResource, containerTemplate, attributeTemplate);
+                Consumer<String> loggerFunction = (counter.incrementAndGet() < 3) ? m -> logger.error(m) : m -> logger.debug(m);
+                logErrorByFetchingResourceAttribute(loggerFunction, resource, relatedResource, evalResource, idResource, containerTemplate, attributeTemplate);
             } else if (isToBeEvaluated(evalResource, idResource, attributeTemplate)) {
                 fhirPathEngine.evaluate(evalResource, expressionNode)
                         .forEach(base -> resourceAttributes.add(
@@ -151,17 +155,17 @@ public class BundleToContainersConverter extends
         return resourceAttributes;
     }
 
-    private void logErrorByFetchingResourceAttribute(Resource resource, Resource relatedResource, Resource evalResource, Resource idResource, ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate) {
-        logger.error("Error fetching ressource attribute for container " + containerTemplate.getCsvFilename() + " and attribute " + attributeTemplate.getCsvColumnName());
-        logResource("Resource: ", resource);
-        logResource("Related Resource: ", relatedResource);
-        logResource("Eval Resource: ", evalResource);
-        logResource("Id Resource: ", idResource);
+    private void logErrorByFetchingResourceAttribute(Consumer<String> loggerFunction, Resource resource, Resource relatedResource, Resource evalResource, Resource idResource, ContainerTemplate containerTemplate, AttributeTemplate attributeTemplate) {
+        loggerFunction.accept("Error fetching ressource attribute for container " + containerTemplate.getCsvFilename() + " and attribute " + attributeTemplate.getCsvColumnName());
+        logResource(loggerFunction, "Resource: ", resource);
+        logResource(loggerFunction, "Related Resource: ", relatedResource);
+        logResource(loggerFunction, "Eval Resource: ", evalResource);
+        logResource(loggerFunction, "Id Resource: ", idResource);
     }
 
-    private void logResource(String initialMessage, Resource resource) {
+    private void logResource(Consumer<String> loggerFunction, String initialMessage, Resource resource) {
         String resourceId = (resource != null) ? fetchResourceId(resource) : "not found";
-        logger.error(initialMessage + resourceId);
+        loggerFunction.accept(initialMessage + resourceId);
     }
 
     private String fetchResourceId(Resource resource) {
