@@ -3,16 +3,15 @@ package de.samply.security;
 import de.samply.exporter.ExporterConst;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,7 +21,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -30,7 +28,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -50,7 +47,7 @@ public class SecurityConfiguration {
     private boolean isSecurityEnabled;
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String jwksUri;
+    private String issuerUri;
 
     @PostConstruct
     public void init() {
@@ -66,7 +63,7 @@ public class SecurityConfiguration {
      */
     @Bean
     public JwtDecoder jwtDecoder() {
-        return JwtDecoders.fromIssuerLocation(jwksUri);
+        return JwtDecoders.fromIssuerLocation(issuerUri);
     }
 
     /**
@@ -89,32 +86,34 @@ public class SecurityConfiguration {
                     .authorizeHttpRequests(authz -> authz.anyRequest().permitAll());
             return http.build();
         }
-        http.csrf(AbstractHttpConfigurer::disable)
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenResolver(bearerTokenResolver())
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder())
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
                 )
-                .authorizeHttpRequests(authz -> authz.anyRequest().access(groupAuthorizationManager())
+                .authorizeHttpRequests(authz -> authz
+                        .anyRequest()
+                        .access(groupAuthorizationManager())
                 );
         return http.build();
     }
 
     private AuthorizationManager<RequestAuthorizationContext> groupAuthorizationManager() {
+        List<String> allowedGroups = Arrays.stream(allowedGroupsEnv.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
         return (authentication, context) -> {
             Authentication auth = authentication.get();
             if (auth instanceof JwtAuthenticationToken jwtAuth) {
                 Jwt jwt = jwtAuth.getToken();
                 List<String> userGroups = jwt.getClaimAsStringList("groups");
-                if (userGroups == null || allowedGroupsEnv.trim().isEmpty()) {
-                    return new AuthorizationDecision(false);
-                }
-                List<String> allowedGroups = Arrays.stream(allowedGroupsEnv.split(","))
-                        .map(String::trim)
-                        .filter(s -> !s.isEmpty())
-                        .toList();
-                boolean isAuthorized = userGroups.stream().anyMatch(allowedGroups::contains);
+                boolean isAuthorized = userGroups != null && userGroups.stream().anyMatch(allowedGroups::contains);
                 return new AuthorizationDecision(isAuthorized);
             }
             return new AuthorizationDecision(false);
@@ -128,29 +127,6 @@ public class SecurityConfiguration {
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         return new JwtAuthenticationConverter();
-    }
-
-    /**
-     * @return
-     */
-    @Bean
-    public BearerTokenResolver bearerTokenResolver() {
-        BearerTokenResolver resolver = request -> {
-            if (request.getCookies() != null) {
-                for (Cookie cookie : request.getCookies()) {
-                    if ("jwt".equals(cookie.getName())) {
-                        return cookie.getValue();
-                    }
-                }
-            }
-            // Fallback to use the Authorization-Header
-            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-            if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
-                return authHeader.substring(7);
-            }
-            return null;
-        };
-        return resolver;
     }
 
     private AuthenticationSuccessHandler successHandler() {
