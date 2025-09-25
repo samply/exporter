@@ -790,16 +790,25 @@ public class ExporterController {
             @Parameter(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, description = "New default output format for the query", required = false)
             @RequestParam(name = ExporterConst.QUERY_DEFAULT_OUTPUT_FORMAT, required = false) Format defaultOutputFormat,
             @Parameter(name = ExporterConst.QUERY_EXPIRATION_DATE, description = "New expiration date for the query", required = false)
-            @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate) throws NoSuchMethodException, RequestMapperException {
+            @RequestParam(name = ExporterConst.QUERY_EXPIRATION_DATE, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate queryExpirationDate,
+            @Parameter(name = ExporterConst.QUERY, description = "Query", required = false)
+            @RequestParam(name = ExporterConst.QUERY, required = false) String query,
+            @Parameter(name = ExporterConst.QUERY_FORMAT, description = "Format of the query", required = false)
+            @RequestParam(name = ExporterConst.QUERY_FORMAT, required = false) Format queryFormat,
+            @Parameter(name = ExporterConst.QUERY_CONTACT_ID, description = "Contact of the query", required = false)
+            @RequestParam(name = ExporterConst.QUERY_CONTACT_ID, required = false) String queryContactId,
+            @Parameter(name = ExporterConst.QUERY_CONTEXT, description = "Environment variables, comma separated and in base 64", required = false)
+            @RequestParam(name = ExporterConst.QUERY_CONTEXT, required = false) String queryContext
+            ) throws NoSuchMethodException, RequestMapperException {
         Optional<Query> optionalQuery = exporterDbService.fetchQuery(queryId);
         if (optionalQuery.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         Map<String, String> requestParameters = RequestMapper.fetchKeyValues(httpServletRequest, fetchCallingMethod());
         Query tempQuery = new ParametersBuilder(requestParameters).buildQuery();
-        Query query = optionalQuery.get();
-        mergeQueries(query, tempQuery);
-        exporterDbService.saveQueryAndGetQueryId(query);
+        Query currentQuery = optionalQuery.get();
+        mergeQueries(currentQuery, tempQuery);
+        exporterDbService.saveQueryAndGetQueryId(currentQuery);
         return ResponseEntity.ok().build();
     }
 

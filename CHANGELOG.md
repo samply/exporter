@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.0 - 2024-10-30]
+## [1.1.0 - 2025-04-10]
 ### Added
 - Java Opts
 - Divide Excel file in several files if number of rows is too large
@@ -62,7 +62,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Refactoring Dockerfile
 - OPAL CSV (replacement of quotes with escape charachters)
 
-
 ### Removed
 - Remove retrieve-query
 
@@ -76,6 +75,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rest service: Get output formats
 - Extract parameters of HttpServletRequest
 - Opal Views
+- Add missing fields in update query
 
 ## [1.0.0 - 2023-07-20]
 ### Added
