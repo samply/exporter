@@ -10,7 +10,7 @@ public class ExporterConst {
 
     // HTTP Headers
     public final static String API_KEY_HEADER = "Authorization";
-    public static final String API_KEY_PREFIX = "ApiKey ";
+    public static final String API_KEY_PREFIX = "ApiKey";
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
     public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
 
@@ -195,10 +195,13 @@ public class ExporterConst {
     public static final String TEMPLATE_GRAPH = "/template-graph";
     public static final String RUNNING_QUERIES = "/running-queries";
     public static final String API_DOCS = "/api-docs";
+    public static final String ERROR = "/error";
 
-    public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, FETCH_QUERIES,
+    public static final String[] REST_PATHS_WITH_AUTH = new String[]{CREATE_QUERY, FETCH_QUERIES,
             FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
-            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS, RUNNING_QUERIES, UPDATE_QUERY, API_DOCS};
+            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, LOGS, RUNNING_QUERIES, UPDATE_QUERY};
+    public static final String[] REST_PATHS_NO_AUTH=new String[]{INFO, API_DOCS,
+            STATUS, ERROR};
     // TODO: RESPONSE ??? Only with UUID enough?
 
     // REST Headers
