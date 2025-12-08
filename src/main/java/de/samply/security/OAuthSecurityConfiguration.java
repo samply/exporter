@@ -12,32 +12,36 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  *
@@ -47,48 +51,9 @@ import java.util.List;
 @Order(2)
 public class OAuthSecurityConfiguration {
     private static final Logger log = LoggerFactory.getLogger(OAuthSecurityConfiguration.class);
-    @Value("${OIDC_GROUPS:}")
-    private String allowedGroupsEnv;
-
     @Value(ExporterConst.SECURITY_ENABLED_SV)
     private boolean isSecurityEnabled;
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuerUri;
-
-    @PostConstruct
-    public void init() {
-        if (allowedGroupsEnv == null || allowedGroupsEnv.trim().isEmpty()) {
-            throw new IllegalStateException("Allowed groups are not configured properly.");
-        }
-        log.info("Allowed groups: " + allowedGroupsEnv);
-    }
-
-    /**
-     * Creates a {@link JwtDecoder} bean using the configured issuer URI.
-     * @return a configured {@link  JwtDecoder} instance
-     */
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        JwtDecoder delegate = JwtDecoders.fromIssuerLocation(issuerUri);
-
-        return token -> {
-            try {
-                Jwt jwt = delegate.decode(token);
-                log.debug("[JWT OK] sub=" + jwt.getSubject()
-                        + " aud=" + jwt.getAudience()
-                        + " iss=" + jwt.getIssuer()
-                        + " exp=" + jwt.getExpiresAt());
-                return jwt;
-            } catch (JwtException e) {
-                log.warn("[JWT FAIL] {}", e.getMessage());
-                throw e;
-            }
-            catch (Exception e) {
-                throw new JwtException( "[JWT FAIL] jwt is not valid.");
-            }
-        };
-    }
 
     /**
      * Filter Chain for the Exporter
@@ -104,65 +69,58 @@ public class OAuthSecurityConfiguration {
      * @throws Exception if an error occurs while configuring the security filter chain
      */
     @Bean(name = "oauthFilterChain")
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity httpSecurity,
+            AuthenticationEntryPoint jwtAuthEntryPoint,
+            JwtDecoder jwtDecoder,
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            AuthorizationManager<RequestAuthorizationContext> groupAuthorizationManager
+    ) throws Exception {
+
+        RequestMatcher browserPaths = new OrRequestMatcher(
+                Arrays.stream(ExporterConst.REST_PATHS_BROWSER_AUTH)
+                        .map(AntPathRequestMatcher::new)
+                        .toArray(RequestMatcher[]::new)
+        );
+
+        AuthorizationManager<RequestAuthorizationContext> authThenGroups =
+                AuthorizationManagers.allOf(
+                        AuthenticatedAuthorizationManager.authenticated(),
+                        groupAuthorizationManager
+                );
+
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .requestCache(rc -> rc.disable())
-                .sessionManagement(httpSecuritySessionManagementConfigurer ->
-                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requestCache(cache -> cache.requestCache(new HttpSessionRequestCache()))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt
-                                .decoder(jwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                        )
-                        .authenticationEntryPoint(jwtAuthEntryPoint())
+                        .jwt(jwt -> jwt.decoder(jwtDecoder)
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter))
+                        .authenticationEntryPoint(jwtAuthEntryPoint)
+                )
+                .oauth2Login(oauth2Login -> oauth2Login
+                        .loginPage("/oauth2/authorization/oidc")
                 )
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/oauth2/**", "/login/**").permitAll()
                         .requestMatchers(ExporterConst.REST_PATHS_NO_AUTH).permitAll()
-                        .anyRequest()
-                        .access(groupAuthorizationManager())
+                        .anyRequest().access(authThenGroups)   // <- use composed manager
                 )
                 .exceptionHandling(eh -> eh
-                        .authenticationEntryPoint(jwtAuthEntryPoint())
+                        .defaultAuthenticationEntryPointFor(
+                                new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/oidc"),
+                                browserPaths
+                        )
+                        .defaultAuthenticationEntryPointFor(
+                                jwtAuthEntryPoint,
+                                AnyRequestMatcher.INSTANCE
+                        )
                         .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
                 );
-        httpSecurity.addFilterBefore((req, res, chain) -> {
-            HttpServletRequest r = (HttpServletRequest) req;
-            String h = r.getHeader(HttpHeaders.AUTHORIZATION);
-            log.info("[CHECK HEADER in JWT Chain before BearerTokenAuthenticationFilter] " + h);
-            chain.doFilter(req, res);
-        }, BearerTokenAuthenticationFilter.class);
+
         return httpSecurity.build();
     }
-
-    private AuthorizationManager<RequestAuthorizationContext> groupAuthorizationManager() {
-        List<String> allowedGroups = Arrays.stream(allowedGroupsEnv.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toList();
-        return (authentication, context) -> {
-            String test = authentication.get().getDetails().toString();
-            Authentication auth = authentication.get();
-            if (auth instanceof JwtAuthenticationToken jwtAuth) {
-                Jwt jwt = jwtAuth.getToken();
-                List<String> userGroups = jwt.getClaimAsStringList("groups");
-                log.debug("JWT groups     : {}", userGroups);
-                log.debug("Allowed groups : {}", allowedGroups);
-                boolean isAuthorized = userGroups != null && userGroups.stream().anyMatch(allowedGroups::contains);
-                log.debug("JWT has allowed groups: {}", isAuthorized);
-                return new AuthorizationDecision(isAuthorized);
-            }
-            return new AuthorizationDecision(false);
-        };
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() { return new JwtAuthenticationConverter();}
 
     private AuthenticationSuccessHandler successHandler() {
         return new SimpleUrlAuthenticationSuccessHandler() {
@@ -179,25 +137,6 @@ public class OAuthSecurityConfiguration {
                 } else {
                     super.onAuthenticationSuccess(request, response, authentication);
                 }
-            }
-        };
-    }
-
-    @Bean
-    public AuthenticationEntryPoint jwtAuthEntryPoint() {
-        return (request, response, authException) -> {
-            Throwable cause = authException.getCause();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-
-            if (cause instanceof JwtException jwtEx && jwtEx.getMessage().contains("expired")) {
-                response.getWriter().write("""
-                {"error":"token_expired","message":"Your access token has expired. Please refresh or log in again."}
-            """);
-            } else {
-                response.getWriter().write("""
-                {"error":"unauthorized","message":"Invalid or missing access token."}
-            """);
             }
         };
     }

@@ -202,6 +202,7 @@ public class ExporterConst {
             ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, LOGS, RUNNING_QUERIES, UPDATE_QUERY};
     public static final String[] REST_PATHS_NO_AUTH=new String[]{INFO, API_DOCS,
             STATUS, ERROR};
+    public static final String[] REST_PATHS_BROWSER_AUTH=new String[]{RESPONSE, "/oauth2/**", "/login/**"};
     // TODO: RESPONSE ??? Only with UUID enough?
 
     // REST Headers

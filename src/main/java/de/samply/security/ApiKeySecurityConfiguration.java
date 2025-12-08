@@ -42,7 +42,7 @@ public class ApiKeySecurityConfiguration {
      * @throws Exception Exception.
      */
     @Bean(name = "apiKeyFilterChain")
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain apiFilterChain(HttpSecurity httpSecurity) throws Exception {
         OrRequestMatcher pathMatcher = new OrRequestMatcher(
                 Arrays.stream(ExporterConst.REST_PATHS_WITH_AUTH)
                         .map(AntPathRequestMatcher::new)
