@@ -18,7 +18,7 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @Order(0)
-public class NoAuthSecurityConfiiguration {
+public class NoAuthSecurityConfiguration {
     @Bean
     SecurityFilterChain publicChain(HttpSecurity httpSecurity) throws Exception {
         var publicPaths = new OrRequestMatcher(
