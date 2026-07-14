@@ -1,21 +1,25 @@
 package de.samply.security;
 
-
 import de.samply.exporter.ExporterConst;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
 import java.util.Arrays;
 
@@ -30,7 +34,6 @@ public class ApiKeySecurityConfiguration {
 
     private ApiKeyAuthenticationManager apiKeyAuthenticationManager;
 
-
     /**
      * Add API key filter to Spring http security.
      *
@@ -38,22 +41,30 @@ public class ApiKeySecurityConfiguration {
      * @return Security Filter Chain based on apiKey.
      * @throws Exception Exception.
      */
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+    @Bean(name = ExporterConst.API_KEY_FILTER_CHAIN)
+    public SecurityFilterChain apiFilterChain(HttpSecurity httpSecurity) throws Exception {
+        OrRequestMatcher pathMatcher = new OrRequestMatcher(
+                Arrays.stream(ExporterConst.REST_PATHS_WITH_AUTH)
+                        .map(AntPathRequestMatcher::new)
+                        .toArray(org.springframework.security.web.util.matcher.RequestMatcher[]::new)
+        );
+        AndRequestMatcher apiKeyOnPaths = new AndRequestMatcher(new ApiKeyRequestMatcher(), pathMatcher);
+
         httpSecurity
+                .securityMatcher(apiKeyOnPaths)
                 .cors(Customizer.withDefaults())
-                .securityMatcher(ExporterConst.REST_PATHS_WITH_API_KEY)
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
                         httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilter(createApiKeyFilter())
-                .authorizeHttpRequests(authorize -> {
-                            authorize.requestMatchers(new AntPathRequestMatcher(ExporterConst.API_DOCS)).permitAll();
-                            Arrays.stream(ExporterConst.REST_PATHS_WITH_API_KEY).forEach(path -> authorize.requestMatchers(new AntPathRequestMatcher(path)).authenticated());
-                            authorize.anyRequest().authenticated();
-                        }
-                );
-
+                .addFilterBefore(createApiKeyFilter(), BearerTokenAuthenticationFilter.class)
+                .authorizeHttpRequests(authz -> authz
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(apiKeyAuthEntryPoint())
+                        .accessDeniedHandler(apiKeyAccessDeniedHandler())
+                )
+                .anonymous(anon -> anon.disable());
         return httpSecurity.build();
     }
 
@@ -65,27 +76,56 @@ public class ApiKeySecurityConfiguration {
 
     @Bean
     public ApiKeyFilter createApiKeyFilter() {
-
         ApiKeyFilter apiKeyFilter = new ApiKeyFilter();
         apiKeyFilter.setAuthenticationManager(apiKeyAuthenticationManager);
         return apiKeyFilter;
+    }
 
+    /**
+     * Entry point invoked when a request that is handled by the API-key filter chain is not
+     * authenticated (missing or invalid API key). Instead of the default HTML error page it
+     * returns a structured {@code 401 Unauthorized} JSON body and advertises the expected
+     * authentication scheme via the {@code WWW-Authenticate: ApiKey} header, so REST clients
+     * receive a machine-readable response.
+     *
+     * @return the {@link AuthenticationEntryPoint} producing the 401 JSON response.
+     */
+    @Bean
+    public AuthenticationEntryPoint apiKeyAuthEntryPoint() {
+        return (request, response, authException) -> {
+            response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "ApiKey realm=\"Exporter\"");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            String body = """
+        {
+          "error": "unauthorized",
+          "error_description": "API key missing or invalid",
+          "status": 401,
+          "path": "%s",
+          "timestamp": "%s"
+        }
+        """.formatted(request.getRequestURI(), java.time.OffsetDateTime.now().toString());
+
+            response.getWriter().write(body);
+        };
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource(
-            @Value(ExporterConst.CROSS_ORIGINS_SV) String[] crossOrigins) {
-        CorsConfiguration configuration = new CorsConfiguration();
-        //configuration.setAllowedOrigins(fetchCrossOrigins(crossOrigins));
-        configuration.setAllowedOrigins(Arrays.asList(crossOrigins));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT"));
-        configuration.setAllowedHeaders(
-                Arrays.asList("Authorization", "Cache-Control", "Content-Type", "Origin",
-                        ExporterConst.API_KEY_HEADER));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    public AccessDeniedHandler apiKeyAccessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json;charset=UTF-8");
+            String body = """
+        {
+          "error": "forbidden",
+          "error_description": "You do not have permission to access this resource",
+          "status": 403,
+          "path": "%s",
+          "timestamp": "%s"
+        }
+        """.formatted(request.getRequestURI(), java.time.OffsetDateTime.now().toString());
+
+            response.getWriter().write(body);
+        };
     }
-
-
 }

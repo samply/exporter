@@ -5,8 +5,35 @@ public class ExporterConst {
     public final static boolean LOG_FHIR_VALIDATION_DEFAULT = false;
 
     // HTTP Headers
-    public final static String API_KEY_HEADER = "x-api-key";
+    public final static String API_KEY_HEADER = "Authorization";
     public final static String OPAL_USER_AGENT = "java";
+    public static final String API_KEY_PREFIX = "ApiKey";
+    public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
+    public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
+
+    // Security filter chain bean names
+    public final static String NO_AUTH_FILTER_CHAIN = "noAuthFilterChain";
+    public final static String API_KEY_FILTER_CHAIN = "apiKeyFilterChain";
+    public final static String OAUTH_FILTER_CHAIN = "oauthFilterChain";
+
+    // OIDC / OAuth2 endpoint paths (Spring Security conventions)
+    public final static String OAUTH2_PATHS = "/oauth2/**";
+    public final static String LOGIN_PATHS = "/login/**";
+    public final static String OIDC_LOGIN_PAGE = "/oauth2/authorization/oidc";
+
+    // OIDC admin-API paths (generic, provider agnostic)
+    public final static String FETCH_USER_ID_OIDC_PATH = "/admin/realms/{realm}/users?email={email}";
+    public final static String FETCH_GROUP_ID_OIDC_PATH = "/admin/realms/{realm}/groups?search={group}";
+    public final static String CHANGE_USER_GROUP_OIDC_PATH = "/admin/realms/{realm}/users/{user-id}/groups/{group-id}";
+    public final static String FETCH_TOKEN_OIDC_PATH = "/realms/{realm}/protocol/openid-connect/token";
+
+    // OIDC parameters
+    public final static String CLIENT_ID_OIDC_PARAM = "client_id";
+    public final static String CLIENT_SECRET_OIDC_PARAM = "client_secret";
+    public final static String GRANT_TYPE_OIDC_PARAM = "grant_type";
+    public final static String CLIENT_CREDENTIALS_OIDC_CONST = "client_credentials";
+    public final static String ACCESS_TOKEN_OIDC_CONST = "access_token";
+    public final static String ID_OIDC_CONST = "id";
 
     // Token variables
     public final static String TOKEN_HEAD = "${";
@@ -170,10 +197,14 @@ public class ExporterConst {
     public final static String OPAL_PROJECT_FILES = "/ws/files";
     public final static String OPAL_PROJECT_WS = "/ws";
     public final static String PROJECTS_OPAL = "/projects";
+    public static final String ERROR = "/error";
 
-    public static final String[] REST_PATHS_WITH_API_KEY = new String[]{CREATE_QUERY, FETCH_QUERIES,
+    public static final String[] REST_PATHS_WITH_AUTH = new String[]{CREATE_QUERY, FETCH_QUERIES,
             FETCH_QUERY_EXECUTIONS, FETCH_QUERY_EXECUTION_ERRORS, REQUEST, ACTIVE_INQUIRIES, ARCHIVED_INQUIRIES,
-            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, STATUS, LOGS, RUNNING_QUERIES, UPDATE_QUERY, API_DOCS};
+            ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, LOGS, RUNNING_QUERIES, UPDATE_QUERY};
+    public static final String[] REST_PATHS_NO_AUTH=new String[]{INFO, API_DOCS,
+            STATUS, ERROR};
+    public static final String[] REST_PATHS_BROWSER_AUTH=new String[]{RESPONSE, OAUTH2_PATHS, LOGIN_PATHS};
     // TODO: RESPONSE ??? Only with UUID enough?
 
     // REST Headers
@@ -250,5 +281,13 @@ public class ExporterConst {
     public final static String QUERY_CONTEXT_SEPARATOR = ";";
     public final static String QUERY_CONTEXT_EQUAL = "=";
     public final static String FHIR_SEARCH_PATH_ROOT = "ROOT";
+
+    // Filter
+    public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
+    public final static String JWKS_URI_PROPERTY_SV = HEAD_SV + JWKS_URI_PROPERTY + BOTTOM_SV;
+
+    // User and Roles
+    public final static String JWT_GROUPS_CLAIM = "JWT_GROUPS_CLAIM";
+    public final static String JWT_GROUPS_CLAIM_SV = HEAD_SV + JWT_GROUPS_CLAIM + ":groups" + BOTTOM_SV;
 
 }
