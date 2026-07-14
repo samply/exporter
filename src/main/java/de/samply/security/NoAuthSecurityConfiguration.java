@@ -19,7 +19,7 @@ import java.util.Arrays;
 @EnableWebSecurity
 @Order(0)
 public class NoAuthSecurityConfiguration {
-    @Bean
+    @Bean(name = ExporterConst.NO_AUTH_FILTER_CHAIN)
     SecurityFilterChain publicChain(HttpSecurity httpSecurity) throws Exception {
         var publicPaths = new OrRequestMatcher(
                 Arrays.stream(ExporterConst.REST_PATHS_NO_AUTH)

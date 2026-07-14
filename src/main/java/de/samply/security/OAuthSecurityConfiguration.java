@@ -68,7 +68,7 @@ public class OAuthSecurityConfiguration {
      * @return the configured {@link SecurityFilterChain}
      * @throws Exception if an error occurs while configuring the security filter chain
      */
-    @Bean(name = "oauthFilterChain")
+    @Bean(name = ExporterConst.OAUTH_FILTER_CHAIN)
     public SecurityFilterChain securityFilterChain(
             HttpSecurity httpSecurity,
             AuthenticationEntryPoint jwtAuthEntryPoint,
@@ -100,16 +100,16 @@ public class OAuthSecurityConfiguration {
                         .authenticationEntryPoint(jwtAuthEntryPoint)
                 )
                 .oauth2Login(oauth2Login -> oauth2Login
-                        .loginPage("/oauth2/authorization/oidc")
+                        .loginPage(ExporterConst.OIDC_LOGIN_PAGE)
                 )
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                        .requestMatchers(ExporterConst.OAUTH2_PATHS, ExporterConst.LOGIN_PATHS).permitAll()
                         .requestMatchers(ExporterConst.REST_PATHS_NO_AUTH).permitAll()
                         .anyRequest().access(authThenGroups)   // <- use composed manager
                 )
                 .exceptionHandling(eh -> eh
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/oidc"),
+                                new LoginUrlAuthenticationEntryPoint(ExporterConst.OIDC_LOGIN_PAGE),
                                 browserPaths
                         )
                         .defaultAuthenticationEntryPointFor(

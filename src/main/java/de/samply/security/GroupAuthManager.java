@@ -20,6 +20,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Group-based authorization for the OAuth2/OIDC filter chain.
+ *
+ * <p>The set of groups that are allowed to access the protected endpoints is read from the
+ * {@code OIDC_GROUPS} environment variable (comma-separated). If it is empty the application
+ * fails fast on startup ({@link #init()}), so the exporter is never started in an
+ * "everyone is allowed" state.</p>
+ *
+ * <p>The {@link #groupAuthorizationManager()} bean produces an
+ * {@link AuthorizationManager} that, for each request, extracts the caller's groups from the
+ * {@code groups} claim and grants access only if at least one of them is contained in the
+ * configured allow-list. Both authentication flavours are supported:</p>
+ * <ul>
+ *     <li>{@link JwtAuthenticationToken} &ndash; API/service calls carrying a Bearer JWT
+ *     (resource-server flow); the claim is read from the token.</li>
+ *     <li>{@link OAuth2AuthenticationToken} &ndash; interactive browser login (oauth2Login
+ *     flow); the claim is read from the {@link OidcUser}/{@link OAuth2User} principal.</li>
+ * </ul>
+ */
 @Configuration
 public class GroupAuthManager {
     private static final Logger log = LoggerFactory.getLogger(GroupAuthManager.class);

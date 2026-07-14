@@ -41,7 +41,7 @@ public class ApiKeySecurityConfiguration {
      * @return Security Filter Chain based on apiKey.
      * @throws Exception Exception.
      */
-    @Bean(name = "apiKeyFilterChain")
+    @Bean(name = ExporterConst.API_KEY_FILTER_CHAIN)
     public SecurityFilterChain apiFilterChain(HttpSecurity httpSecurity) throws Exception {
         OrRequestMatcher pathMatcher = new OrRequestMatcher(
                 Arrays.stream(ExporterConst.REST_PATHS_WITH_AUTH)
@@ -81,6 +81,15 @@ public class ApiKeySecurityConfiguration {
         return apiKeyFilter;
     }
 
+    /**
+     * Entry point invoked when a request that is handled by the API-key filter chain is not
+     * authenticated (missing or invalid API key). Instead of the default HTML error page it
+     * returns a structured {@code 401 Unauthorized} JSON body and advertises the expected
+     * authentication scheme via the {@code WWW-Authenticate: ApiKey} header, so REST clients
+     * receive a machine-readable response.
+     *
+     * @return the {@link AuthenticationEntryPoint} producing the 401 JSON response.
+     */
     @Bean
     public AuthenticationEntryPoint apiKeyAuthEntryPoint() {
         return (request, response, authException) -> {

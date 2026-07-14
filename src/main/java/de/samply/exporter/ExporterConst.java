@@ -11,20 +11,29 @@ public class ExporterConst {
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
     public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
 
+    // Security filter chain bean names
+    public final static String NO_AUTH_FILTER_CHAIN = "noAuthFilterChain";
+    public final static String API_KEY_FILTER_CHAIN = "apiKeyFilterChain";
+    public final static String OAUTH_FILTER_CHAIN = "oauthFilterChain";
 
-    // Keycloak paths
-    public final static String FETCH_USER_ID_KEYCLOAK_PATH = "/admin/realms/{realm}/users?email={email}";
-    public final static String FETCH_GROUP_ID_KEYCLOAK_PATH = "/admin/realms/{realm}/groups?search={group}";
-    public final static String CHANGE_USER_GROUP_KEYCLOAK_PATH = "/admin/realms/{realm}/users/{user-id}/groups/{group-id}";
-    public final static String FETCH_TOKEN_KEYCLOAK_PATH = "/realms/{realm}/protocol/openid-connect/token";
+    // OIDC / OAuth2 endpoint paths (Spring Security conventions)
+    public final static String OAUTH2_PATHS = "/oauth2/**";
+    public final static String LOGIN_PATHS = "/login/**";
+    public final static String OIDC_LOGIN_PAGE = "/oauth2/authorization/oidc";
 
-    // Keycloak parameters
-    public final static String CLIENT_ID_KEYCLOAK_PARAM = "client_id";
-    public final static String CLIENT_SECRET_KEYCLOAK_PARAM = "client_secret";
-    public final static String GRANT_TYPE_KEYCLOAK_PARAM = "grant_type";
-    public final static String CLIENT_CREDENTIALS_KEYCLOAK_CONST = "client_credentials";
-    public final static String ACCES_TOKEN_KEYCLOAK_CONST = "access_token";
-    public final static String ID_KEYCLOAK_CONST = "id";
+    // OIDC admin-API paths (generic, provider agnostic)
+    public final static String FETCH_USER_ID_OIDC_PATH = "/admin/realms/{realm}/users?email={email}";
+    public final static String FETCH_GROUP_ID_OIDC_PATH = "/admin/realms/{realm}/groups?search={group}";
+    public final static String CHANGE_USER_GROUP_OIDC_PATH = "/admin/realms/{realm}/users/{user-id}/groups/{group-id}";
+    public final static String FETCH_TOKEN_OIDC_PATH = "/realms/{realm}/protocol/openid-connect/token";
+
+    // OIDC parameters
+    public final static String CLIENT_ID_OIDC_PARAM = "client_id";
+    public final static String CLIENT_SECRET_OIDC_PARAM = "client_secret";
+    public final static String GRANT_TYPE_OIDC_PARAM = "grant_type";
+    public final static String CLIENT_CREDENTIALS_OIDC_CONST = "client_credentials";
+    public final static String ACCESS_TOKEN_OIDC_CONST = "access_token";
+    public final static String ID_OIDC_CONST = "id";
 
     // Token variables
     public final static String TOKEN_HEAD = "${";
@@ -195,7 +204,7 @@ public class ExporterConst {
             ERROR_INQUIRIES, INQUIRY, ARCHIVE_QUERY, LOGS, RUNNING_QUERIES, UPDATE_QUERY};
     public static final String[] REST_PATHS_NO_AUTH=new String[]{INFO, API_DOCS,
             STATUS, ERROR};
-    public static final String[] REST_PATHS_BROWSER_AUTH=new String[]{RESPONSE, "/oauth2/**", "/login/**"};
+    public static final String[] REST_PATHS_BROWSER_AUTH=new String[]{RESPONSE, OAUTH2_PATHS, LOGIN_PATHS};
     // TODO: RESPONSE ??? Only with UUID enough?
 
     // REST Headers
@@ -277,11 +286,8 @@ public class ExporterConst {
     public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
     public final static String JWKS_URI_PROPERTY_SV = HEAD_SV + JWKS_URI_PROPERTY + BOTTOM_SV;
 
-    // UUser and Roles
-    public final static String TEST_EMAIL = "test@project-manager.com";
-    public final static String TEST_BRIDGEHEAD = "bridgehead-test";
+    // User and Roles
     public final static String JWT_GROUPS_CLAIM = "JWT_GROUPS_CLAIM";
     public final static String JWT_GROUPS_CLAIM_SV = HEAD_SV + JWT_GROUPS_CLAIM + ":groups" + BOTTOM_SV;
-
 
 }
