@@ -2,9 +2,9 @@ package de.samply.template;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import de.samply.exporter.ExporterConst;
 import de.samply.opal.model.Permission;
 import de.samply.opal.model.PermissionType;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@JacksonXmlRootElement(localName = "converter")
+@JsonRootName("converter")
 public class ConverterTemplate {
 
     @JsonIgnore

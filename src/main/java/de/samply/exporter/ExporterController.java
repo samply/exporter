@@ -1,9 +1,10 @@
 package de.samply.exporter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.SerializationFeature;
 import de.samply.converter.Format;
 import de.samply.core.ExporterCore;
 import de.samply.core.ExporterCoreException;
@@ -61,8 +62,8 @@ public class ExporterController {
 
     private final static Logger logger = BufferedLoggerFactory.getLogger(ExporterController.class);
 
-    private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-            .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    private ObjectMapper objectMapper = JsonMapper.builder().configureForJackson2().enable(SerializationFeature.INDENT_OUTPUT)
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS).build();
     private final String projectVersion = ProjectVersion.getProjectVersion();
     private final ExporterCore exporterCore;
     private final ExplorerManager explorerManager;
@@ -137,7 +138,7 @@ public class ExporterController {
     private String createCreateQueryResponseEntity(Long queryId) throws ExporterControllerException {
         try {
             return objectMapper.writeValueAsString(new CreateQueryResponseEntity(queryId));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new ExporterControllerException(e);
         }
     }
@@ -218,7 +219,7 @@ public class ExporterController {
             } else {
                 return ResponseEntity.notFound().build();
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return createInternalServerError(e);
         }
     }
@@ -321,7 +322,7 @@ public class ExporterController {
             T result = supplier.get();
             return (result != null) ? ResponseEntity.ok(objectMapper.writeValueAsString(result))
                     : ResponseEntity.notFound().build();
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return createInternalServerError(e);
         }
     }
@@ -331,7 +332,7 @@ public class ExporterController {
         try {
             return ResponseEntity.ok(
                     objectMapper.writeValueAsString(pagePageSizeBifunction.apply(page, pageSize)));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return createInternalServerError(e);
         }
     }
@@ -439,7 +440,7 @@ public class ExporterController {
         try {
             return objectMapper.writeValueAsString(
                     new RequestResponseEntity(fetchResponseUrl(request, queryExecutionId, isInternalRequest)));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new ExporterControllerException(e);
         }
     }

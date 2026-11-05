@@ -1,7 +1,9 @@
 package de.samply.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.xml.XmlMapper;
 import de.samply.converter.Converter;
 import de.samply.converter.ConverterManager;
 import de.samply.db.crud.ExporterDbService;
@@ -136,7 +138,7 @@ public class ExporterCore {
     private ConverterTemplate fetchConverterTemplate(ExporterParameters exporterParameters, Errors errors) {
         try {
             return fetchConverterTemplate(exporterParameters.requestTemplate(), exporterParameters.contentType());
-        } catch (IOException e) {
+        } catch (IOException | JacksonException e) {
             errors.addError("Error deserializing template");
             errors.addError(ExceptionUtils.getStackTrace(e));
             return null;
@@ -145,7 +147,7 @@ public class ExporterCore {
 
     public ConverterTemplate fetchConverterTemplate(String template, String contentType)
             throws IOException {
-        return ((contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ? new XmlMapper() : new ObjectMapper())
+        return ((contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ? XmlMapper.builder().configureForJackson2().build() : JsonMapper.builder().configureForJackson2().build())
                 .readValue(Base64Utils.decodeIfNecessary(template), ConverterTemplate.class);
     }
 
