@@ -18,6 +18,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Increase default webclient buffer
 - Default values for webclient
 - Default timeout values for fhir client
+- Java 25 (Docker image eclipse-temurin:25-jre)
+- Spring Boot 4.1.2 (Spring Framework 7, Spring Security 7, Hibernate 7.4, Flyway 12, Jackson 3)
+- springdoc-openapi 3.2.0 (api-docs are now OpenAPI 3.1.0)
+- Apache POI 6.0.0, Guava 33.8.0, commons-csv 1.14.1, jgrapht 1.5.3
+- Maven Wrapper 3.9.16
+- GitHub Actions updated, trivy-action pinned
+
+### Removed
+- springdoc-openapi-common 1.7.0 and the unused GroupedOpenApi bean
+- Hibernate 4 naming strategy and explicit dialect settings
 
 ## [1.1.0 - 2025-04-10]
 ### Added
