@@ -5,7 +5,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletRequest;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
@@ -103,7 +103,7 @@ public class RequestMapper {
         return requestParamAndHeadersValues;
     }
 
-    private static Map<String, String> fetchKeyValuesOfBody(String requestBody, @NotNull String contentType) throws RequestMapperException {
+    private static Map<String, String> fetchKeyValuesOfBody(String requestBody, @NonNull String contentType) throws RequestMapperException {
         if (!StringUtils.hasText(requestBody)) {
             return new HashMap<>();
         } else if (contentType.equals(MediaType.APPLICATION_JSON_VALUE)) {
