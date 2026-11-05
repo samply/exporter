@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -37,7 +37,7 @@ public class FhirPackageLoader {
 
     private String downloadFhirPackageAndGetPath(String fhirPackage) throws IOException {
         String result = fetchFhirPackagePath(fetchFilenameFromUrl(fhirPackage));
-        try (InputStream inputStream = new URL(fhirPackage).openStream()) {
+        try (InputStream inputStream = URI.create(fhirPackage).toURL().openStream()) {
             copyInputStreamToFilePath(inputStream, result);
         }
         return result;
@@ -78,7 +78,7 @@ public class FhirPackageLoader {
 
     private String fetchFilenameFromUrl(String fileUrl) {
         try {
-            URLConnection urlConnection = new URL(fileUrl).openConnection();
+            URLConnection urlConnection = URI.create(fileUrl).toURL().openConnection();
             String headerField = urlConnection.getHeaderField(
                     ExporterConst.HTTP_HEADER_CONTENT_DISPOSITION);
             return fetchFilenameFromHeader(headerField);
@@ -96,7 +96,7 @@ public class FhirPackageLoader {
     }
 
     private String fetchRandomFilename() {
-        return RandomStringUtils.random(ExporterConst.RANDOM_FILENAME_SIZE, true, false) + ".tgz";
+        return RandomStringUtils.secure().nextAlphabetic(ExporterConst.RANDOM_FILENAME_SIZE) + ".tgz";
     }
 
     private NpmPackage fetchNpmPackage(String fhirPackage) throws IOException {

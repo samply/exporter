@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.util.StringUtils;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Set;
@@ -64,8 +65,8 @@ public abstract class FhirRelatedConverter<O> extends SourceConverterImpl<String
 
     private URL createUrl(String httpProxy) throws ConverterException {
         try {
-            return new URL(httpProxy);
-        } catch (MalformedURLException e) {
+            return URI.create(httpProxy).toURL();
+        } catch (MalformedURLException | IllegalArgumentException e) {
             throw new ConverterException(e);
         }
     }
