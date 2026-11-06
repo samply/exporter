@@ -39,7 +39,7 @@
     <properties>
         <java.version>25</java.version>
         <hapi.version>6.4.7</hapi.version>
-        <ucum.version>1.0.8</ucum.version>
+        <ucum.version>1.0.10</ucum.version>
         <org.hl7.fhir.r4.version>5.6.971</org.hl7.fhir.r4.version>
         <guava.version>33.8.0-jre</guava.version>
         <maven-model.version>3.9.16</maven-model.version>
