@@ -408,19 +408,26 @@ public class ExporterController {
         try {
             exporterCore.retrieveQuery(exporterCoreParameters, tokenContext).subscribe(
                     path -> exporterDbService.saveQueryExecutionFile(
-                            createQueryExecutionFile(queryExecutionId, ((Path) path).toString())));
-            exporterDbService.setQueryExecutionAsOk(queryExecutionId);
-            BufferedLoggerFactory.clearBuffer();
+                            createQueryExecutionFile(queryExecutionId, ((Path) path).toString())),
+                    error -> setQueryExecutionAsError(queryExecutionId, error),
+                    () -> {
+                        exporterDbService.setQueryExecutionAsOk(queryExecutionId);
+                        BufferedLoggerFactory.clearBuffer();
+                    });
         } catch (ExporterCoreException e) {
-            exporterDbService.setQueryExecutionAsError(queryExecutionId);
-            exporterDbService.saveQueryExecutionErrorAndGetId(
-                    createQueryExecutionError(e, queryExecutionId));
-            BufferedLoggerFactory.clearBuffer();
-            logger.error(ExceptionUtils.getStackTrace(e));
+            setQueryExecutionAsError(queryExecutionId, e);
         }
     }
 
-    private QueryExecutionError createQueryExecutionError(Exception e, Long queryExecutionId) {
+    private void setQueryExecutionAsError(Long queryExecutionId, Throwable e) {
+        exporterDbService.setQueryExecutionAsError(queryExecutionId);
+        exporterDbService.saveQueryExecutionErrorAndGetId(
+                createQueryExecutionError(e, queryExecutionId));
+        BufferedLoggerFactory.clearBuffer();
+        logger.error(ExceptionUtils.getStackTrace(e));
+    }
+
+    private QueryExecutionError createQueryExecutionError(Throwable e, Long queryExecutionId) {
         QueryExecutionError queryExecutionError = new QueryExecutionError();
         queryExecutionError.setQueryExecutionId(queryExecutionId);
         queryExecutionError.setError(ExceptionUtils.getStackTrace(e));
