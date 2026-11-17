@@ -59,9 +59,8 @@ public class BundleValidator {
                 new SnapshotGeneratingValidationSupport(fhirContext)
         );
         addRemoteTerminologyServers(validationSupportChain, fhirContext, converterTemplate);
-        CachingValidationSupport validationSupport = new CachingValidationSupport(
-                validationSupportChain);
-        return new FhirInstanceValidator(validationSupport);
+        // Since HAPI FHIR 8, ValidationSupportChain caches by itself (CachingValidationSupport is deprecated)
+        return new FhirInstanceValidator(validationSupportChain);
     }
 
     private NpmPackageValidationSupport fetchNpmPackageValidationSupport(FhirContext fhirContext,
