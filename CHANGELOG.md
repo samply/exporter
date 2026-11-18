@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - HAPI FHIR 8.12.1 (HL7 core 6.9.12, FHIRPathEngine now in org.hl7.fhir.r4.fhirpath; ValidationSupportChain caches itself)
 - EXTRACT_RELATIVE_ID: works with bare ids (FHIRPath "Resource.id" returns only the id part since HL7 core 6.x) and ids without /_history; export output unchanged
 - Apache POI 6.0.0, Guava 33.8.0, commons-csv 1.14.1, jgrapht 1.5.3, UCUM 1.0.10
-- Maven Wrapper 3.9.16
+- Maven Wrapper with Maven 3.10.1, maven-model 3.10.1
 - GitHub Actions updated, trivy-action pinned
 
 ### Removed
