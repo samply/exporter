@@ -1,10 +1,11 @@
 package de.samply.exporter.request;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletRequest;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
@@ -29,7 +30,7 @@ import java.util.*;
 
 public class RequestMapper {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = JsonMapper.builder().configureForJackson2().build();
 
     // Body properties have priority over the parameters
     public static Map<String, String> fetchKeyValues(HttpServletRequest request, Method method) throws RequestMapperException {
@@ -102,7 +103,7 @@ public class RequestMapper {
         return requestParamAndHeadersValues;
     }
 
-    private static Map<String, String> fetchKeyValuesOfBody(String requestBody, @NotNull String contentType) throws RequestMapperException {
+    private static Map<String, String> fetchKeyValuesOfBody(String requestBody, @NonNull String contentType) throws RequestMapperException {
         if (!StringUtils.hasText(requestBody)) {
             return new HashMap<>();
         } else if (contentType.equals(MediaType.APPLICATION_JSON_VALUE)) {
@@ -190,7 +191,7 @@ public class RequestMapper {
             JsonNode rootNode = objectMapper.readTree(requestBody);
 
             // Extract first-level keys and their string representations
-            Iterator<String> fieldNames = rootNode.fieldNames();
+            Iterator<String> fieldNames = rootNode.propertyNames().iterator();
             while (fieldNames.hasNext()) {
                 String fieldName = fieldNames.next();
                 JsonNode fieldValue = rootNode.get(fieldName);
@@ -205,7 +206,7 @@ public class RequestMapper {
             }
 
             return result;
-        } catch (JsonProcessingException | NullPointerException e) {
+        } catch (JacksonException | NullPointerException e) {
             throw new RequestMapperException(e);
         }
     }

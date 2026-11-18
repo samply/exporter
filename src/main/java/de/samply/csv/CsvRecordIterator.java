@@ -32,7 +32,7 @@ public class CsvRecordIterator implements Iterator<CSVRecord>, Closeable {
         .setSkipHeaderRecord(true)
         .setDelimiter(csvConfig.delimiter())
         .setRecordSeparator(csvConfig.endOfLine())
-        .build()
+        .get()
         .parse(bufferedReader);
   }
 

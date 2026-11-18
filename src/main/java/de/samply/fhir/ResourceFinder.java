@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.ExpressionNode;
+import org.hl7.fhir.r4.fhirpath.ExpressionNode;
 import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r4.utils.FHIRPathEngine;
+import org.hl7.fhir.r4.fhirpath.FHIRPathEngine;
 
 public class ResourceFinder {
 

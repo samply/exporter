@@ -12,11 +12,13 @@ import de.samply.logger.Logger;
 import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 import de.samply.template.ConverterTemplate;
+import de.samply.template.Operation;
 import de.samply.template.token.TokenContext;
 import de.samply.utils.LimitedLogger;
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext;
 import org.hl7.fhir.r4.model.*;
-import org.hl7.fhir.r4.utils.FHIRPathEngine;
+import org.hl7.fhir.r4.fhirpath.ExpressionNode;
+import org.hl7.fhir.r4.fhirpath.FHIRPathEngine;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -212,6 +214,9 @@ public class BundleToContainersConverter extends
     private String fetchResourceAttributeValue(ResourceAttribute resourceAttribute,
                                                BundleContext context) {
         String result = resourceAttribute.attributeValue();
+        if (resourceAttribute.attributeTemplate().getOperation() == Operation.EXTRACT_RELATIVE_ID) {
+            result = qualifyBareResourceId(result, resourceAttribute.valueResource());
+        }
         if (resourceAttribute.attributeTemplate().getOperation() != null) {
             result = resourceAttribute.attributeTemplate().getOperation().execute(result);
         }
@@ -219,6 +224,18 @@ public class BundleToContainersConverter extends
             result = context.fetchAnonym(resourceAttribute.attributeTemplate(), result);
         }
         return result;
+    }
+
+    /**
+     * Since HL7 FHIR core 6.x (HAPI FHIR 8), FHIRPath "Resource.id" only returns the id part ("123")
+     * instead of the full id ("http://host/fhir/Patient/123/_history/1"). Prefix the resource type
+     * so that EXTRACT_RELATIVE_ID still yields "Patient/123" as before.
+     */
+    private String qualifyBareResourceId(String value, Resource valueResource) {
+        if (value != null && valueResource != null && value.equals(valueResource.getIdPart())) {
+            return valueResource.fhirType() + "/" + value;
+        }
+        return value;
     }
 
     private FHIRPathEngine createFhirPathEngine(FhirContext fhirContext) {

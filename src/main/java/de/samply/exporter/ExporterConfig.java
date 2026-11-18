@@ -1,6 +1,5 @@
 package de.samply.exporter;
 
-import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -16,14 +15,6 @@ public class ExporterConfig {
         new ClassPathResource("application.properties"));
     propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(true);
     return propertySourcesPlaceholderConfigurer;
-  }
-
-  @Bean
-  public GroupedOpenApi publicApi() {
-    return GroupedOpenApi.builder()
-            .group("public-api")
-            .pathsToMatch("/exporter/.*")
-            .build();
   }
 
 }

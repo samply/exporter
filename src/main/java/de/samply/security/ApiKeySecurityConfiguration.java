@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -48,8 +48,8 @@ public class ApiKeySecurityConfiguration {
                         httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilter(createApiKeyFilter())
                 .authorizeHttpRequests(authorize -> {
-                            authorize.requestMatchers(new AntPathRequestMatcher(ExporterConst.API_DOCS)).permitAll();
-                            Arrays.stream(ExporterConst.REST_PATHS_WITH_API_KEY).forEach(path -> authorize.requestMatchers(new AntPathRequestMatcher(path)).authenticated());
+                            authorize.requestMatchers(PathPatternRequestMatcher.withDefaults().matcher(ExporterConst.API_DOCS)).permitAll();
+                            Arrays.stream(ExporterConst.REST_PATHS_WITH_API_KEY).forEach(path -> authorize.requestMatchers(PathPatternRequestMatcher.withDefaults().matcher(path)).authenticated());
                             authorize.anyRequest().authenticated();
                         }
                 );

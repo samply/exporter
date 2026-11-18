@@ -1,7 +1,8 @@
 package de.samply.template;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.xml.XmlMapper;
 import de.samply.exporter.ExporterConst;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -70,7 +71,7 @@ public class ConverterTemplateManager {
             throws IOException {
         ObjectMapper objectMapper =
                 (contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ?
-                        new XmlMapper() : new ObjectMapper();
+                        XmlMapper.builder().configureForJackson2().build() : JsonMapper.builder().configureForJackson2().build();
         return objectMapper.readValue(template, ConverterTemplate.class);
     }
 

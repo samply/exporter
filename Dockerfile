@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 
 # Add pipx binary path to PATH environment variable
 ENV PATH="$PATH:/root/.local/bin"
