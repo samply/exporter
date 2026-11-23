@@ -1,6 +1,7 @@
 package de.samply.fhir;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.LenientErrorHandler;
 import ca.uhn.fhir.rest.client.apache.ApacheRestfulClientFactory;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.api.IRestfulClientFactory;
@@ -82,6 +83,7 @@ public abstract class FhirRelatedConverter<O> extends SourceConverterImpl<String
 
     private IGenericClient recreateFhirClient(String blazeStoreUrl) {
         FhirContext fhirContext = FhirContext.forR4();
+        fhirContext.setParserErrorHandler(new LenientErrorHandler().setErrorOnInvalidValue(false));
         createIRestfulClientFactoryWithProxy(fhirContext).ifPresent(fhirContext::setRestfulClientFactory);
         return configureHttpClient(fhirContext).newRestfulGenericClient(blazeStoreUrl);
     }
