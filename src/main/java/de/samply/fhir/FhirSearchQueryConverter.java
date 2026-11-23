@@ -160,7 +160,7 @@ public class FhirSearchQueryConverter extends FhirRelatedConverter<Bundle> {
             try {
                 return bundleSupplier.get();
             } catch (FhirClientConnectionException e) {
-                logger.error("Connection refused with FHIR Server. Retrying (" + i + "/" + ExporterConst.DEFAULT_MAX_NUMBER_OF_RETRIES + ")");
+                logger.error(e.getMessage() + " Retrying (" + i + "/" + ExporterConst.DEFAULT_MAX_NUMBER_OF_RETRIES + ")");
                 if (i + 1 > ExporterConst.DEFAULT_MAX_NUMBER_OF_RETRIES) {
                     throw e;
                 }
