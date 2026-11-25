@@ -1,8 +1,9 @@
 package de.samply.template;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.dataformat.xml.XmlMapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,9 +17,9 @@ class ConverterTemplateTest {
 
   private Random random = new Random();
   private String filepath = "./test-templates/my-test";
-  private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-  private XmlMapper xmlMapper = (XmlMapper) new XmlMapper().enable(
-      SerializationFeature.INDENT_OUTPUT);
+  private ObjectMapper objectMapper = JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT).build();
+  private XmlMapper xmlMapper = XmlMapper.builder().enable(
+      SerializationFeature.INDENT_OUTPUT).build();
 
   @Test
   void test() throws IOException {

@@ -20,10 +20,11 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.util.StringUtils;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Set;
@@ -65,8 +66,8 @@ public abstract class FhirRelatedConverter<O> extends SourceConverterImpl<String
 
     private URL createUrl(String httpProxy) throws ConverterException {
         try {
-            return new URL(httpProxy);
-        } catch (MalformedURLException e) {
+            return URI.create(httpProxy).toURL();
+        } catch (MalformedURLException | IllegalArgumentException e) {
             throw new ConverterException(e);
         }
     }
@@ -114,7 +115,7 @@ public abstract class FhirRelatedConverter<O> extends SourceConverterImpl<String
         return Optional.empty();
     }
 
-    private Optional<HttpRoutePlanner> createHttpRoutePlanner(@NotNull HttpHost proxy) {
+    private Optional<HttpRoutePlanner> createHttpRoutePlanner(@NonNull HttpHost proxy) {
         if (noProxy != null && noProxy.size() > 0) {
             DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy) {
                 @Override

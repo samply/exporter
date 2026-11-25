@@ -1,6 +1,6 @@
 package de.samply.explorer;
 
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 
 public class PivotIdentifier {
     private String filename;

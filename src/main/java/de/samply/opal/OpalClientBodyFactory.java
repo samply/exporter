@@ -1,9 +1,9 @@
 package de.samply.opal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.SerializationFeature;
 import de.samply.exporter.ExporterConst;
 import de.samply.opal.model.*;
 import de.samply.template.AttributeTemplate;
@@ -15,23 +15,22 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class OpalClientBodyFactory {
-    private final static ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-            .registerModule(new JavaTimeModule());
+    private final static ObjectMapper objectMapper = JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT).build();
 
 
-    public static String createViewAndSerializeAsJson(Session session, ContainerTemplate containerTemplate) throws JsonProcessingException {
+    public static String createViewAndSerializeAsJson(Session session, ContainerTemplate containerTemplate) throws JacksonException {
         return objectMapper.writeValueAsString(OpalClientBodyFactory.createView(session, containerTemplate));
     }
 
-    public static String createCsvDatasourceBodyAndSerializeAsJson(Session session, ContainerTemplate containerTemplate, String data) throws JsonProcessingException {
+    public static String createCsvDatasourceBodyAndSerializeAsJson(Session session, ContainerTemplate containerTemplate, String data) throws JacksonException {
         return objectMapper.writeValueAsString(OpalClientBodyFactory.createCSVDatasourceBody(session, containerTemplate, data));
     }
 
-    public static String createProjectBodyAndSerializeAsJson(String projectName, String database) throws JsonProcessingException {
+    public static String createProjectBodyAndSerializeAsJson(String projectName, String database) throws JacksonException {
         return objectMapper.writeValueAsString(OpalClientBodyFactory.createProjectBody(projectName, database));
     }
 
-    public static String createPathBodyAndSerializeAsJson(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
+    public static String createPathBodyAndSerializeAsJson(Session session, ContainerTemplate template, String transientUid) throws JacksonException {
         return objectMapper.writeValueAsString(OpalClientBodyFactory.createPathBody(session, template, transientUid));
     }
 

@@ -1,6 +1,6 @@
 package de.samply.opal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import de.samply.exporter.ExporterConst;
 import de.samply.logger.BufferedLoggerFactory;
 import de.samply.logger.Logger;
@@ -40,7 +40,7 @@ public class OpalEngine implements ApplicationContextAware {
         this.opalServer = opalServer;
     }
 
-    public void sendPathToOpal(Path path, Session session) throws OpalEngineException, JsonProcessingException {
+    public void sendPathToOpal(Path path, Session session) throws OpalEngineException, JacksonException {
         ContainerTemplate containerTemplate = session.getContainerTemplate(
                 path.getFileName().toString());
         if (containerTemplate != null) {
@@ -53,7 +53,7 @@ public class OpalEngine implements ApplicationContextAware {
         }
     }
 
-    public void createProjectIfNotExists(Session session) throws OpalEngineException, JsonProcessingException {
+    public void createProjectIfNotExists(Session session) throws OpalEngineException, JacksonException {
         if (!existsProject(session)) {
             createProject(session);
             createProjectPermissions(session);
@@ -81,7 +81,7 @@ public class OpalEngine implements ApplicationContextAware {
                 .block());
     }
 
-    private void createProject(Session session) throws JsonProcessingException {
+    private void createProject(Session session) throws JacksonException {
         String projectName = session.fetchProject();
         logger.info("Create Project " + projectName);
         fetchWebClient().post()
@@ -158,7 +158,7 @@ public class OpalEngine implements ApplicationContextAware {
         return session.fetchOpalProjectDirectoryPath(opalServer.getFilesDirectory(), path);
     }
 
-    private String importPathTransient(Path path, Session session, ContainerTemplate template) throws OpalEngineException, JsonProcessingException {
+    private String importPathTransient(Path path, Session session, ContainerTemplate template) throws OpalEngineException, JacksonException {
         logger.info("Import started for: " + template.getOpalTable() + " in Project " + session.fetchProject());
         Map<String, Object> response = fetchWebClient().post()
                 .uri(uriBuilder -> uriBuilder
@@ -190,7 +190,7 @@ public class OpalEngine implements ApplicationContextAware {
         return transientUid;
     }
 
-    private String importPath(Session session, ContainerTemplate template, String transientUid) throws JsonProcessingException {
+    private String importPath(Session session, ContainerTemplate template, String transientUid) throws JacksonException {
         return fetchWebClient().post()
                 .uri(ExporterConst.OPAL_PROJECT + session.fetchProject() + ExporterConst.OPAL_PROJECT_IMPORT)
                 .headers(headers -> {
@@ -261,12 +261,12 @@ public class OpalEngine implements ApplicationContextAware {
             throws OpalEngineException {
         try {
             createViewWithoutExceptionHandling(session, containerTemplate);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new OpalEngineException(e);
         }
     }
 
-    private void createViewWithoutExceptionHandling(Session session, ContainerTemplate containerTemplate) throws JsonProcessingException {
+    private void createViewWithoutExceptionHandling(Session session, ContainerTemplate containerTemplate) throws JacksonException {
         String view = OpalClientBodyFactory.createViewAndSerializeAsJson(session, containerTemplate);
         logger.info("Create View");
         logger.info("Request body: " + view);

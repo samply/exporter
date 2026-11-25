@@ -8,7 +8,7 @@ import de.samply.template.ConverterTemplate;
 import java.util.List;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r4.utils.FHIRPathEngine;
+import org.hl7.fhir.r4.fhirpath.FHIRPathEngine;
 
 public class BundleContext {
 

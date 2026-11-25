@@ -8,7 +8,7 @@ import de.samply.template.AttributeTemplate;
 import de.samply.template.ContainerTemplate;
 import org.hl7.fhir.r4.model.Base;
 import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r4.utils.FHIRPathEngine;
+import org.hl7.fhir.r4.fhirpath.FHIRPathEngine;
 
 import java.util.HashMap;
 import java.util.List;

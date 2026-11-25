@@ -3,11 +3,17 @@ package de.samply.template;
 import java.util.function.Function;
 
 public enum Operation {
+  // "http://host/fhir/Patient/123/_history/1" or "http://host/fhir/Patient/123" -> "Patient/123".
+  // Values that are already relative ("Patient/123") or a bare id ("123") are returned unchanged.
   EXTRACT_RELATIVE_ID(value -> {
-    int end = value.indexOf("/_history");
-    int tempIndex = value.substring(0, end).lastIndexOf("/");
-    int begin = value.substring(0, tempIndex).lastIndexOf("/") + 1;
-    return value.substring(begin, end);
+    int historyIndex = value.indexOf("/_history");
+    String withoutHistory = (historyIndex >= 0) ? value.substring(0, historyIndex) : value;
+    int idSlash = withoutHistory.lastIndexOf("/");
+    if (idSlash < 0) {
+      return withoutHistory;
+    }
+    int begin = withoutHistory.substring(0, idSlash).lastIndexOf("/") + 1;
+    return withoutHistory.substring(begin);
   });
 
   private Function<String, String> function;
