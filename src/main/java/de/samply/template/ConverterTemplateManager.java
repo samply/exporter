@@ -71,7 +71,7 @@ public class ConverterTemplateManager {
             throws IOException {
         ObjectMapper objectMapper =
                 (contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ?
-                        XmlMapper.builder().configureForJackson2().build() : JsonMapper.builder().configureForJackson2().build();
+                        new XmlMapper() : new JsonMapper();
         return objectMapper.readValue(template, ConverterTemplate.class);
     }
 

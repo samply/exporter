@@ -147,7 +147,7 @@ public class ExporterCore {
 
     public ConverterTemplate fetchConverterTemplate(String template, String contentType)
             throws IOException {
-        return ((contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ? XmlMapper.builder().configureForJackson2().build() : JsonMapper.builder().configureForJackson2().build())
+        return ((contentType.equalsIgnoreCase(MediaType.APPLICATION_XML_VALUE)) ? new XmlMapper() : new JsonMapper())
                 .readValue(Base64Utils.decodeIfNecessary(template), ConverterTemplate.class);
     }
 

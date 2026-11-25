@@ -30,7 +30,7 @@ import java.util.*;
 
 public class RequestMapper {
 
-    private static ObjectMapper objectMapper = JsonMapper.builder().configureForJackson2().build();
+    private static ObjectMapper objectMapper = new JsonMapper();
 
     // Body properties have priority over the parameters
     public static Map<String, String> fetchKeyValues(HttpServletRequest request, Method method) throws RequestMapperException {

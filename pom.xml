@@ -82,7 +82,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-        <!-- Used by WebClientFactory (EpollChannelOption); was transitive via reactor-netty before Boot 4 -->
+        <!--
+          Netty epoll (Linux native transport), versions managed by the Spring Boot BOM.
+          WebClientFactory sets TCP keep-alive options via EpollChannelOption
+          (TCP_KEEPIDLE / TCP_KEEPINTVL / TCP_KEEPCNT), so the epoll classes are needed at compile time.
+          Up to Spring Boot 3 (Netty 4.1) reactor-netty brought them in transitively; with
+          Spring Boot 4 (Netty 4.2) it no longer does, so they are declared explicitly:
+          - netty-transport-classes-epoll (compile): Java classes such as EpollChannelOption
+          - netty-transport-native-epoll:linux-x86_64 (runtime): native library, so the options are
+            actually applied in the Linux container. Without a native library for the platform
+            (e.g. linux/arm64) Netty falls back to NIO and ignores these options (same as before).
+        -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-classes-epoll</artifactId>
@@ -100,6 +110,12 @@
             <artifactId>hapi-fhir-client</artifactId>
             <version>${hapi.version}</version>
         </dependency>
+        <!--
+          hapi-fhir-structures-r4 brings the matching HL7 core library transitively
+          (ca.uhn.hapi.fhir:org.hl7.fhir.r4, e.g. 6.9.12 for HAPI 8.12.1), including FHIRPathEngine
+          (package org.hl7.fhir.r4.fhirpath since HAPI 8). It is intentionally not pinned separately
+          any more: HAPI and the HL7 core are released and tested together, an own version can get out of sync.
+        -->
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-structures-r4</artifactId>

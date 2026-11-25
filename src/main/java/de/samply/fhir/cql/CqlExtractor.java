@@ -12,7 +12,7 @@ import de.samply.utils.Base64Utils;
 public class CqlExtractor {
 
     private final static Logger logger = BufferedLoggerFactory.getLogger(CqlExtractor.class);
-    private final static ObjectMapper objectMapper = JsonMapper.builder().configureForJackson2().addModule(
+    private final static ObjectMapper objectMapper = JsonMapper.builder().addModule(
             new SimpleModule().addDeserializer(CqlQuery.class, new CqlQueryDeserializer())).build();
 
 

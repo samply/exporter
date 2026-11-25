@@ -17,8 +17,8 @@ class ConverterTemplateTest {
 
   private Random random = new Random();
   private String filepath = "./test-templates/my-test";
-  private ObjectMapper objectMapper = JsonMapper.builder().configureForJackson2().enable(SerializationFeature.INDENT_OUTPUT).build();
-  private XmlMapper xmlMapper = XmlMapper.builder().configureForJackson2().enable(
+  private ObjectMapper objectMapper = JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT).build();
+  private XmlMapper xmlMapper = XmlMapper.builder().enable(
       SerializationFeature.INDENT_OUTPUT).build();
 
   @Test

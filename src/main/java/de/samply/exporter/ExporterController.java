@@ -62,7 +62,7 @@ public class ExporterController {
 
     private final static Logger logger = BufferedLoggerFactory.getLogger(ExporterController.class);
 
-    private ObjectMapper objectMapper = JsonMapper.builder().configureForJackson2().enable(SerializationFeature.INDENT_OUTPUT)
+    private ObjectMapper objectMapper = JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT)
             .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS).build();
     private final String projectVersion = ProjectVersion.getProjectVersion();
     private final ExporterCore exporterCore;

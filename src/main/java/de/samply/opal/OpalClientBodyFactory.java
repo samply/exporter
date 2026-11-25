@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class OpalClientBodyFactory {
-    private final static ObjectMapper objectMapper = JsonMapper.builder().configureForJackson2().enable(SerializationFeature.INDENT_OUTPUT).build();
+    private final static ObjectMapper objectMapper = JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT).build();
 
 
     public static String createViewAndSerializeAsJson(Session session, ContainerTemplate containerTemplate) throws JacksonException {
